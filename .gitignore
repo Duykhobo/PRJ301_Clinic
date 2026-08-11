@@ -1,0 +1,17 @@
+# NetBeans & Ant Build Artifacts
+build/
+dist/
+nbproject/private/
+nbproject/project.fragment
+
+# Temp & Log Files
+*.log
+*.class
+*.tmp
+*.bak
+
+# IDE & OS Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
