@@ -63,6 +63,10 @@ public class BookingServlet extends HttpServlet {
             handleGetSlots(request, response);
             return;
         }
+        if ("check-payment-status".equals(action)) {
+            handleCheckPaymentStatus(request, response);
+            return;
+        }
         // 1. Lấy danh sách Dịch vụ Nha khoa & Spa hoạt động từ ClinicService
         List<Service> services = clinicService.getActiveServices();
         // 2. Lấy danh sách Bác sĩ từ ClinicService
@@ -214,5 +218,24 @@ public class BookingServlet extends HttpServlet {
         } catch (Exception e) {
             response.getWriter().write("[]");
         }
+    }
+
+    /**
+     * Hàm AJAX kiểm tra trạng thái thanh toán VietQR theo thời gian thực.
+     */
+    private void handleCheckPaymentStatus(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        try {
+            int appointmentId = Integer.parseInt(request.getParameter("id"));
+            Appointment app = bookingService.getAppointmentById(appointmentId);
+            if (app != null) {
+                response.getWriter().write(String.format("{\"id\":%d,\"paymentStatus\":\"%s\",\"status\":\"%s\"}",
+                        app.getId(), app.getPaymentStatus(), app.getStatus()));
+                return;
+            }
+        } catch (Exception ignored) {
+        }
+        response.getWriter().write("{\"id\":0,\"paymentStatus\":\"UNPAID\",\"status\":\"PENDING\"}");
     }
 }
