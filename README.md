@@ -132,20 +132,20 @@ Tầng 3 — Application: SlotAlreadyBookedException + Toast Error Notification
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         PRESENTATION LAYER                           │
-│  JSP 2.3 · JSTL 1.2 · Bootstrap 5.3 · Font Awesome 6 · Flatpickr  │
+│                         PRESENTATION LAYER                          │
+│   JSP 2.3 · JSTL 1.2 · Bootstrap 5.3 · Font Awesome 6 · Flatpickr  │
 ├─────────────────────────────────────────────────────────────────────┤
-│                          BUSINESS LAYER                              │
+│                           BUSINESS LAYER                            │
 │         Java EE 8 · Servlet 3.1 · Service Classes · Filters         │
 ├─────────────────────────────────────────────────────────────────────┤
-│                       DATA ACCESS LAYER                              │
-│              Pure JDBC · BaseDAO<T> · HikariCP 3.4.5                │
+│                          DATA ACCESS LAYER                          │
+│               Pure JDBC · BaseDAO<T> · HikariCP 3.4.5               │
 ├─────────────────────────────────────────────────────────────────────┤
-│                          DATABASE LAYER                              │
-│    Microsoft SQL Server · Triggers · Stored Procedures · Functions   │
+│                           DATABASE LAYER                            │
+│   Microsoft SQL Server · Triggers · Stored Procedures · Functions   │
 ├─────────────────────────────────────────────────────────────────────┤
-│                       EXTERNAL SERVICES                              │
-│           SePay VietQR API · HMAC-SHA256 Webhook · Sacombank         │
+│                          EXTERNAL SERVICES                          │
+│         SePay VietQR API · HMAC-SHA256 Webhook · Sacombank          │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
