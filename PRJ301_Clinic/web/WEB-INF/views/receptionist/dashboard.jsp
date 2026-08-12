@@ -27,7 +27,7 @@
                         <span style="font-size:.75rem; color:#10b981; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">LIVE · Reception Workspace</span>
                     </div>
                     <h4 class="fw-bold text-white mb-1" style="font-size:1.3rem;">
-                        Sảnh Tiếp Đón — ${sessionScope.LOGIN_USER.fullname}
+                        Sảnh Tiếp Đón — <c:out value="${sessionScope.LOGIN_USER.fullname}"/>
                     </h4>
                     <p class="mb-0" style="color:rgba(255,255,255,.5); font-size:.83rem;">
                         <i class="fa-solid fa-hospital me-1" style="color:#10b981;"></i>Điều phối khách hàng &amp; Thu tiền mặt &nbsp;·&nbsp;
@@ -127,16 +127,16 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="patient-name">${app.patientName}</div>
-                                        <div class="patient-phone"><i class="fa-solid fa-phone" style="font-size:.7rem;"></i> ${app.patientPhone}</div>
+                                        <div class="patient-name"><c:out value="${app.patientName}"/></div>
+                                        <div class="patient-phone"><i class="fa-solid fa-phone" style="font-size:.7rem;"></i> <c:out value="${app.patientPhone}"/></div>
                                     </td>
                                     <td>
                                         <span class="doctor-chip">
-                                            <i class="fa-solid fa-user-doctor"></i>${app.doctorName}
+                                            <i class="fa-solid fa-user-doctor"></i><c:out value="${app.doctorName}"/>
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="service-chip">${app.serviceName}</span>
+                                        <span class="service-chip"><c:out value="${app.serviceName}"/></span>
                                     </td>
                                     <td>
                                         <c:choose>

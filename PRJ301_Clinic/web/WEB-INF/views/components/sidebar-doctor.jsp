@@ -27,7 +27,7 @@
                     ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
                   </div>
                   <div style="min-width:0;">
-                    <div class="sb-user-name">${sessionScope.LOGIN_USER.fullname}</div>
+                    <div class="sb-user-name"><c:out value="${sessionScope.LOGIN_USER.fullname}"/></div>
                     <div class="sb-user-role">
                       <i class="fa-solid fa-stethoscope"></i> Bác Sĩ
                     </div>

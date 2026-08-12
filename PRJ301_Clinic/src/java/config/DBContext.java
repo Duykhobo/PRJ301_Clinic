@@ -16,8 +16,18 @@ public class DBContext {
             // Driver & Connection String SQL Server
             config.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             config.setJdbcUrl("jdbc:sqlserver://localhost:1433;databaseName=PRJ301_ClinicDB;encrypt=false;trustServerCertificate=true");
-            config.setUsername("sa"); // Sửa lại username SQL Server của bạn nếu khác
-            config.setPassword("12345"); // Sửa lại mật khẩu SQL Server của bạn nếu khác
+            String dbUsername = System.getenv("DB_USERNAME");
+            if (dbUsername == null || dbUsername.trim().isEmpty()) {
+                dbUsername = "sa";
+            }
+
+            String dbPassword = System.getenv("DB_PASSWORD");
+            if (dbPassword == null || dbPassword.trim().isEmpty()) {
+                dbPassword = "12345";
+            }
+
+            config.setUsername(dbUsername);
+            config.setPassword(dbPassword);
 
             // Cấu hình HikariCP Connection Pool
             config.setMaximumPoolSize(15);

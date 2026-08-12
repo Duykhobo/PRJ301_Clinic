@@ -32,7 +32,7 @@
                                                         WORKSPACE</span>
                                                 </div>
                                                 <h4 class="fw-bold text-white mb-1" style="font-size:1.3rem;">
-                                                    Xin chào, BS. ${sessionScope.LOGIN_USER.fullname}
+                                                    Xin chào, BS. <c:out value="${sessionScope.LOGIN_USER.fullname}"/>
                                                 </h4>
                                                 <p class="mb-0" style="color:rgba(255,255,255,.5); font-size:.83rem;">
                                                     <i class="fa-solid fa-stethoscope me-1"
@@ -139,16 +139,11 @@
                                                                             </span>
                                                                         </td>
                                                                         <td>
-                                                                            <div class="patient-name">${app.patientName}
-                                                                            </div>
-                                                                            <div class="patient-phone"><i
-                                                                                    class="fa-solid fa-phone"
-                                                                                    style="font-size:.7rem;"></i>
-                                                                                ${app.patientPhone}</div>
+                                                                            <div class="patient-name"><c:out value="${app.patientName}"/></div>
+                                                                            <div class="patient-phone"><i class="fa-solid fa-phone" style="font-size:.7rem;"></i> <c:out value="${app.patientPhone}"/></div>
                                                                         </td>
                                                                         <td>
-                                                                            <span
-                                                                                class="service-chip">${app.serviceName}</span>
+                                                                            <span class="service-chip"><c:out value="${app.serviceName}"/></span>
                                                                         </td>
                                                                         <td>
                                                                             <c:choose>

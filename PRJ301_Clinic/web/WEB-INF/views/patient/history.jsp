@@ -79,13 +79,13 @@
                                                                 </td>
                                                                 <td class="text-white">
                                                                     <i
-                                                                        class="fa-solid fa-user-doctor me-1 text-info"></i>${app.doctorName}
+                                                                        class="fa-solid fa-user-doctor me-1 text-info"></i><c:out value="${app.doctorName}"/>
                                                                 </td>
                                                                 <td>
                                                                     <span class="badge px-3 py-2 rounded-pill fw-bold"
                                                                         style="background: rgba(13, 202, 240, 0.15); color: #0dcaf0 !important; border: 1px solid rgba(13, 202, 240, 0.4);">
                                                                         <i
-                                                                            class="fa-solid fa-notes-medical me-1"></i>${app.serviceName}
+                                                                            class="fa-solid fa-notes-medical me-1"></i><c:out value="${app.serviceName}"/>
                                                                     </span>
                                                                 </td>
                                                                 <td class="fw-bold text-warning">${app.totalPrice} VNĐ

@@ -69,7 +69,7 @@
                                 <div class="avatar-circle bg-info text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                                     ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
                                 </div>
-                                <span class="fw-semibold text-white me-1">${sessionScope.LOGIN_USER.fullname}</span>
+                                <span class="fw-semibold text-white me-1"><c:out value="${sessionScope.LOGIN_USER.fullname}"/></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end glass-dropdown border-0 shadow-lg mt-2 p-2 rounded-4">
                                 <li class="dropdown-header text-muted px-3 py-2">
