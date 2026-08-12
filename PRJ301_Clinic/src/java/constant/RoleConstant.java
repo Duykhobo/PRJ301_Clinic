@@ -1,4 +1,4 @@
-package constants;
+package constant;
 
 /**
  * RoleConstant - Quản lý danh mục Vai trò Người dùng trong Hệ thống.

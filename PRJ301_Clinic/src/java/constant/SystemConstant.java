@@ -1,7 +1,8 @@
-package constants;
+package constant;
 
 /**
- * SystemConstant - Quản lý các Hằng số Trạng thái & Default Fallbacks của Hệ thống.
+ * SystemConstant - Quản lý các Hằng số Trạng thái & Default Fallbacks của Hệ
+ * thống.
  */
 public class SystemConstant {
 
@@ -34,6 +35,6 @@ public class SystemConstant {
     // Default Fallbacks (Dùng khi Database chưa khởi tạo xong)
     public static final int DEFAULT_SLOT_DURATION_MINUTES = 60;
     public static final String[] DEFAULT_CLINIC_TIME_SLOTS = {
-        "08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"
+            "08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"
     };
 }

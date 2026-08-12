@@ -1,28 +1,24 @@
 package dao;
 
-import config.DBContext;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import constant.RoleConstant;
 import model.User;
 import util.BCryptUtil;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Lớp UserDAO quản lý trực tiếp các thao tác CSDL cho bảng Users.
- * Tối ưu tốc độ phát triển sát Deadline (Pragmatic Feature-First Strategy).
- * Áp dụng nguyên tắc DRY qua hàm helper mapResultSetToUser.
+ * Lớp UserDAO quản lý các thao tác CSDL cho bảng Users. Bạn tự gõ code cho các
+ * hàm TODO bên dưới để rèn luyện thói quen!
  */
-public class UserDAO {
+public class UserDAO extends BaseDAO<User> {
 
     // =========================================================================
-    // 🧱 1. ÁP DỤNG DRY (DON'T REPEAT YOURSELF) - HELPER MAPPER
+    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
     // =========================================================================
     /**
-     * Helper Mapper dùng chung cho tất cả các hàm SELECT (Tái sử dụng code 100%).
+     * Helper Mapper chuyển 1 dòng ResultSet thành đối tượng User.
      */
     protected User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
@@ -39,73 +35,87 @@ public class UserDAO {
     }
 
     // =========================================================================
-    // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP, ĐĂNG KÝ & KIỂM TRA (BẠN TỰ TAY GÕ CODE)
+    // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP & ĐĂNG KÝ (TODO DÀNH CHO BẠN)
     // =========================================================================
-
     /**
-     * TODO 1: Viết hàm Đăng nhập login(String username, String rawPassword)
-     * Gợi ý Flow:
-     * - Query: "SELECT * FROM Users WHERE username = ?"
-     * - try-with-resources cho Connection & PreparedStatement
-     * - Check status == true (tài khoản không bị khóa)
-     * - Check BCryptUtil.checkPassword(rawPassword, dbHash)
-     * - Trả về mapResultSetToUser(rs)
+     * TODO 1: Viết hàm Đăng nhập login(String username, String rawPassword) Gợi
+     * ý Flow: - Query: "SELECT * FROM Users WHERE username = ?" - Dùng
+     * queryOne(sql, this::mapResultSetToUser, username) - Check status == true
+     * (Tài khoản đang Active) - Check BCryptUtil.checkPassword(rawPassword,
+     * user.getPassword())
      */
     public User login(String username, String rawPassword) {
-        // TODO: Bạn tự gõ code tại đây
+        String sql = "SELECT * FROM Users WHERE username = ?";
+        User user = queryOne(sql, this::mapResultSetToUser, username);
+        if (user != null && user.isStatus()) {
+            if (BCryptUtil.checkPassword(rawPassword, user.getPassword())) {
+                return user;
+            }
+        }
         return null;
     }
 
     /**
-     * TODO 2: Viết hàm Đăng ký / Thêm mới register(User user)
-     * Gợi ý Flow:
-     * - Hash password trước: String hashed = BCryptUtil.hashPassword(user.getPassword());
-     * - Query: "INSERT INTO Users (username, password, email, fullname, phone, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)"
-     * - Set các tham số 1..7
-     * - executeUpdate() > 0
+     * TODO 2: Viết hàm Đăng ký register(User user) - Form 4 trường (username,
+     * password, fullname, phone + email optional) Gợi ý Flow: - Hash password
+     * trước: String hashed = BCryptUtil.hashPassword(user.getPassword()); -
+     * Query: "INSERT INTO Users (username, password, email, fullname, phone,
+     * role, status) VALUES (?, ?, ?, ?, ?, ?, ?)" - Dùng executeUpdate(sql,
+     * user.getUsername(), hashed, user.getEmail(), user.getFullname(),
+     * user.getPhone(), "PATIENT", true)
      */
     public boolean register(User user) {
-        // TODO: Bạn tự gõ code tại đây
-        return false;
+        String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
+                + "VALUES(?, ?, ?, ?, ?, ?, ?)";
+        String hashedPassword = BCryptUtil.hashPassword(user.getPassword());
+        String role = (user.getRole() != null && !user.getRole().trim().isEmpty()) ? user.getRole()
+                : RoleConstant.PATIENT;
+        return executeUpdate(sql, user.getUsername(), hashedPassword, user.getEmail(), user.getFullname(),
+                user.getPhone(), role, true);
     }
 
     /**
-     * TODO 3: Kiểm tra trùng username
+     * TODO 3: Kiểm tra trùng username existsByUsername(String username) Gợi ý:
+     * SELECT 1 FROM Users WHERE username = ?
      */
     public boolean existsByUsername(String username) {
-        // TODO: Bạn tự gõ code tại đây
-        return false;
+        String sql = "SELECT * FROM Users WHERE username = ?";
+        return queryOne(sql, this::mapResultSetToUser, username) != null;
     }
 
     /**
-     * TODO 4: Kiểm tra trùng email
+     * TODO 4: Kiểm tra trùng email existsByEmail(String email)
      */
     public boolean existsByEmail(String email) {
-        // TODO: Bạn tự gõ code tại đây
-        return false;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "SELECT * FROM Users WHERE email = ?";
+        return queryOne(sql, this::mapResultSetToUser, email) != null;
     }
 
     /**
-     * TODO 5: Tìm User theo ID
+     * TODO 5: Tìm User theo ID findById(int id)
      */
     public User findById(int id) {
-        // TODO: Bạn tự gõ code tại đây
-        return null;
+        String sql = "SELECT * FROM Users WHERE id = ?";
+        return queryOne(sql, this::mapResultSetToUser, id);
     }
 
     /**
-     * TODO 6: Cập nhật trạng thái Active/Banned
+     * TODO 6: Cập nhật trạng thái Active/Banned updateStatus(int id, boolean
+     * status)
      */
     public boolean updateStatus(int id, boolean status) {
-        // TODO: Bạn tự gõ code tại đây
-        return false;
+        String sql = "UPDATE Users SET status = ? WHERE id = ?";
+        return executeUpdate(sql, status, id);
     }
 
     /**
-     * TODO 7: Lấy toàn bộ danh sách Users (Admin)
+     * TODO 7: Lấy danh sách toàn bộ Users (Admin) findAll()
      */
     public List<User> findAll() {
-        // TODO: Bạn tự gõ code tại đây
-        return new ArrayList<>();
+        String sql = "SELECT * FROM Users";
+        return queryList(sql, this::mapResultSetToUser);
     }
 }
