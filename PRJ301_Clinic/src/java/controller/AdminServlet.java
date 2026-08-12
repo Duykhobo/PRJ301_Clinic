@@ -125,29 +125,50 @@ public class AdminServlet extends HttpServlet {
 
         switch (action) {
             case "toggle-user-status": {
-                int userId = Integer.parseInt(request.getParameter("userId"));
-                success = userDAO.toggleStatus(userId);
-                User updatedUser = userDAO.findById(userId);
-                newStatus = updatedUser != null && updatedUser.isStatus();
-                message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                String userIdStr = request.getParameter("userId");
+                if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
+                    try {
+                        int userId = Integer.parseInt(userIdStr.trim());
+                        success = userDAO.toggleStatus(userId);
+                        User updatedUser = userDAO.findById(userId);
+                        newStatus = updatedUser != null && updatedUser.isStatus();
+                        message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                    } catch (NumberFormatException e) {
+                        message = "Mã người dùng không hợp lệ!";
+                    }
+                }
                 break;
             }
             case "update-user-role": {
-                int userId = Integer.parseInt(request.getParameter("userId"));
+                String userIdStr = request.getParameter("userId");
                 String newRole = request.getParameter("role");
-                if (newRole != null && !newRole.trim().isEmpty()) {
-                    newRoleStr = newRole.trim().toUpperCase();
-                    success = userDAO.updateRole(userId, newRoleStr);
-                    message = "Đã cập nhật vai trò người dùng #" + userId + " thành " + newRoleStr;
+                if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
+                    try {
+                        int userId = Integer.parseInt(userIdStr.trim());
+                        if (newRole != null && !newRole.trim().isEmpty()) {
+                            newRoleStr = newRole.trim().toUpperCase();
+                            success = userDAO.updateRole(userId, newRoleStr);
+                            message = "Đã cập nhật vai trò người dùng #" + userId + " thành " + newRoleStr;
+                        }
+                    } catch (NumberFormatException e) {
+                        message = "Mã người dùng không hợp lệ!";
+                    }
                 }
                 break;
             }
             case "toggle-service-status": {
-                int serviceId = Integer.parseInt(request.getParameter("serviceId"));
-                success = serviceDAO.toggleStatus(serviceId);
-                Service updatedSvc = serviceDAO.findById(serviceId);
-                newStatus = updatedSvc != null && updatedSvc.isStatus();
-                message = newStatus ? "Đã HIỂN THỊ dịch vụ #" + serviceId : "Đã ẨN dịch vụ #" + serviceId;
+                String serviceIdStr = request.getParameter("serviceId");
+                if (serviceIdStr != null && !serviceIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(serviceIdStr.trim())) {
+                    try {
+                        int serviceId = Integer.parseInt(serviceIdStr.trim());
+                        success = serviceDAO.toggleStatus(serviceId);
+                        Service updatedSvc = serviceDAO.findById(serviceId);
+                        newStatus = updatedSvc != null && updatedSvc.isStatus();
+                        message = newStatus ? "Đã HIỂN THỊ dịch vụ #" + serviceId : "Đã ẨN dịch vụ #" + serviceId;
+                    } catch (NumberFormatException e) {
+                        message = "Mã dịch vụ không hợp lệ!";
+                    }
+                }
                 break;
             }
             case "add-service": {
