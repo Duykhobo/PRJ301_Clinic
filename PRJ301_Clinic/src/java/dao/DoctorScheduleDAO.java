@@ -31,7 +31,11 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      */
     protected DoctorSchedule mapResultSetToSchedule(ResultSet rs) throws SQLException {
         DoctorSchedule schedule = new DoctorSchedule();
-        schedule.setId(rs.getInt("id"));
+        try {
+            schedule.setId(rs.getInt("id"));
+        } catch (SQLException e) {
+            schedule.setId(rs.getInt("schedule_id"));
+        }
         schedule.setDoctorId(rs.getInt("doctor_id"));
         schedule.setWorkDate(rs.getDate("work_date"));
         schedule.setStartTime(rs.getTime("start_time"));
@@ -41,23 +45,15 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     }
 
     // =========================================================================
-    // 🔑 2. CÁC NGHỆP VỤ DAO LỊCH LÀM VIỆC (TODO BẠN TỰ GÕ CODE THỰC HÀNH)
+    // 🔑 2. CÁC NGHỆP VỤ DAO LỊCH LÀM VIỆC BÁC SĨ
     // =========================================================================
 
     /**
-     * TODO 1: Gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate lấy danh
-     * sách Slot 60m còn trống
-     * Gợi ý SQL Stored Proc: "{call sp_GetAvailableSlotsByDoctorAndDate(?, ?)}"
-     * Cú pháp JDBC:
-     * try (Connection conn = DBContext.getConnection();
-     * CallableStatement cs = conn.prepareCall("{call
-     * sp_GetAvailableSlotsByDoctorAndDate(?, ?)}")) {
-     * cs.setInt(1, doctorId);
-     * cs.setDate(2, workDate);
-     * try (ResultSet rs = cs.executeQuery()) {
-     * while (rs.next()) list.add(mapResultSetToSchedule(rs));
-     * }
-     * }
+     * Lấy danh sách các Slot 60 phút còn trống của Bác sĩ theo Ngày khám cụ thể.
+     * Gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate trên SQL Server.
+     *
+     * @param doctorId Mã Bác sĩ (Doctor Profile ID)
+     * @return Danh sách các Ca rảnh DoctorSchedule
      */
     public List<DoctorSchedule> findAvailableSlotsByDoctorAndDate(int doctorId, Date workDate) {
         List<DoctorSchedule> list = new ArrayList<>();
@@ -79,8 +75,10 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     }
 
     /**
-     * TODO 2: Tìm Slot theo ID
-     * Gợi ý: SELECT * FROM DoctorSchedules WHERE id = ?
+     * Tìm thông tin Khung giờ làm việc theo ID Slot.
+     *
+     * @param id Mã Slot (Schedule ID)
+     * @return Đối tượng DoctorSchedule hoặc null nếu không tìm thấy
      */
     public DoctorSchedule findById(int id) {
         String sql = "SELECT * FROM DoctorSchedules WHERE id = ?";
@@ -88,8 +86,11 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     }
 
     /**
-     * TODO 3: Cập nhật trạng thái Slot (is_available = 0: Khóa / 1: Mở)
-     * Gợi ý: UPDATE DoctorSchedules SET is_available = ? WHERE id = ?
+     * Cập nhật trạng thái Khóa / Mở Slot làm việc của Bác sĩ.
+     *
+     * @param id          Mã Slot (Schedule ID)
+     * @param isAvailable true: Mở slot (Khả dụng), false: Khóa slot (Đã được đặt)
+     * @return true nếu cập nhật thành công
      */
     public boolean updateSlotAvailability(int id, boolean isAvailable) {
         String sql = "UPDATE DoctorSchedules SET is_available = ? WHERE id = ?";

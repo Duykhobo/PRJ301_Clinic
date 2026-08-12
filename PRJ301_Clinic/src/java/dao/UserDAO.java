@@ -35,14 +35,15 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     // =========================================================================
-    // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP & ĐĂNG KÝ (TODO DÀNH CHO BẠN)
+    // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP & ĐĂNG KÝ
     // =========================================================================
+
     /**
-     * TODO 1: Viết hàm Đăng nhập login(String username, String rawPassword) Gợi
-     * ý Flow: - Query: "SELECT * FROM Users WHERE username = ?" - Dùng
-     * queryOne(sql, this::mapResultSetToUser, username) - Check status == true
-     * (Tài khoản đang Active) - Check BCryptUtil.checkPassword(rawPassword,
-     * user.getPassword())
+     * Xác thực Đăng nhập tài khoản bằng Username và Mật khẩu thô (BCrypt Verified).
+     *
+     * @param username    Tên đăng nhập
+     * @param rawPassword Mật khẩu người dùng nhập vào
+     * @return Đối tượng User nếu thành công và tài khoản Active, ngược lại trả về null
      */
     public User login(String username, String rawPassword) {
         String sql = "SELECT * FROM Users WHERE username = ?";
@@ -56,13 +57,11 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 2: Viết hàm Đăng ký register(User user) - Form 4 trường (username,
-     * password, fullname, phone + email optional) Gợi ý Flow: - Hash password
-     * trước: String hashed = BCryptUtil.hashPassword(user.getPassword()); -
-     * Query: "INSERT INTO Users (username, password, email, fullname, phone,
-     * role, status) VALUES (?, ?, ?, ?, ?, ?, ?)" - Dùng executeUpdate(sql,
-     * user.getUsername(), hashed, user.getEmail(), user.getFullname(),
-     * user.getPhone(), "PATIENT", true)
+     * Đăng ký tài khoản Bệnh nhân mới (Form 4 trường tối giản + email optional).
+     * Tự động băm mật khẩu bằng BCryptUtil trước khi lưu vào CSDL.
+     *
+     * @param user Đối tượng User chứa thông tin đăng ký
+     * @return true nếu đăng ký thành công
      */
     public boolean register(User user) {
         String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
@@ -75,8 +74,10 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 3: Kiểm tra trùng username existsByUsername(String username) Gợi ý:
-     * SELECT 1 FROM Users WHERE username = ?
+     * Kiểm tra xem Username đã tồn tại trong CSDL hay chưa.
+     *
+     * @param username Tên đăng nhập cần kiểm tra
+     * @return true nếu username đã tồn tại
      */
     public boolean existsByUsername(String username) {
         String sql = "SELECT * FROM Users WHERE username = ?";
@@ -84,7 +85,10 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 4: Kiểm tra trùng email existsByEmail(String email)
+     * Kiểm tra xem Email đã tồn tại trong CSDL hay chưa.
+     *
+     * @param email Email cần kiểm tra
+     * @return true nếu email đã tồn tại và không rỗng
      */
     public boolean existsByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -95,7 +99,10 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 5: Tìm User theo ID findById(int id)
+     * Tìm thông tin Người dùng theo ID.
+     *
+     * @param id Mã User ID
+     * @return Đối tượng User hoặc null nếu không tìm thấy
      */
     public User findById(int id) {
         String sql = "SELECT * FROM Users WHERE id = ?";
@@ -103,8 +110,11 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 6: Cập nhật trạng thái Active/Banned updateStatus(int id, boolean
-     * status)
+     * Cập nhật trạng thái Tài khoản (Active / Banned).
+     *
+     * @param id     Mã User ID
+     * @param status true: Active, false: Banned
+     * @return true nếu cập nhật thành công
      */
     public boolean updateStatus(int id, boolean status) {
         String sql = "UPDATE Users SET status = ? WHERE id = ?";
@@ -112,7 +122,9 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
-     * TODO 7: Lấy danh sách toàn bộ Users (Admin) findAll()
+     * Lấy danh sách toàn bộ Người dùng trong hệ thống (Dành cho Admin).
+     *
+     * @return Danh sách tất cả Users
      */
     public List<User> findAll() {
         String sql = "SELECT * FROM Users";

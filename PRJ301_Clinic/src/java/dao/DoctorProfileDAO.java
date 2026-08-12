@@ -39,16 +39,14 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
     }
 
     // =========================================================================
-    // 🔑 2. CÁC NGHỆP VỤ DAO BÁC SĨ (TODO BẠN TỰ GÕ CODE THỰC HÀNH)
+    // 🔑 2. CÁC NGHỆP VỤ DAO BÁC SĨ
     // =========================================================================
 
     /**
-     * TODO 1: Lấy danh sách tất cả Bác sĩ kèm Họ tên, SĐT từ bảng Users (Dành cho
-     * Bệnh nhân chọn Bác sĩ)
-     * Gợi ý SQL:
-     * "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u
-     * ON d.user_id = u.id WHERE u.status = 1"
-     * Trả về: queryList(sql, this::mapResultSetToDoctorProfile)
+     * Lấy danh sách tất cả Bác sĩ đang Hoạt động kèm Họ tên, SĐT từ bảng Users.
+     * Dành cho Bệnh nhân tham khảo và chọn Bác sĩ khi Đặt lịch.
+     *
+     * @return Danh sách các Hồ sơ Bác sĩ Active
      */
     public List<DoctorProfile> findAllActiveDoctors() {
         String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE u.status = 1";
@@ -56,11 +54,10 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
     }
 
     /**
-     * TODO 2: Tìm thông tin Bác sĩ theo ID (kèm thông tin Users)
-     * Gợi ý SQL:
-     * "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u
-     * ON d.user_id = u.id WHERE d.id = ?"
-     * Trả về: queryOne(sql, this::mapResultSetToDoctorProfile, id)
+     * Tìm thông tin Hồ sơ Bác sĩ theo ID Bác sĩ (Doctor Profile ID).
+     *
+     * @param id Mã Bác sĩ (id trong bảng DoctorProfiles)
+     * @return Đối tượng DoctorProfile hoặc null nếu không tìm thấy
      */
     public DoctorProfile findById(int id) {
         String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.id = ?";
@@ -68,12 +65,13 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
     }
 
     /**
-     * TODO 3: Tìm thông tin Bác sĩ theo user_id
-     * Gợi ý SQL: "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d
-     * JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?"
+     * Tìm thông tin Hồ sơ Bác sĩ theo Mã Tài khoản Đăng nhập (User ID).
+     * Dành cho Bác sĩ khi đã đăng nhập hệ thống xem Hồ sơ cá nhân.
+     *
+     * @param userId Mã Tài khoản người dùng (user_id)
+     * @return Đối tượng DoctorProfile tương ứng với tài khoản Bác sĩ
      */
     public DoctorProfile findByUserId(int userId) {
-
         String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?";
         return queryOne(sql, this::mapResultSetToDoctorProfile, userId);
     }

@@ -80,6 +80,93 @@ public abstract class BaseDAO<T> {
     }
 
     /**
+     * Overload queryOne cho phép thực thi chung trong 1 Connection Transaction.
+     */
+    protected <E> E queryOne(Connection conn, String sql, RowMapper<E> mapper, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapper.mapRow(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Overload executeUpdate cho phép thực thi chung trong 1 Connection Transaction.
+     */
+    protected boolean executeUpdate(Connection conn, String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Helper thực thi INSERT và tự động lấy ID sinh tự động (Generated Key) trong 1 Transaction.
+     */
+    protected int executeInsertAndGetGeneratedKey(Connection conn, String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            setParameters(ps, params);
+            int affected = ps.executeUpdate();
+            if (affected > 0) {
+                try (ResultSet gk = ps.getGeneratedKeys()) {
+                    if (gk.next()) {
+                        return gk.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Functional Interface phục vụ thực thi Transaction chung 1 Connection.
+     */
+    @FunctionalInterface
+    protected interface TransactionCallback<E> {
+        E doInTransaction(Connection conn) throws Exception;
+    }
+
+    /**
+     * Helper quản lý Giao dịch Nguyên tử (Atomic Transaction Helper).
+     * Tự động mở connection, disable auto-commit, commit khi thành công và rollback khi gặp sự cố.
+     */
+    protected <E> E executeTransaction(TransactionCallback<E> action) throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu Transaction
+
+            E result = action.doInTransaction(conn); // Thực thi các bước dùng chung connection này
+
+            conn.commit(); // Commit giao dịch
+            return result;
+
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback an toàn khi gặp sự cố
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi rollback transaction", ex);
+                }
+            }
+            throw e; // Ném lại ngoại lệ cho tầng trên xử lý
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close(); // Đóng connection trả lại Pool
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi đóng connection", ex);
+                }
+            }
+        }
+    }
+
+    /**
      * Helper gán tham số động Varargs (Object... params) vào PreparedStatement.
      */
     private void setParameters(PreparedStatement ps, Object... params) throws SQLException {

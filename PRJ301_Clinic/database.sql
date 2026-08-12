@@ -135,50 +135,74 @@ CREATE TABLE ClinicSettings (
 GO
 
 -- ============================================================================
--- DỮ LIỆU MẪU (SEED DATA)
+-- DỮ LIỆU MẪU (SEED DATA CHUYÊN NGHIỆP DÀNH CHO DỰ ÁN PRJ301)
 -- Mật khẩu hash BCrypt cho tất cả tài khoản mẫu bên dưới là "123456":
 -- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 -- ============================================================================
 
--- 1. Chèn Users
+-- 1. Chèn Users (Tài khoản Admin, Doctor, Receptionist, Patients)
 INSERT INTO Users (username, password, email, fullname, phone, role, status) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@clinic.com', N'Quản Trị Viên', '0901234567', 'ADMIN', 1),
+('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@clinic.com', N'Quản Trị Viên Master', '0901234567', 'ADMIN', 1),
 ('drminh', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
 ('drlan', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
+('receptionist1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'letan@clinic.com', N'Lễ Tân Nguyễn Mai Phương', '0933334444', 'RECEPTIONIST', 1),
 ('patient1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
-('patient2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1);
+('patient2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1),
+('patient3', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient3@gmail.com', N'Vũ Ngọc Anh', '0956789012', 'PATIENT', 1),
+('patient4', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1);
 
--- 2. Chèn Services
+-- 2. Chèn Services (Danh mục Dịch vụ Phòng khám & Spa)
 INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES
 (N'Khám & Tẩy Trắng Răng Laser', 1500000.00, 45, N'Tẩy trắng răng công nghệ Laser Whitening không gây ê buốt, sáng bóng tự nhiên.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
 (N'Khám Nha Khoa Tổng Quát', 300000.00, 30, N'Kiểm tra sức khỏe răng miệng, lấy cao răng đánh bóng chuyên sâu.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mặt Deep Cleansing', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mụn & Phục Hồi', 650000.00, 50, N'Điều trị mụn chuyên y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1);
+(N'Chăm Sóc Da Mặt Deep Cleansing Spa', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
+(N'Chăm Sóc Da Mụn & Phục Hồi Y Khoa', 650000.00, 50, N'Điều trị mụn chuyên y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1),
+(N'Trẻ Hóa Da Công Nghệ High Tech', 2500000.00, 90, N'Liệu trình nâng cơ, xóa nhăn và tái tạo collagen cho làn da tuổi trung niên.', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80', 1),
+(N'Niềng Răng Thẩm Mỹ Khám Tư Vấn', 500000.00, 45, N'Chụp X-quang panorama tư vấn phác đồ niềng răng trong suốt và mắc cài.', 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80', 1);
 
--- 3. Chèn DoctorProfiles
+-- 3. Chèn DoctorProfiles (Hồ sơ Bác sĩ)
 INSERT INTO DoctorProfiles (user_id, specialty, experience_years, room_number, bio) VALUES
-(2, N'Nha Khoa Thẩm Mỹ', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
-(3, N'Da Liễu & Thẩm Mỹ Skin Care', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
+(2, N'Nha Khoa Thẩm Mỹ & Phục Hình', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
+(3, N'Da Liễu & Thẩm Mỹ Skin Care Spa', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
 
--- 4. Chèn DoctorSchedules
+-- 4. Chèn DoctorSchedules (Khung giờ làm việc cho Hôm nay, Ngày mai và Ngày 2026-08-15)
 INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES
+-- Hôm nay (GETDATE())
 (1, CAST(GETDATE() AS DATE), '08:00', '09:00', 0),
 (1, CAST(GETDATE() AS DATE), '09:00', '10:00', 1),
 (1, CAST(GETDATE() AS DATE), '10:00', '11:00', 1),
+(1, CAST(GETDATE() AS DATE), '11:00', '12:00', 1),
+(1, CAST(GETDATE() AS DATE), '14:00', '15:00', 1),
 (2, CAST(GETDATE() AS DATE), '14:00', '15:00', 0),
-(2, CAST(GETDATE() AS DATE), '15:00', '16:00', 1);
+(2, CAST(GETDATE() AS DATE), '15:00', '16:00', 1),
+(2, CAST(GETDATE() AS DATE), '16:00', '17:00', 1),
 
--- 5. Chèn Appointments
+-- Ngày mai (GETDATE() + 1)
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '08:00', '09:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '15:00', '16:00', 1),
+
+-- Ngày thử nghiệm cố định 2026-08-15
+(1, '2026-08-15', '08:00', '09:00', 1),
+(1, '2026-08-15', '09:00', '10:00', 1),
+(1, '2026-08-15', '10:00', '11:00', 1),
+(1, '2026-08-15', '14:00', '15:00', 1),
+(2, '2026-08-15', '14:00', '15:00', 1),
+(2, '2026-08-15', '15:00', '16:00', 1);
+
+-- 5. Chèn Appointments (Lịch hẹn mẫu)
 INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, payment_content, transaction_code, notes) VALUES
-(4, 1, 1, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLINIC1', 'FT2408110001', N'Khách hàng muốn tẩy trắng trước ngày cưới.'),
-(5, 2, 3, 4, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLINIC2', 'FT2408110002', N'Da nhạy cảm, dễ dị ứng.');
+(5, 1, 1, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLINIC1', 'FT2408110001', N'Khách hàng muốn tẩy trắng trước ngày cưới.'),
+(6, 2, 3, 6, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLINIC2', 'FT2408110002', N'Da nhạy cảm, dễ dị ứng.');
 
--- 6. Chèn MedicalRecords
+-- 6. Chèn MedicalRecords (Hồ sơ bệnh án mẫu)
 INSERT INTO MedicalRecords (appointment_id, patient_id, doctor_id, diagnosis, prescription_or_result, rating, review_comment) VALUES
-(1, 4, 1, N'Răng ố vàng nhẹ do uống cà phê.', N'Tẩy trắng thành công Laser Whitening. Dùng kem đánh răng chống ê buốt 3 ngày.', 5, N'Bác sĩ Minh rất mát tay, răng trắng sáng đẹp lắm!');
+(1, 5, 1, N'Răng ố vàng nhẹ do uống cà phê.', N'Tẩy trắng thành công Laser Whitening. Dùng kem đánh răng chống ê buốt 3 ngày.', 5, N'Bác sĩ Minh rất mát tay, răng trắng sáng đẹp lắm!');
 GO
 
--- 7. Chèn ClinicSettings (System Configs)
+-- 7. Chèn ClinicSettings (Cấu hình Hệ thống & Ngân hàng VietQR SePay)
 INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
 ('CLINIC_NAME', N'Phòng Khám & Spa Nha Khoa Quốc Tế PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
 ('CLINIC_HOTLINE', '0901234567', N'Số điện thoại tổng đài tư vấn'),
@@ -226,6 +250,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT 
+        s.id AS id,
         s.id AS schedule_id,
         s.doctor_id,
         s.work_date,
@@ -296,4 +321,3 @@ BEGIN
     WHERE i.status = 'CANCELLED';
 END;
 GO
-

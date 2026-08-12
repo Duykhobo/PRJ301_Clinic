@@ -32,14 +32,14 @@ public class ServiceDAO extends BaseDAO<Service> {
     }
 
     // =========================================================================
-    // 🔑 2. CÁC NGHỆP VỤ DAO DỊCH VỤ (TODO BẠN TỰ GÕ CODE THỰC HÀNH)
+    // 🔑 2. CÁC NGHỆP VỤ DAO DỊCH VỤ
     // =========================================================================
 
     /**
-     * TODO 1: Lấy danh sách tất cả dịch vụ đang Active (status = 1) cho Bệnh nhân
-     * chọn đặt lịch
-     * Gợi ý: SELECT * FROM Services WHERE status = 1 ORDER BY service_name ASC
-     * Dùng: queryList(sql, this::mapResultSetToService)
+     * Lấy danh sách tất cả các Dịch vụ đang Hoạt động (status = 1) để Bệnh nhân chọn Đặt lịch.
+     * Sắp xếp theo Tên Dịch vụ tăng dần (A-Z).
+     *
+     * @return Danh sách các Dịch vụ Active
      */
     public List<Service> findAllActive() {
         String sql = "SELECT * FROM Services WHERE status = 1 ORDER BY service_name ASC";
@@ -47,9 +47,10 @@ public class ServiceDAO extends BaseDAO<Service> {
     }
 
     /**
-     * TODO 2: Tìm thông tin Dịch vụ theo ID
-     * Gợi ý: SELECT * FROM Services WHERE id = ?
-     * Dùng: queryOne(sql, this::mapResultSetToService, id)
+     * Tìm thông tin Dịch vụ theo ID.
+     *
+     * @param id Mã Dịch vụ
+     * @return Đối tượng Service hoặc null nếu không tìm thấy
      */
     public Service findById(int id) {
         String sql = "SELECT * FROM Services WHERE id = ?";
@@ -57,12 +58,10 @@ public class ServiceDAO extends BaseDAO<Service> {
     }
 
     /**
-     * TODO 3: Thêm Dịch vụ mới (Admin)
-     * Gợi ý: INSERT INTO Services (service_name, price, duration_minutes,
-     * description, image_url, status) VALUES (?, ?, ?, ?, ?, ?)
-     * Dùng: executeUpdate(sql, service.getServiceName(), service.getPrice(),
-     * service.getDurationMinutes(), service.getDescription(),
-     * service.getImageUrl(), service.isStatus())
+     * Thêm Dịch vụ mới vào CSDL (Dành cho Admin).
+     *
+     * @param service Đối tượng Service chứa thông tin thêm mới
+     * @return true nếu thêm thành công
      */
     public boolean insert(Service service) {
         String sql = "INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES (?, ?, ?, ?, ?, ?)";
@@ -77,10 +76,10 @@ public class ServiceDAO extends BaseDAO<Service> {
     }
 
     /**
-     * TODO 4: Cập nhật thông tin Dịch vụ (Admin)
-     * Gợi ý: UPDATE Services SET service_name = ?, price = ?, duration_minutes = ?,
-     * description = ?, image_url = ?, status = ? WHERE id = ?
-     * Dùng: executeUpdate(sql, ...)
+     * Cập nhật thông tin chi tiết Dịch vụ (Dành cho Admin).
+     *
+     * @param service Đối tượng Service chứa thông tin cần cập nhật
+     * @return true nếu cập nhật thành công
      */
     public boolean update(Service service) {
         String sql = "UPDATE Services SET service_name = ?, price = ?, duration_minutes = ?, description = ?, image_url = ?, status = ? WHERE id = ?";
@@ -94,13 +93,14 @@ public class ServiceDAO extends BaseDAO<Service> {
     }
 
     /**
-     * TODO 5: Cập nhật trạng thái Hiển thị / Ẩn Dịch vụ (Admin)
-     * Gợi ý: UPDATE Services SET status = ? WHERE id = ?
+     * Cập nhật trạng thái Hiển thị / Ẩn Dịch vụ (Dành cho Admin).
+     *
+     * @param id     Mã Dịch vụ
+     * @param status true: Hiển thị (Active), false: Ẩn (Hidden)
+     * @return true nếu cập nhật thành công
      */
     public boolean updateStatus(int id, boolean status) {
         String sql = "UPDATE Services SET status = ? WHERE id = ?";
-        return executeUpdate(sql,
-                status,
-                id);
+        return executeUpdate(sql, status, id);
     }
 }
