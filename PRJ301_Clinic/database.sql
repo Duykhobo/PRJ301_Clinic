@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- SCRIPT KHỞI TẠO CƠ SỞ DỮ LIỆU MICROSOFT SQL SERVER
 -- Môn học: PRJ301 - Java Web Application Development
 -- Chủ đề: Hệ thống Đặt lịch Phòng khám & Spa (PRJ301_ClinicDB)
@@ -237,19 +237,19 @@ GO
 -- ============================================================================
 -- DỮ LIỆU MẪU (SEED DATA CHUYÊN NGHIỆP DÀNH CHO DỰ ÁN PRJ301)
 -- Mật khẩu hash BCrypt cho tất cả tài khoản mẫu bên dưới là "123456":
--- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+-- $2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC
 -- ============================================================================
 
 -- 1. Chèn Users (Tài khoản Admin, Doctor, Receptionist, Patients)
 INSERT INTO Users (username, password, email, fullname, phone, role, status) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@clinic.com', N'Quản Trị Viên Master', '0901234567', 'ADMIN', 1),
-('drminh', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
-('drlan', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
-('receptionist1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'letan@clinic.com', N'Lễ Tân Nguyễn Mai Phương', '0933334444', 'RECEPTIONIST', 1),
-('patient1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
-('patient2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1),
-('patient3', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient3@gmail.com', N'Vũ Ngọc Anh', '0956789012', 'PATIENT', 1),
-('patient4', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1);
+('admin', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'admin@clinic.com', N'Quản Trị Viên Master', '0901234567', 'ADMIN', 1),
+('drminh', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
+('drlan', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
+('receptionist1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'letan@clinic.com', N'Lễ Tân Nguyễn Mai Phương', '0933334444', 'RECEPTIONIST', 1),
+('patient1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
+('patient2', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1),
+('patient3', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient3@gmail.com', N'Vũ Ngọc Anh', '0956789012', 'PATIENT', 1),
+('patient4', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1);
 
 -- 2. Chèn Services (Danh mục Dịch vụ Phòng khám & Spa)
 INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES
