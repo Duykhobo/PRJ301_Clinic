@@ -433,6 +433,8 @@ graph TD
 Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive First**, chuẩn **Bootstrap 5.3**, tông màu chủ đạo **Thẩm mỹ Y tế & Spa (Healthcare Teal & Blue)**:
 
 #### 🖼️ Wireframe 1: Trang Đặt lịch Hẹn Bệnh nhân (`/patient/booking`)
+- **Tương tác AJAX Động (Dynamic Re-rendering)**: Khi bệnh nhân thay đổi Bác sĩ hoặc Ngày khám (`work_date`), JavaScript tự động gọi API `fetch('/api/available-slots?doctor_id=...&date=...')` về Servlet (gọi Stored Procedure `sp_GetAvailableSlotsByDoctorAndDate`) để **re-render lại ma trận Nút bấm Slot 60 phút mượt mà mà KHÔNG CẦN tải lại toàn bộ trang**.
+
 ```text
 +-----------------------------------------------------------------------------------+
 |  [LOGO PRJ301 CLINIC]      Trang Chủ   Dịch Vụ   Bác Sĩ   [Xin chào, Nam! (Patient)]|
@@ -442,7 +444,7 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 |   -----------------------------------------------------------------------------   |
 |   Bước 1: Chọn Dịch Vụ       : [ Khám & Tẩy trắng răng Laser Whitening - 1,500,000đ ]|
 |   Bước 2: Chọn Bác Sĩ Chuyên Khám: [ BS. Bùi Văn Minh - Chuyên khoa Nha Khoa    ]|
-|   Bước 3: Chọn Ngày Khám     : [ 2026-08-15 ] (Lịch rảnh từ T2 - CN)              |
+|   Bước 3: Chọn Ngày Khám     : [ 2026-08-15 ] (Tự động AJAX Re-render Slot)       |
 |                                                                                   |
 |   Bước 4: Chọn Khung Giờ Khả Dụng (Slot 60 Phút Cố Định):                         |
 |   +------------------+  +------------------+  +------------------+                |
@@ -461,6 +463,9 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 ```
 
 #### 🖼️ Wireframe 2: Màn hình Thanh toán SePay VietQR Động (`/patient/payment`)
+- **Tự động Đối soát Polling (`setInterval 3s`)**: Đơn trang tích hợp mã JS `setInterval()` 3s/lần gọi API `/api/check-payment-status?id=15`. Ngay khi Webhook SePay nạp tiền thành công và chuyển `payment_status = 'PAID'`, màn hình lập tức chuyển hướng sang trang Cảm ơn & Chi tiết lịch hẹn.
+- **Kịch bản Cứu hộ (Fallback Strategy Demo)**: Tích hợp nút **[ 🔴 GIẢ LẬP SEPAY WEBHOOK (DEMO) ]** bắn JSON giả lập trực tiếp và nút **[ 💳 CHỌN TIỀN MẶT KHI ĐẾN ]** cứu hộ khi bảo vệ đồ án.
+
 ```text
 +-----------------------------------------------------------------------------------+
 |  XÁC NHẬN THANH TOÁN VÀ XÁC NHẬN LỊCH HẸN (MÃ HẸN: #15)                          |
@@ -479,6 +484,12 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 ```
 
 #### 🖼️ Wireframe 3: Dashboard Quản trị Admin & Thống kê (`/admin/dashboard`)
+- **Trực quan hóa Trạng thái (Status Badges Visual Feedback)**: Sử dụng hệ thống màu sắc Bootstrap 5 Badge giúp Admin nhận diện nhanh:
+  - 🟡 **Badge Vàng (`bg-warning text-dark`)**: `PENDING` (Chờ thanh toán / duyệt).
+  - 🔵 **Badge Xanh Dương (`bg-info text-dark`)**: `CONFIRMED` (Đã thanh toán SePay / đã xác nhận).
+  - 🟢 **Badge Xanh Lá (`bg-success`)**: `COMPLETED` / `PAID` (Đã khám xong / Đã duyệt tiền).
+  - 🔴 **Badge Đỏ (`bg-danger`)**: `CANCELLED` / `UNPAID` (Đã hủy / Chưa trả tiền).
+
 ```text
 +-----------------------------------------------------------------------------------+
 | [ADMIN PANEL]  | Dashboard  | Users  | Services  | Appointments  | Settings       |
@@ -490,9 +501,9 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 |  +-------------------+  +-------------------+  +-------------------+              |
 |                                                                                   |
 |  DANH SÁCH LỊCH HẸN CẦN XÁC NHẬN / DUYỆT TAY (MANUAL VERIFY)                      |
-|  | ID | Bệnh nhân   | Dịch vụ    | Số tiền     | SePay Code | Thao tác            |
-|  | 15 | Lê Hoàng Nam| Tẩy trắng  | 1,500,000đ  | CLINIC15   | [Duyệt Tay (Paid)]  |
-|  | 16 | Phạm Mai    | Skin Care  |   850,000đ  | --         | [Xác nhận Tiền Mặt] |
+|  | ID | Bệnh nhân   | Dịch vụ    | Số tiền     | Status Badge  | Thao tác          |
+|  | 15 | Lê Hoàng Nam| Tẩy trắng  | 1,500,000đ  | [🟡 PENDING]  | [Duyệt Tay (Paid)]|
+|  | 16 | Phạm Mai    | Skin Care  |   850,000đ  | [🔵 CONFIRMED]| [Xác nhận Tiền Mặt]|
 +-----------------------------------------------------------------------------------+
 ```
 
