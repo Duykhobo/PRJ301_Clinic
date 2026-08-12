@@ -9,8 +9,7 @@ import model.User;
 import util.BCryptUtil;
 
 /**
- * Lớp UserDAO quản lý các thao tác CSDL cho bảng Users. Bạn tự gõ code cho các
- * hàm TODO bên dưới để rèn luyện thói quen!
+ * Lớp UserDAO quản lý các thao tác CSDL cho bảng Users.
  */
 public class UserDAO extends BaseDAO<User> {
 

@@ -22,8 +22,8 @@ import service.BookingService;
 import service.ClinicService;
 
 /**
- * TODO: BookingServlet - Điều hướng & Xử lý Đặt Lịch Hẹn Khám Bệnh Nhân
- * (/booking). Chuẩn mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
+ * BookingServlet - Điều hướng & Xử lý Đặt Lịch Hẹn Khám Bệnh Nhân (/booking).
+ * Chuẩn mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
  */
 @WebServlet(name = "BookingServlet", urlPatterns = { "/booking" })
 public class BookingServlet extends HttpServlet {
@@ -38,12 +38,10 @@ public class BookingServlet extends HttpServlet {
     }
 
     /**
-     * TODO 1: Nạp Giao diện Đặt Lịch Hẹn (GET) Gợi ý Flow 3 Tầng: 1. Check
-     * param action=="payment" -> chuyển hướng xử lý trang VietQR. 2. Gọi
-     * clinicService.getActiveServices() lấy danh sách Dịch vụ. 3. Gọi
-     * clinicService.getAllDoctors() lấy danh sách Bác sĩ. 4. Gán
-     * request.setAttribute("services", services) và ("doctors", doctors). 5.
-     * Forward sang RouterConstant.BOOKING_JSP.
+     * Nạp Giao diện Đặt Lịch Hẹn & Xử lý các action phụ (GET).
+     * 1. Nạp trang thanh toán SePay VietQR (nếu action == "payment").
+     * 2. Nạp danh sách ca khám dạng JSON (nếu action == "get-slots").
+     * 3. Nạp danh sách Dịch vụ và Bác sĩ cho form booking.jsp.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -69,13 +67,12 @@ public class BookingServlet extends HttpServlet {
     }
 
     /**
-     * TODO 2: Xử lý Đặt Lịch Hẹn Nguyên Tử chống trùng Slot khi Submit Form
-     * (POST) Quy trình 5 bước: Bước 1: Check Session User (nếu null -> redirect
-     * /login) Bước 2: Lấy form data (serviceId, doctorId, scheduleId,
-     * appointmentDate, notes) Bước 3: Đóng gói đối tượng Appointment (gán
-     * status PENDING, paymentStatus UNPAID) Bước 4: Gọi
-     * bookingService.createBookingAtomic(app) Bước 5: Nếu thành công ->
-     * redirect sang /booking?action=payment&id=...
+     * Xử lý Đặt Lịch Hẹn Nguyên Tử chống trùng Slot khi Submit Form (POST).
+     * 1. Check Session User (nếu null -> redirect /login)
+     * 2. Lấy form data (serviceId, doctorId, scheduleId, appointmentDate, notes)
+     * 3. Đóng gói đối tượng Appointment (gán status PENDING, paymentStatus UNPAID)
+     * 4. Gọi bookingService.createBookingAtomic(app)
+     * 5. Nếu thành công -> redirect sang /booking?action=payment&id=...
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -89,7 +86,7 @@ public class BookingServlet extends HttpServlet {
         User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
         try {
-            // 2. lấy data từ form
+            // 2. Lấy data từ form
             int serviceId = Integer.parseInt(request.getParameter("serviceId"));
             int doctorId = Integer.parseInt(request.getParameter("doctorId"));
             int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
@@ -136,10 +133,11 @@ public class BookingServlet extends HttpServlet {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Thông tin đặt lịch không hợp lệ!");
             doGet(request, response);
         }
-
     }
 
-    // Hàm hỗ trợ nạp lịch hẹn cho trang thanh toán
+    /**
+     * Hàm hỗ trợ nạp lịch hẹn cho trang thanh toán SePay VietQR.
+     */
     private void handlePaymentPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -152,7 +150,9 @@ public class BookingServlet extends HttpServlet {
         }
     }
 
-    // Hàm AJAX nạp danh sách slot động dạng JSON
+    /**
+     * Hàm AJAX nạp danh sách slot động dạng JSON.
+     */
     private void handleGetSlots(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");

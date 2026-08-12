@@ -18,7 +18,8 @@ import service.UserService;
 import util.ValidationUtil;
 
 /**
- * TODO: LoginServlet - Điều hướng & Xử lý Đăng nhập Người dùng (/login).
+ * LoginServlet - Điều hướng & Xử lý Đăng nhập Người dùng (/login).
+ * Mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
  */
 @WebServlet(name = "LoginServlet", urlPatterns = { "/login" })
 public class LoginServlet extends HttpServlet {
@@ -31,11 +32,10 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
-     * TODO 1: Hiển thị trang Đăng nhập (GET)
-     * Gợi ý:
-     * 1. Check xem đã đăng nhập chưa (session != null && SESSION_USER != null)
-     * 2. Nếu đã đăng nhập -> chuyển hướng về trang tương ứng theo Role
-     * 3. Nếu chưa -> forward tới RouterConstant.LOGIN_JSP
+     * Hiển thị trang Đăng nhập (GET).
+     * 1. Check xem đã đăng nhập chưa (session != null && SESSION_USER != null).
+     * 2. Nếu đã đăng nhập -> chuyển hướng về trang tương ứng theo Role.
+     * 3. Nếu chưa -> forward tới RouterConstant.LOGIN_JSP.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -52,14 +52,12 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
-     * TODO 2: Xử lý Đăng nhập khi bấm Submit Form (POST)
+     * Xử lý Đăng nhập khi bấm Submit Form (POST).
      * Quy trình 4 bước:
      * Bước 1: Lấy thông tin username, password từ request.getParameter()
-     * Bước 2: Fail-fast Validation dùng ValidationUtil.isValidUsername(), check
-     * null password
+     * Bước 2: Fail-fast Validation dùng ValidationUtil.isValidUsername(), check null password
      * Bước 3: Gọi userService.login(username, password)
-     * Bước 4: Nếu user != null -> lưu session.setAttribute(SESSION_USER, user),
-     * chuyển hướng theo Role
+     * Bước 4: Nếu user != null -> lưu session.setAttribute(SESSION_USER, user), chuyển hướng theo Role
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

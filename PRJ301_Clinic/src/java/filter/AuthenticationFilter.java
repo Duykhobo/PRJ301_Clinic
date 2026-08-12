@@ -19,8 +19,7 @@ import constant.SystemConstant;
 import model.User;
 
 /**
- * TODO: AuthenticationFilter - Bộ lọc Kiểm tra Đăng nhập & Phân quyền Truy cập
- * (Session Guard).
+ * AuthenticationFilter - Bộ lọc Kiểm tra Đăng nhập & Phân quyền Truy cập (Session Guard).
  * Phân quyền 4 Roles: ADMIN, DOCTOR, PATIENT, RECEPTIONIST.
  */
 @WebFilter(filterName = "AuthenticationFilter", urlPatterns = { "/*" })

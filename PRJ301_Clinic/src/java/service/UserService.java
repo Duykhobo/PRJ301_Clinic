@@ -4,7 +4,8 @@ import dao.UserDAO;
 import model.User;
 
 /**
- * TODO: UserService - Tầng Service Quản lý Người dùng & Xác thực (Business Logic).
+ * UserService - Tầng Service Quản lý Người dùng & Xác thực (Business Logic).
+ * Mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
  */
 public class UserService {
 
@@ -19,31 +20,36 @@ public class UserService {
     }
 
     /**
-     * TODO: Xác thực Đăng nhập & Check Mật khẩu băm BCrypt.
+     * Xác thực Đăng nhập & Check Mật khẩu băm BCrypt qua UserDAO.
+     *
+     * @param username Tên đăng nhập
+     * @param password Mật khẩu thô
+     * @return Đối tượng User nếu hợp lệ, ngược lại trả về null
      */
     public User login(String username, String password) {
-        // =====================================================================
-        // TODO: BẠN TỰ THỰC HÀNH GÕ LOGIC SERVICE TẠI ĐÂY!
-        // Gợi ý: return userDAO.login(username, password);
-        // =====================================================================
         return userDAO.login(username, password);
     }
 
     /**
-     * TODO: Đăng ký Bệnh nhân mới.
+     * Đăng ký tài khoản Bệnh nhân mới vào CSDL.
+     *
+     * @param user Đối tượng User chứa thông tin đăng ký
+     * @return true nếu đăng ký thành công
      */
     public boolean registerPatient(User user) {
-        // =====================================================================
-        // TODO: BẠN TỰ THỰC HÀNH GÕ LOGIC SERVICE TẠI ĐÂY!
-        // Gợi ý: return userDAO.register(user);
-        // =====================================================================
         return userDAO.register(user);
     }
 
+    /**
+     * Kiểm tra xem Username đã tồn tại hay chưa.
+     */
     public boolean existsByUsername(String username) {
         return userDAO.existsByUsername(username);
     }
 
+    /**
+     * Kiểm tra xem Email đã tồn tại hay chưa.
+     */
     public boolean existsByEmail(String email) {
         return userDAO.existsByEmail(email);
     }
