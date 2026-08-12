@@ -79,6 +79,12 @@
                                 <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
                                 <li>
                                     <a class="dropdown-item rounded-3 py-2 text-white" 
+                                       href="${pageContext.request.contextPath}/profile">
+                                        <i class="fa-solid fa-id-card me-2 text-info"></i>Hồ Sơ Cá Nhân
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-3 py-2 text-white" 
                                        href="${pageContext.request.contextPath}/MainController?action=history">
                                         <i class="fa-solid fa-clock-rotate-left me-2 text-info"></i>Lịch Sử Đặt Khám
                                     </a>

@@ -57,6 +57,10 @@ public class MainController extends HttpServlet {
                 case "history":
                     url = RouterConstant.ROUTE_HISTORY;
                     break;
+                case "profile-page":
+                case "profile":
+                    url = "/profile";
+                    break;
                 default:
                     ClinicService clinicService = new ClinicService();
                     request.setAttribute("services", clinicService.getActiveServices());

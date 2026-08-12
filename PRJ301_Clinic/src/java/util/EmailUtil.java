@@ -159,12 +159,20 @@ public class EmailUtil {
     }
 
     private static String readSmtpResponse(BufferedReader reader) throws Exception {
-        String line = reader.readLine();
-        LOGGER.fine("SMTP Res: " + line);
-        return line;
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            LOGGER.info("SMTP Server: " + line);
+            sb.append(line).append("\n");
+            if (line.length() >= 4 && line.charAt(3) == ' ') {
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     private static void sendSmtpCmd(PrintWriter writer, BufferedReader reader, String cmd) throws Exception {
+        LOGGER.info("SMTP Client: " + (cmd.startsWith("AUTH") || cmd.length() > 20 ? "[PROTECTED_DATA]" : cmd));
         writer.println(cmd);
         writer.flush();
         readSmtpResponse(reader);

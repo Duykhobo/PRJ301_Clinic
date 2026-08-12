@@ -168,4 +168,21 @@ public class UserDAO extends BaseDAO<User> {
         } catch (SQLException ignored) {}
         return 0;
     }
+
+    /**
+     * Cập nhật thông tin Hồ sơ cá nhân (Họ tên, Email, Số điện thoại).
+     */
+    public boolean updateProfile(int userId, String fullname, String email, String phone) {
+        String sql = "UPDATE Users SET fullname = ?, email = ?, phone = ? WHERE id = ?";
+        return executeUpdate(sql, fullname, email, phone, userId);
+    }
+
+    /**
+     * Đổi mật khẩu người dùng (Băm BCrypt mật khẩu mới).
+     */
+    public boolean updatePassword(int userId, String newRawPassword) {
+        String hashedPassword = BCryptUtil.hashPassword(newRawPassword);
+        String sql = "UPDATE Users SET password = ? WHERE id = ?";
+        return executeUpdate(sql, hashedPassword, userId);
+    }
 }

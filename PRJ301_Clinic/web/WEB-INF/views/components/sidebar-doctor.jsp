@@ -52,6 +52,12 @@
                     <div class="sb-section-label">Khác</div>
                     <ul class="sb-menu" style="margin-bottom:1rem;">
                       <li>
+                        <a href="${pageContext.request.contextPath}/profile">
+                          <span class="sb-icon"><i class="fa-solid fa-id-card"></i></span>
+                          Hồ Sơ Cá Nhân
+                        </a>
+                      </li>
+                      <li>
                         <a href="${pageContext.request.contextPath}/MainController?action=home">
                           <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
                           Trang Chủ
