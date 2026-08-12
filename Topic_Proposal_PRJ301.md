@@ -404,8 +404,8 @@ graph TD
 - **Các Lớp Ngoại lệ Tùy chỉnh (Custom Exception Classes in `src/java/exception/`)**:
   - `AppException.java`: Lớp ngoại lệ gốc kế thừa `Exception`.
   - `SlotAlreadyBookedException.java`: Ném ra khi phát hiện trùng lịch do Race Condition.
-  - `UnauthorizedException.java`: Ném ra khi người dùng cố truy cập tài nguyên không đủ thẩm quyền.
-  - `EntityNotFoundException.java`: Ném ra khi không tìm thấy dữ liệu (User, Service, Appointment).
+  - `UnauthorizedException.java`: Ném ra khi người dùng cố truy cập tài nguyên không đủ thẩm quyền $\rightarrow$ Hệ thống tự động chuyển sang trang **`403.jsp` (Access Denied)** kèm 2 nút bấm điều hướng linh hoạt: **🏠 Quay về Trang Chủ** (`/home`) và **🔐 Đăng Nhập Tài Khoản Khác** (`/login`).
+  - `EntityNotFoundException.java`: Ném ra khi không tìm thấy dữ liệu (User, Service, Appointment) $\rightarrow$ Chuyển hướng sang trang **`404.jsp` (Not Found)**.
 - **Cấu hình Global Error Page trong `web.xml`**:
   ```xml
   <error-page>
