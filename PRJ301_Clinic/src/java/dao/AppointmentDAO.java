@@ -99,9 +99,9 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                         app.getPaymentMethod() != null ? app.getPaymentMethod() : SystemConstant.METHOD_SEPAY_QR,
                         app.getNotes());
                 app.setId(newAppId);
-                String paymentContent = "CLINIC" + newAppId;
+                String paymentContent = "CLN" + newAppId;
                 app.setPaymentContent(paymentContent);
-                // Bước 3: Cập nhật payment_content = "CLINIC" + newAppId (SePay VietQR)
+                // Bước 3: Cập nhật payment_content = "CLN" + newAppId (SePay VietQR)
                 String contentSql = "UPDATE Appointments SET payment_content = ? WHERE id = ?";
                 executeUpdate(conn, contentSql, paymentContent, newAppId);
                 // Bước 4: Khóa slot trong DoctorSchedules (is_available = 0)
