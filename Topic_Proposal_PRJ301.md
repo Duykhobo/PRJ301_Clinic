@@ -102,6 +102,23 @@ graph TD
 
 ---
 
+### 4. Nguyên tắc Thiết kế Phần mềm (SOLID, DRY & Clean Architecture)
+
+Để đảm bảo mã nguồn dễ đọc, dễ mở rộng và dễ bảo trì, dự án áp dụng nghiêm ngặt các nguyên tắc thiết kế phần mềm chuẩn công nghiệp:
+
+- **S - Single Responsibility Principle (Đơn trách nhiệm)**:
+  - Tầng **DAO** chỉ đảm nhận nhiệm vụ tương tác SQL Server (`PreparedStatement`). Không chứa logic HTTP Session hay giao diện.
+  - Tầng **Servlet** chỉ làm Lễ tân tiếp nhận Request, validate sơ bộ và điều hướng View. Không viết câu SQL trong Servlet.
+  - Tầng **Model POJO** chỉ chứa thuộc tính, Getter/Setter.
+- **O - Open/Closed Principle (Mở rộng/Đóng đổi)**:
+  - Tầng Service và Servlet được thiết kế để mở rộng tính năng mới mà không phải sửa đổi cấu trúc cốt lõi hiện có.
+- **D - Dependency Inversion & Abstraction (Đảo ngược Phụ thuộc)**:
+  - Mô tả tư tưởng Abstraction & Loose Coupling trong tài liệu thiết kế giúp hệ thống linh hoạt khi kiểm thử.
+- **DRY - Don't Repeat Yourself (Không lặp lại code)**:
+  - Tái sử dụng 100% các hàm Helper Mapper (VD: `mapResultSetToUser(ResultSet rs)`) trong các lớp DAO cho tất cả các câu lệnh query `SELECT`, loại bỏ hoàn toàn việc viết lặp lại mã gán thuộc tính.
+
+---
+
 ## III. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (DATABASE SCHEMA & ERD)
 
 Hệ thống bao gồm **7 bảng (Models)** trong Microsoft SQL Server với đầy đủ quan hệ khóa ngoại và ràng buộc toàn vẹn:
