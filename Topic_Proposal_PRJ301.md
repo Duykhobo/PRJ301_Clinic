@@ -607,19 +607,21 @@ PRJ301_Assignment/
 │   ├── dao/                        # UserDAOTest.java, AppointmentDAOTest.java
 │   └── util/                       # BCryptUtilTest.java
 ├── web/                            # THƯ MỤC WEBAPP (NETBEANS ANT STRUCTURE)
-│   ├── assets/                     # css/, js/, images/, bootstrap/
+│   ├── assets/                     # css/ (style.css, sidebar.css, dashboard.css, error.css), js/, images/
 │   ├── WEB-INF/
-│   │   ├── lib/                    # mssql-jdbc.jar, jbcrypt.jar, HikariCP.jar, slf4j-api.jar, slf4j-simple.jar, jackson.jar, jstl.jar, junit-5.jar
+│   │   ├── lib/                    # mssql-jdbc.jar, jbcrypt.jar, HikariCP.jar, slf4j-api.jar, jackson.jar, jstl.jar
 │   │   ├── views/
 │   │   │   ├── auth/               # login.jsp, register.jsp
-│   │   │   ├── patient/            # home.jsp, services.jsp, booking.jsp, payment-qr.jsp, my-appointments.jsp
-│   │   │   ├── doctor/             # doctor-dashboard.jsp, schedule-manage.jsp, update-record.jsp
-│   │   │   ├── admin/              # dashboard.jsp, manage-users.jsp, manage-services.jsp, manage-settings.jsp...
-│   │   │   └── common/             # header.jsp, footer.jsp, navbar.jsp
-│   │   └── web.xml                 # Servlet Mappings, Filters, Welcome files
+│   │   │   ├── patient/            # booking.jsp, payment.jsp, history.jsp
+│   │   │   ├── doctor/             # dashboard.jsp
+│   │   │   ├── receptionist/       # dashboard.jsp
+│   │   │   ├── admin/              # dashboard.jsp
+│   │   │   ├── error/              # 403.jsp, 404.jsp, 500.jsp
+│   │   │   └── components/         # head.jsp, navbar.jsp, sidebar-doctor.jsp, footer.jsp, alerts.jsp
+│   │   └── web.xml                 # Servlet Mappings, Filters, Error Pages, Welcome files
 ├── nbproject/                      # File cấu hình dự án NetBeans IDE
 ├── build.xml                       # Ant Build Script
-└── database.sql                    # Script CSDL SQL Server (Schema 7 Bảng + Mock Data)
+└── database.sql                    # Script CSDL SQL Server (Schema 7 Bảng + 8 Indexes + Mock Data)
 ```
 
 ---

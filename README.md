@@ -70,10 +70,12 @@ Tầng 3 — Application: SlotAlreadyBookedException + Toast Error Notification
 | **Function** | `fn_GetDoctorAverageRating` | Tính điểm đánh giá 1–5 sao của Bác sĩ |
 
 ### 🛡️ 4. Bảo Mật & Kiến Trúc Sạch
-- **BCrypt Password Hashing** — Mật khẩu không bao giờ lưu plaintext.
+- **BCrypt Password Hashing** — Mật khẩu mã hóa BCrypt (60-char hash), tuyệt đối không lưu plaintext.
+- **XSS Protection** — Mã hóa toàn bộ dữ liệu tự do từ client trên JSP bằng `<c:out value="${...}"/>`.
 - **3-Layer Security Filters**: `EncodingFilter` → `AuthenticationFilter` → `RoleFilter`.
-- **Environment Variable** cho tất cả thông tin nhạy cảm (DB Password, API Keys).
-- **BaseDAO Pattern** — Loại bỏ 90% boilerplate JDBC với Generic RowMapper.
+- **Environment Variable Security** — Nạp linh hoạt `DB_USERNAME`, `DB_PASSWORD`, `SEPAY_SECRET_KEY` từ biến môi trường.
+- **BaseDAO Pattern** — Loại bỏ 90% boilerplate JDBC với Generic RowMapper & Transaction Callback.
+- **Modular CSS Architecture** — Tách biệt 4 stylesheet chuyên biệt (`style.css`, `sidebar.css`, `dashboard.css`, `error.css`).
 
 ---
 
@@ -332,13 +334,15 @@ Module 7 — Testing Suite           ░░░░░░░░░░░░░░�
 
 ### Bước 2 — Cấu Hình Kết Nối CSDL
 
-Mở `PRJ301_Clinic/src/java/config/DBContext.java` và cập nhật:
+Hệ thống tự động nạp `DB_USERNAME` và `DB_PASSWORD` từ biến môi trường (với mặc định `sa` / `12345`).
 
-```java
-config.setJdbcUrl("jdbc:sqlserver://localhost:1433;databaseName=PRJ301_ClinicDB;...");
-config.setUsername("sa");
-config.setPassword("YOUR_SQL_SERVER_PASSWORD"); // ← Đổi thành mật khẩu của bạn
+Nếu muốn đổi mật khẩu CSDL SQL Server của bạn:
+```bash
+# Đặt biến môi trường trên Windows PowerShell:
+$env:DB_USERNAME="sa"
+$env:DB_PASSWORD="YOUR_SQL_SERVER_PASSWORD"
 ```
+Hoặc chỉnh sửa trực tiếp giá trị fallback trong `PRJ301_Clinic/src/java/config/DBContext.java`.
 
 ### Bước 3 — Cấu Hình SePay (Tùy Chọn)
 
