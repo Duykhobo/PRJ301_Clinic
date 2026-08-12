@@ -19,5 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 
-<!-- Global Design System Stylesheet -->
+<!-- Global Design System & Component Stylesheets -->
 <link href="${pageContext.request.contextPath}/assets/css/style.css" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/assets/css/sidebar.css" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/assets/css/dashboard.css" rel="stylesheet">
