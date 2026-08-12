@@ -117,6 +117,10 @@ graph TD
   - Mô tả tư tưởng Abstraction & Loose Coupling trong tài liệu thiết kế giúp hệ thống linh hoạt khi kiểm thử.
 - **DRY - Don't Repeat Yourself (Không lặp lại code)**:
   - Tái sử dụng 100% các hàm Helper Mapper (VD: `mapResultSetToUser(ResultSet rs)`) trong các lớp DAO cho tất cả các câu lệnh query `SELECT`, loại bỏ hoàn toàn việc viết lặp lại mã gán thuộc tính.
+- **Quy tắc Điều hướng & Bảo mật Thư mục WEB-INF**:
+  - Tất cả file JSP cất giữ an toàn trong `/WEB-INF/views/` (Bảo mật cấm trình duyệt truy cập trực tiếp từ ngoài).
+  - Hàm `sendRedirect()`: Bắt trình duyệt gửi Request mới $\rightarrow$ Bắt buộc dùng **Public Servlet Route** (ví dụ: `RouterConstant.ROUTE_LOGIN` = `"/login"`).
+  - Hàm `forward()`: Chuyển tiếp nội bộ trong Server $\rightarrow$ Dùng **Internal JSP File** (ví dụ: `RouterConstant.LOGIN_JSP` = `"/WEB-INF/views/auth/login.jsp"`).
 
 ---
 
