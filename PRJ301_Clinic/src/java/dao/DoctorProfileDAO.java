@@ -1,0 +1,80 @@
+package dao;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import model.DoctorProfile;
+
+/**
+ * Lớp DoctorProfileDAO quản lý thông tin Hồ sơ Bác sĩ (DoctorProfiles & Users).
+ * Kế thừa BaseDAO<DoctorProfile> áp dụng chuẩn DRY.
+ */
+public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
+
+    // =========================================================================
+    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
+    // =========================================================================
+    /**
+     * Mapper chuyển ResultSet từ câu SQL JOIN DoctorProfiles + Users.
+     */
+    protected DoctorProfile mapResultSetToDoctorProfile(ResultSet rs) throws SQLException {
+        DoctorProfile doc = new DoctorProfile();
+        doc.setId(rs.getInt("id"));
+        doc.setUserId(rs.getInt("user_id"));
+        doc.setSpecialty(rs.getString("specialty"));
+        doc.setExperienceYears(rs.getInt("experience_years"));
+        doc.setRoomNumber(rs.getString("room_number"));
+        doc.setBio(rs.getString("bio"));
+
+        // Map thông tin JOIN từ bảng Users (nếu có trong câu query)
+        try {
+            doc.setDoctorName(rs.getString("fullname"));
+            doc.setDoctorPhone(rs.getString("phone"));
+            doc.setDoctorEmail(rs.getString("email"));
+        } catch (SQLException ignored) {
+            // Cho phép bỏ qua nếu câu SQL đơn giản không JOIN với Users
+        }
+        return doc;
+    }
+
+    // =========================================================================
+    // 🔑 2. CÁC NGHỆP VỤ DAO BÁC SĨ (TODO BẠN TỰ GÕ CODE THỰC HÀNH)
+    // =========================================================================
+
+    /**
+     * TODO 1: Lấy danh sách tất cả Bác sĩ kèm Họ tên, SĐT từ bảng Users (Dành cho
+     * Bệnh nhân chọn Bác sĩ)
+     * Gợi ý SQL:
+     * "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u
+     * ON d.user_id = u.id WHERE u.status = 1"
+     * Trả về: queryList(sql, this::mapResultSetToDoctorProfile)
+     */
+    public List<DoctorProfile> findAllActiveDoctors() {
+        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE u.status = 1";
+        return queryList(sql, this::mapResultSetToDoctorProfile);
+    }
+
+    /**
+     * TODO 2: Tìm thông tin Bác sĩ theo ID (kèm thông tin Users)
+     * Gợi ý SQL:
+     * "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u
+     * ON d.user_id = u.id WHERE d.id = ?"
+     * Trả về: queryOne(sql, this::mapResultSetToDoctorProfile, id)
+     */
+    public DoctorProfile findById(int id) {
+        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.id = ?";
+        return queryOne(sql, this::mapResultSetToDoctorProfile, id);
+    }
+
+    /**
+     * TODO 3: Tìm thông tin Bác sĩ theo user_id
+     * Gợi ý SQL: "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d
+     * JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?"
+     */
+    public DoctorProfile findByUserId(int userId) {
+
+        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?";
+        return queryOne(sql, this::mapResultSetToDoctorProfile, userId);
+    }
+}
