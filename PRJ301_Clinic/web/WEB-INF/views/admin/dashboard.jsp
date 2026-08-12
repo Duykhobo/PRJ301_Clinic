@@ -181,7 +181,10 @@
                                 <i class="fa-solid fa-users text-danger me-2"></i>Danh Sách Người Dùng (Trang ${currentPageUser} / ${totalPagesUser})
                             </div>
                             <%-- LIVE SEARCH USER --%>
-                            <input type="text" id="searchUser" class="form-control form-control-sm bg-dark text-white border-secondary rounded-pill px-3" placeholder="🔍 Tìm nhanh Tên, Username, SĐT..." style="max-width:280px;" onkeyup="filterTable('searchUser', 'usersTable')">
+                            <div class="position-relative" style="max-width:280px; width:100%;">
+                                <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50" style="font-size:.82rem; pointer-events:none;"></i>
+                                <input type="text" id="searchUser" class="form-control form-control-sm bg-dark text-white border-secondary rounded-pill ps-5 pe-3" placeholder="Tìm nhanh Tên, Username, SĐT..." onkeyup="filterTable('searchUser', 'usersTable')">
+                            </div>
                         </div>
                         <div style="overflow-x:auto;">
                             <table class="tbl" id="usersTable">
@@ -270,7 +273,10 @@
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <%-- LIVE SEARCH SERVICE --%>
-                                <input type="text" id="searchService" class="form-control form-control-sm bg-dark text-white border-secondary rounded-pill px-3" placeholder="🔍 Tìm nhanh Dịch vụ..." style="max-width:240px;" onkeyup="filterTable('searchService', 'servicesTable')">
+                                <div class="position-relative" style="max-width:240px; width:100%;">
+                                    <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50" style="font-size:.82rem; pointer-events:none;"></i>
+                                    <input type="text" id="searchService" class="form-control form-control-sm bg-dark text-white border-secondary rounded-pill ps-5 pe-3" placeholder="Tìm nhanh Dịch vụ..." onkeyup="filterTable('searchService', 'servicesTable')">
+                                </div>
                                 <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold px-3" data-bs-toggle="modal" data-bs-target="#addServiceModal">
                                     <i class="fa-solid fa-plus me-1"></i>Thêm Dịch Vụ Mới
                                 </button>
