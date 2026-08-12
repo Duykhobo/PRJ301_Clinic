@@ -106,6 +106,14 @@ graph TD
 
 ---
 
+### 8. ⏱️ Thói quen 8: Pragmatic Delivery & Feature-First Strategy (Chiến lược Ưu tiên Sát Deadline)
+- **Quy tắc Vàng**: **"TÍNH NĂNG CHẠY THỰC TẾ LÀ ƯU TIÊN SỐ 1"**. Khi chịu áp lực Deadline:
+  1. **Ưu tiên 1 (85% Điểm số)**: Viết trực tiếp lớp Class DAO (`UserDAO.java`), dồn sức cho tính năng thực tế chạy 100% không bug (Đăng ký, Đăng nhập, Đặt lịch, SePay VietQR).
+  2. **Ưu tiên 2 (15% Điểm số)**: Tách Interface (`IUserDAO`) sau nếu còn dư thời gian trước hạn nộp (chỉ tốn 5 phút dùng tính năng Refactor `Extract Interface` trên IDE).
+  3. **Tuyên ngôn**: Đồ án PRJ301 ăn điểm cao nhất nhờ tính năng chạy ổn định, giao diện mượt mà và không văng lỗi Runtime.
+
+---
+
 ## 📅 SPRINT BOARD TIẾN ĐỘ DỰ ÁN (AGILE SPRINT ROADMAP)
 
 ### 🔴 SPRINT 1: CƠ SỞ DỮ LIỆU & BỘ KHUNG (ĐẠT CHECKPOINT 1 - 17/08)
