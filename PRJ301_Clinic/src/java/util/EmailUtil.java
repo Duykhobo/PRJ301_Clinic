@@ -26,13 +26,24 @@ public class EmailUtil {
     private static final Logger LOGGER = Logger.getLogger(EmailUtil.class.getName());
     private static final ExecutorService executor = Executors.newFixedThreadPool(3);
 
-    // Cấu hình Nạp Key từ Env Variable (Bảo mật 100% chống lộ Key)
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
-    private static final String SENDER_EMAIL = System.getenv("MAIL_USERNAME") != null 
-            ? System.getenv("MAIL_USERNAME") : "nthanhduy310@gmail.com";
-    private static final String SENDER_PASSWORD = System.getenv("MAIL_PASSWORD") != null 
-            ? System.getenv("MAIL_PASSWORD") : "";
+
+    private static String getSenderEmail() {
+        String email = System.getenv("MAIL_USERNAME");
+        if (email == null || email.trim().isEmpty()) {
+            email = System.getProperty("MAIL_USERNAME", "nthanhduy310@gmail.com");
+        }
+        return email;
+    }
+
+    private static String getSenderPassword() {
+        String pass = System.getenv("MAIL_PASSWORD");
+        if (pass == null || pass.trim().isEmpty()) {
+            pass = System.getProperty("MAIL_PASSWORD", "omcvmyijlstkwdgx");
+        }
+        return pass;
+    }
 
     /**
      * Gửi Email HTML Xác Nhận Đặt Lịch Hẹn Khám Bệnh (Async).
@@ -53,15 +64,18 @@ public class EmailUtil {
                 props.put("mail.smtp.auth", "true");
                 props.put("mail.smtp.starttls.enable", "true");
 
+                String senderEmail = getSenderEmail();
+                String senderPass = getSenderPassword();
+
                 Session session = Session.getInstance(props, new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
+                        return new PasswordAuthentication(senderEmail, senderPass);
                     }
                 });
 
                 Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(SENDER_EMAIL, "PRJ301 Clinic & Spa Notification"));
+                message.setFrom(new InternetAddress(senderEmail, "PRJ301 Clinic & Spa Notification"));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
                 message.setSubject("🏥 XÁC NHẬN ĐẶT LỊCH HẸN KHÁM KHÁCH HÀNG — PRJ301 CLINIC");
 
@@ -108,15 +122,18 @@ public class EmailUtil {
                 props.put("mail.smtp.auth", "true");
                 props.put("mail.smtp.starttls.enable", "true");
 
+                String senderEmail = getSenderEmail();
+                String senderPass = getSenderPassword();
+
                 Session session = Session.getInstance(props, new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
+                        return new PasswordAuthentication(senderEmail, senderPass);
                     }
                 });
 
                 Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(SENDER_EMAIL, "PRJ301 Clinic Payment"));
+                message.setFrom(new InternetAddress(senderEmail, "PRJ301 Clinic Payment"));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
                 message.setSubject("💳 HÓA ĐƠN THANH TOÁN VIETQR SEPAY THÀNH CÔNG — PRJ301 CLINIC");
 
