@@ -24,7 +24,7 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        User loginUser = (User) request.getSession().getAttribute(SystemConstant.LOGIN_USER_SESSION);
+        User loginUser = (User) request.getSession().getAttribute(SystemConstant.SESSION_USER);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/MainController?action=login-page");
             return;
@@ -33,7 +33,7 @@ public class ProfileServlet extends HttpServlet {
         // Tải thông tin mới nhất từ CSDL
         User freshUser = userDAO.findById(loginUser.getId());
         if (freshUser != null) {
-            request.getSession().setAttribute(SystemConstant.LOGIN_USER_SESSION, freshUser);
+            request.getSession().setAttribute(SystemConstant.SESSION_USER, freshUser);
             request.setAttribute("user", freshUser);
         } else {
             request.setAttribute("user", loginUser);
@@ -46,7 +46,7 @@ public class ProfileServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        User loginUser = (User) request.getSession().getAttribute(SystemConstant.LOGIN_USER_SESSION);
+        User loginUser = (User) request.getSession().getAttribute(SystemConstant.SESSION_USER);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/MainController?action=login-page");
             return;
@@ -68,19 +68,19 @@ public class ProfileServlet extends HttpServlet {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
 
-        if (!ValidationUtil.isFullnameValid(fullname)) {
+        if (!ValidationUtil.isValidFullname(fullname)) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Họ và tên không hợp lệ (độ dài 2-100 ký tự)!");
             doGet(request, response);
             return;
         }
 
-        if (!ValidationUtil.isEmailValid(email)) {
+        if (!ValidationUtil.isValidEmail(email)) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Địa chỉ Email không đúng định dạng!");
             doGet(request, response);
             return;
         }
 
-        if (!ValidationUtil.isPhoneValid(phone)) {
+        if (!ValidationUtil.isValidPhone(phone)) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Số điện thoại không hợp lệ (độ dài 10-11 chữ số)!");
             doGet(request, response);
             return;
@@ -89,7 +89,7 @@ public class ProfileServlet extends HttpServlet {
         boolean updated = userDAO.updateProfile(loginUser.getId(), fullname.trim(), email.trim(), phone.trim());
         if (updated) {
             User freshUser = userDAO.findById(loginUser.getId());
-            request.getSession().setAttribute(SystemConstant.LOGIN_USER_SESSION, freshUser);
+            request.getSession().setAttribute(SystemConstant.SESSION_USER, freshUser);
             request.setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR, "Cập nhật hồ sơ cá nhân thành công!");
         } else {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Cập nhật hồ sơ thất bại, vui lòng thử lại!");
