@@ -116,8 +116,10 @@ public class ServiceDAO extends BaseDAO<Service> {
      * Đảo trạng thái Ẩn / Hiện Dịch vụ.
      */
     public boolean toggleStatus(int id) {
-        String sql = "UPDATE Services SET status = CASE WHEN status = 1 THEN 0 ELSE 1 END WHERE id = ?";
-        return executeUpdate(sql, id);
+        Service s = findById(id);
+        if (s == null) return false;
+        String sql = "UPDATE Services SET status = ? WHERE id = ?";
+        return executeUpdate(sql, !s.isStatus(), id);
     }
 
     /**

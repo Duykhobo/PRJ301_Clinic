@@ -134,8 +134,10 @@ public class UserDAO extends BaseDAO<User> {
      * Đảo trạng thái tài khoản (Active <-> Banned).
      */
     public boolean toggleStatus(int userId) {
-        String sql = "UPDATE Users SET status = CASE WHEN status = 1 THEN 0 ELSE 1 END WHERE id = ?";
-        return executeUpdate(sql, userId);
+        User user = findById(userId);
+        if (user == null) return false;
+        String sql = "UPDATE Users SET status = ? WHERE id = ?";
+        return executeUpdate(sql, !user.isStatus(), userId);
     }
 
     /**

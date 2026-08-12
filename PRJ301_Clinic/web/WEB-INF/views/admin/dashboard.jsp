@@ -456,7 +456,12 @@
 
         // 1. GLASSMORPHIC TOAST NOTIFICATION HELPER
         function showToast(type, message) {
-            const container = document.getElementById("toastContainer");
+            let container = document.getElementById("toastContainer");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toastContainer";
+                document.body.appendChild(container);
+            }
             const toast = document.createElement("div");
             toast.className = "toast-glass " + type;
             const iconClass = type === 'success' ? 'fa-solid fa-circle-check text-success' : 'fa-solid fa-triangle-exclamation text-danger';
@@ -466,7 +471,7 @@
             setTimeout(() => {
                 toast.style.animation = "fadeOutRight 0.3s ease-in forwards";
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 3500);
         }
 
         // 2. REAL-TIME TABLE FILTER
@@ -500,8 +505,9 @@
                 },
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.text())
+            .then(text => {
+                const data = JSON.parse(text);
                 if (data.success) {
                     showToast("success", data.message);
                     const statusTd = document.getElementById("user-status-td-" + userId);
@@ -515,10 +521,13 @@
                         actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size:.78rem;" onclick="toggleUserStatusAjax(${userId})"><i class="fa-solid fa-unlock me-1"></i><span>Mở Khóa</span></button>`;
                     }
                 } else {
-                    showToast("error", "Không thể cập nhật trạng thái người dùng.");
+                    showToast("error", data.message || "Không thể cập nhật trạng thái người dùng.");
                 }
             })
-            .catch(() => showToast("error", "Lỗi kết nối máy chủ!"));
+            .catch(err => {
+                console.error("AJAX Error:", err);
+                showToast("error", "Lỗi kết nối máy chủ!");
+            });
         }
 
         // 4. AJAX UPDATE USER ROLE
@@ -538,15 +547,19 @@
                 },
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.text())
+            .then(text => {
+                const data = JSON.parse(text);
                 if (data.success) {
                     showToast("success", data.message);
                 } else {
-                    showToast("error", "Không thể đổi vai trò người dùng.");
+                    showToast("error", data.message || "Không thể đổi vai trò người dùng.");
                 }
             })
-            .catch(() => showToast("error", "Lỗi kết nối máy chủ!"));
+            .catch(err => {
+                console.error("AJAX Error:", err);
+                showToast("error", "Lỗi kết nối máy chủ!");
+            });
         }
 
         // 5. AJAX TOGGLE SERVICE STATUS
@@ -564,8 +577,9 @@
                 },
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.text())
+            .then(text => {
+                const data = JSON.parse(text);
                 if (data.success) {
                     showToast("success", data.message);
                     const statusTd = document.getElementById("service-status-td-" + serviceId);
@@ -579,10 +593,13 @@
                         actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" style="font-size:.78rem;" onclick="toggleServiceStatusAjax(${serviceId})"><i class="fa-solid fa-eye me-1"></i><span>Hiện Dịch Vụ</span></button>`;
                     }
                 } else {
-                    showToast("error", "Không thể cập nhật trạng thái dịch vụ.");
+                    showToast("error", data.message || "Không thể cập nhật trạng thái dịch vụ.");
                 }
             })
-            .catch(() => showToast("error", "Lỗi kết nối máy chủ!"));
+            .catch(err => {
+                console.error("AJAX Error:", err);
+                showToast("error", "Lỗi kết nối máy chủ!");
+            });
         }
 
         // 6. AJAX SAVE CLINIC SETTINGS
@@ -598,15 +615,19 @@
                 },
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.text())
+            .then(text => {
+                const data = JSON.parse(text);
                 if (data.success) {
                     showToast("success", data.message);
                 } else {
-                    showToast("error", "Không thể lưu cấu hình.");
+                    showToast("error", data.message || "Không thể lưu cấu hình.");
                 }
             })
-            .catch(() => showToast("error", "Lỗi kết nối máy chủ!"));
+            .catch(err => {
+                console.error("AJAX Error:", err);
+                showToast("error", "Lỗi kết nối máy chủ!");
+            });
         }
     </script>
 </body>
