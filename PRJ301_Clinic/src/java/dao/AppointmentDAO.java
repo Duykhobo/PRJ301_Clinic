@@ -264,15 +264,25 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
      */
     public RevenueReport getRevenueReport(Date startDate, Date endDate) {
         String sql = "EXEC dbo.sp_GetClinicRevenueReport ?, ?";
-        RevenueReport report = queryOne(sql, rs -> new RevenueReport(
-                rs.getInt("total_appointments"),
-                rs.getInt("completed_appointments"),
-                rs.getInt("cancelled_appointments"),
-                rs.getBigDecimal("total_revenue_paid"),
-                rs.getBigDecimal("sepay_revenue"),
-                rs.getBigDecimal("cash_revenue")
-        ), startDate, endDate);
-
-        return report != null ? report : new model.RevenueReport();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new RevenueReport(
+                            rs.getInt("total_appointments"),
+                            rs.getInt("completed_appointments"),
+                            rs.getInt("cancelled_appointments"),
+                            rs.getBigDecimal("total_revenue_paid"),
+                            rs.getBigDecimal("sepay_revenue"),
+                            rs.getBigDecimal("cash_revenue")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi gọi Stored Proc sp_GetClinicRevenueReport", e);
+        }
+        return new RevenueReport();
     }
 }
