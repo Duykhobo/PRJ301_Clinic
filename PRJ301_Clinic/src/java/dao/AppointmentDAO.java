@@ -44,13 +44,10 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         app.setCreatedAt(rs.getTimestamp("created_at"));
 
         // Joined Fields
-        try {
-            app.setPatientName(rs.getString("patient_name"));
-            app.setPatientPhone(rs.getString("patient_phone"));
-            app.setDoctorName(rs.getString("doctor_name"));
-            app.setServiceName(rs.getString("service_name"));
-        } catch (SQLException ignored) {
-        }
+        try { app.setPatientName(rs.getString("patient_name")); } catch (SQLException ignored) {}
+        try { app.setPatientPhone(rs.getString("patient_phone")); } catch (SQLException ignored) {}
+        try { app.setDoctorName(rs.getString("doctor_name")); } catch (SQLException ignored) {}
+        try { app.setServiceName(rs.getString("service_name")); } catch (SQLException ignored) {}
         return app;
     }
 
@@ -153,6 +150,45 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     /**
+     * Lấy danh sách Lịch sử Cuộc hẹn có Phân Trang cho Bệnh Nhân (MS SQL Server OFFSET...FETCH NEXT).
+     */
+    public List<Appointment> findPatientAppointmentsPaginated(int patientId, int offset, int limit) {
+        String sql = "SELECT a.*, "
+                + "u.fullname AS patient_name, "
+                + "u.phone AS patient_phone, "
+                + "doc_u.fullname AS doctor_name, "
+                + "s.service_name "
+                + "FROM Appointments a "
+                + "JOIN Users u ON a.patient_id = u.id "
+                + "JOIN DoctorProfiles d ON a.doctor_id = d.id "
+                + "JOIN Users doc_u ON d.user_id = doc_u.id "
+                + "JOIN Services s ON a.service_id = s.id "
+                + "WHERE a.patient_id = ? "
+                + "ORDER BY a.created_at DESC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        return queryList(sql, this::mapResultSetToAppointment, patientId, offset, limit);
+    }
+
+    /**
+     * Đếm tổng số cuộc hẹn của Bệnh Nhân để tính tổng số trang.
+     */
+    public int countPatientAppointments(int patientId) {
+        String sql = "SELECT COUNT(*) FROM Appointments WHERE patient_id = ?";
+        try (java.sql.Connection conn = config.DBContext.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, patientId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi đếm số lượng cuộc hẹn bệnh nhân", e);
+        }
+        return 0;
+    }
+
+    /**
      * Cập nhật trạng thái Thanh toán thành công (Xác thực qua Webhook VietQR SePay).
      *
      * @param appointmentId   Mã Lịch hẹn
@@ -163,5 +199,57 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         String sql = "UPDATE Appointments SET payment_status = '" + SystemConstant.PAYMENT_PAID + "', status = '"
                 + SystemConstant.STATUS_CONFIRMED + "', transaction_code = ? WHERE id = ?";
         return executeUpdate(sql, transactionCode, appointmentId);
+    }
+
+    /**
+     * Lấy danh sách lịch hẹn của Bác sĩ theo ID Bác sĩ (User ID) và Ngày khám.
+     */
+    public List<Appointment> findAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {
+        String sql = "SELECT a.*, "
+                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
+                + "u_doc.fullname AS doctor_name, "
+                + "s.service_name "
+                + "FROM Appointments a "
+                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
+                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
+                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
+                + "JOIN Services s ON a.service_id = s.id "
+                + "WHERE dp.user_id = ? AND a.appointment_date = ? "
+                + "ORDER BY a.start_time ASC";
+        return queryList(sql, this::mapResultSetToAppointment, doctorUserId, date);
+    }
+
+    /**
+     * Lấy danh sách tất cả lịch hẹn trong ngày dành cho Lễ tân theo dõi tại sảnh.
+     */
+    public List<Appointment> findAllAppointmentsByDate(String date) {
+        String sql = "SELECT a.*, "
+                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
+                + "u_doc.fullname AS doctor_name, "
+                + "s.service_name "
+                + "FROM Appointments a "
+                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
+                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
+                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
+                + "JOIN Services s ON a.service_id = s.id "
+                + "WHERE a.appointment_date = ? "
+                + "ORDER BY a.start_time ASC";
+        return queryList(sql, this::mapResultSetToAppointment, date);
+    }
+
+    /**
+     * Cập nhật trạng thái cuộc hẹn (CONFIRMED, COMPLETED, CANCELLED).
+     */
+    public boolean updateStatus(int appointmentId, String newStatus) {
+        String sql = "UPDATE Appointments SET status = ? WHERE id = ?";
+        return executeUpdate(sql, newStatus, appointmentId);
+    }
+
+    /**
+     * Cập nhật trạng thái thanh toán (UNPAID, PAID) và hình thức (CASH, SEPAY_QR).
+     */
+    public boolean updatePayment(int appointmentId, String paymentStatus, String paymentMethod) {
+        String sql = "UPDATE Appointments SET payment_status = ?, payment_method = ? WHERE id = ?";
+        return executeUpdate(sql, paymentStatus, paymentMethod, appointmentId);
     }
 }

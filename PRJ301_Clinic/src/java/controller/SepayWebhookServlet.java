@@ -101,7 +101,7 @@ public class SepayWebhookServlet extends HttpServlet {
             if (transferType != null && !"in".equalsIgnoreCase(transferType)) {
                 LOGGER.info("Bo qua giao dich tien ra (transferType = " + transferType + ")");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("{\"status\": 200, \"message\": \"Ignored non-incoming transaction\"}");
+                response.getWriter().write("{\"success\": true, \"message\": \"Ignored non-incoming transaction\"}");
                 return;
             }
 
@@ -112,25 +112,35 @@ public class SepayWebhookServlet extends HttpServlet {
             if ("SEPAYTEST".equalsIgnoreCase(code) || (content != null && content.toUpperCase().contains("SEPAY TEST"))) {
                 LOGGER.info("Nhan Test Webhook Ping tu SePay Dashboard. Phan hoi HTTP 200 OK!");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("{\"status\": 200, \"message\": \"SePay Test Webhook Ping Received Successfully!\"}");
+                response.getWriter().write("{\"success\": true, \"message\": \"SePay Test Webhook Ping Received Successfully!\"}");
                 return;
             }
 
             // 5. Giải mã Mã Lịch hẹn từ Nội dung chuyển khoản (CLINIC<ID> hoặc CLN<ID>)
             int appointmentId = extractAppointmentId(content, request.getParameter("appointmentId"));
+            if (appointmentId <= 0) {
+                // Thử trích xuất từ trường "code" (vd: CLN63528)
+                appointmentId = extractAppointmentId(code, null);
+            }
 
             if (appointmentId > 0) {
                 boolean updated = bookingService.updatePaymentSuccess(appointmentId, transactionCode != null ? transactionCode : "SEPAY_AUTO");
                 if (updated) {
                     LOGGER.info("Xac thuc thanh toan VietQR SePay thanh cong cho cuoc hen #" + appointmentId);
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("{\"status\": 200, \"message\": \"Payment processed successfully for appointment #" + appointmentId + "\"}");
+                    response.getWriter().write("{\"success\": true, \"message\": \"Payment processed successfully for appointment #" + appointmentId + "\"}");
+                    return;
+                } else {
+                    LOGGER.info("Nhan Webhook SePay cho cuoc hen #" + appointmentId + " (Chua tim thay ID local hoac ID test sandbox). Phan hoi HTTP 200 OK!");
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"success\": true, \"message\": \"Webhook received for appointment #" + appointmentId + "\"}");
                     return;
                 }
             }
 
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"status\": 400, \"message\": \"Could not parse appointment ID from payload\"}");
+            // Trường hợp Webhook hợp lệ nhưng là giao dịch tự do / test
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("{\"success\": true, \"message\": \"SePay webhook received successfully\"}");
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Loi khi xu ly Webhook SePay", e);

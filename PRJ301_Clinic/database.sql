@@ -153,6 +153,9 @@ INSERT INTO Users (username, password, email, fullname, phone, role, status) VAL
 
 -- 2. Chèn Services (Danh mục Dịch vụ Phòng khám & Spa)
 INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES
+(N'Khám Tư Vấn Thử Nghiệm SePay (Mã Test)', 2000.00, 15, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 2.000 VNĐ.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
+(N'Kiểm Tra Da Mặt Định Kỳ (Mã Test)', 5000.00, 20, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 5.000 VNĐ.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
+(N'Lấy Cao Răng Thử Nghiệm (Mã Test)', 10000.00, 30, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 10.000 VNĐ.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
 (N'Khám & Tẩy Trắng Răng Laser', 1500000.00, 45, N'Tẩy trắng răng công nghệ Laser Whitening không gây ê buốt, sáng bóng tự nhiên.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
 (N'Khám Nha Khoa Tổng Quát', 300000.00, 30, N'Kiểm tra sức khỏe răng miệng, lấy cao răng đánh bóng chuyên sâu.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
 (N'Chăm Sóc Da Mặt Deep Cleansing Spa', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
@@ -211,9 +214,9 @@ INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
 ('OPENING_HOURS', N'08:00 - 20:00 (Từ Thứ 2 đến Chủ Nhật)', N'Khung giờ mở cửa hoạt động chung'),
 ('CLINIC_SLOT_DURATION', '60', N'Thời lượng mỗi khung giờ khám (Phút) - Động'),
 ('CLINIC_TIME_SLOTS', '08:00,09:00,10:00,11:00,14:00,15:00,16:00,17:00', N'Danh sách các khung giờ khám khả dụng trong ngày - Động'),
-('SEPAY_BANK_NAME', 'MBBank', N'Tên ngân hàng tài khoản SePay'),
-('SEPAY_BANK_ACC', '0901234567', N'Số tài khoản nhận chuyển khoản SePay'),
-('SEPAY_ACCOUNT_HOLDER', N'PHONG KHAM PRJ301', N'Tên chủ tài khoản nhận tiền');
+('SEPAY_BANK_NAME', 'Sacombank', N'Tên ngân hàng tài khoản SePay'),
+('SEPAY_BANK_ACC', '070148520060', N'Số tài khoản nhận chuyển khoản SePay'),
+('SEPAY_ACCOUNT_HOLDER', N'NGUYEN THANH DUY', N'Tên chủ tài khoản nhận tiền');
 GO
 
 -- ============================================================================

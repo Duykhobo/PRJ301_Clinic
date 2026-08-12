@@ -30,7 +30,7 @@ public class RouterConstant {
     
     // Role Redirect Dashboards
     public static final String DASHBOARD_ADMIN = "/admin/dashboard";
-    public static final String DASHBOARD_DOCTOR = "/doctor/schedule";
-    public static final String DASHBOARD_RECEPTIONIST = "/receptionist/appointments";
+    public static final String DASHBOARD_DOCTOR = "/doctor/dashboard";
+    public static final String DASHBOARD_RECEPTIONIST = "/receptionist/dashboard";
     public static final String DASHBOARD_PATIENT = "/patient/history";
 }

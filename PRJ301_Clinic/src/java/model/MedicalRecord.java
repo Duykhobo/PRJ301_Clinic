@@ -1,12 +1,12 @@
 package model;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
- * Model MedicalRecord - Ánh xạ bảng MedicalRecords trong CSDL SQL Server.
+ * MedicalRecord - JavaBean đại diện cho bảng MedicalRecords.
+ * Quản lý Hồ sơ khám bệnh, Chẩn đoán y khoa, Đơn thuốc & Đánh giá của Bệnh nhân.
  */
-public class MedicalRecord implements Serializable {
+public class MedicalRecord {
 
     private int id;
     private int appointmentId;
@@ -14,11 +14,11 @@ public class MedicalRecord implements Serializable {
     private int doctorId;
     private String diagnosis;
     private String prescriptionOrResult;
-    private Integer rating; // 1 - 5 stars
+    private Integer rating;
     private String reviewComment;
     private Timestamp createdAt;
 
-    // Joined Fields
+    // Additional Display Fields
     private String patientName;
     private String doctorName;
     private String serviceName;
@@ -26,16 +26,12 @@ public class MedicalRecord implements Serializable {
     public MedicalRecord() {
     }
 
-    public MedicalRecord(int id, int appointmentId, int patientId, int doctorId, String diagnosis, String prescriptionOrResult, Integer rating, String reviewComment, Timestamp createdAt) {
-        this.id = id;
+    public MedicalRecord(int appointmentId, int patientId, int doctorId, String diagnosis, String prescriptionOrResult) {
         this.appointmentId = appointmentId;
         this.patientId = patientId;
         this.doctorId = doctorId;
         this.diagnosis = diagnosis;
         this.prescriptionOrResult = prescriptionOrResult;
-        this.rating = rating;
-        this.reviewComment = reviewComment;
-        this.createdAt = createdAt;
     }
 
     public int getId() {

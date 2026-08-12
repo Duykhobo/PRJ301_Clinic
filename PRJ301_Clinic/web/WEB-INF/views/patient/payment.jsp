@@ -24,8 +24,8 @@
             <%-- Cột bên trái: Mã VietQR SePay Động & Trạng Thái Tự Động --%>
             <div class="col-md-5 text-center">
                 <div class="p-3 rounded-4 position-relative" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);">
-                    <img src="https://qr.sepay.vn/img?bank=MBBank&acc=0901234567&amount=${appointment.totalPrice}&des=${appointment.paymentContent}" 
-                         alt="Mã VietQR SePay" class="img-fluid rounded-3 mb-3 shadow-sm" style="max-width: 240px;">
+                    <img src="https://vietqr.app/img?bank=Sacombank&acc=070148520060&amount=${appointment.totalPrice}&des=${appointment.paymentContent}&template=compact&showinfo=true&holder=NGUYEN%20THANH%20DUY" 
+                         alt="Mã VietQR SePay Sacombank" class="img-fluid rounded-3 mb-3 shadow-sm" style="max-width: 280px;">
                     
                     <div id="paymentStatusBadge" class="badge px-3 py-2 rounded-pill slot-btn-available mb-2 d-inline-flex align-items-center gap-2">
                         <i class="fa-solid fa-spinner fa-spin text-info" id="paymentStatusSpinner"></i>
