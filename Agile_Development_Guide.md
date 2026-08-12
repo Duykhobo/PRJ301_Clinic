@@ -64,6 +64,48 @@ Document này hướng dẫn bạn quy trình làm việc chuẩn công nghiệp
 
 ---
 
+### 6. 🌿 Thói quen 6: Mô hình Chia nhánh Git Chuyên nghiệp (Enterprise Git Flow Strategy)
+Trong môi trường doanh nghiệp chuẩn công nghiệp, cây nhánh Git được phân tách thành **4 tầng nhánh nghiêm ngặt**:
+
+```mermaid
+graph TD
+    Main["🔴 main / master (Production Ready - Nộp bài LMS)"]
+    Develop["🟡 develop / staging (Nhánh Tích hợp Sprint & Checkpoint)"]
+    Feature1["🟢 feature/auth-user-dao (Đăng ký, Đăng nhập & UserDAO)"]
+    Feature2["🟢 feature/patient-booking (Đặt lịch & SePay VietQR)"]
+    Feature3["🟢 feature/admin-dashboard (Admin Management & Settings)"]
+
+    Main --> Develop
+    Develop --> Feature1
+    Develop --> Feature2
+    Develop --> Feature3
+    Feature1 -->|Merge| Develop
+    Feature2 -->|Merge| Develop
+    Feature3 -->|Merge| Develop
+    Develop -->|Release Checkpoint| Main
+```
+
+- **Quy tắc Đặt tên Nhánh chuẩn Quốc tế**:
+  - 🔴 `main`: Nhánh sản phẩm hoàn chỉnh 100% dùng nộp LMS và bảo vệ vấn đáp. Tuyệt đối không commit rác vào `main`.
+  - 🟡 `develop`: Nhánh tích hợp dữ liệu chính của Sprint, dùng demo tại các mốc **Checkpoint 1** (17/08) và **Checkpoint 2** (22/08).
+  - 🟢 `feature/<phân-hệ-chức-năng>`: Nhánh phát triển riêng cho từng module:
+    - `feature/auth-user-dao`: Module Đăng ký/Đăng nhập & UserDAO.
+    - `feature/patient-booking`: Module Bệnh nhân Đặt lịch & AJAX Slots.
+    - `feature/sepay-payment`: Module Thanh toán SePay VietQR & Webhook.
+    - `feature/doctor-medical-record`: Module Bác sĩ cập nhật Bệnh án.
+    - `feature/admin-management`: Module Admin Dashboard & Cấu hình Động.
+  - 🔴 `hotfix/<tên-lỗi>`: Nhánh sửa lỗi khẩn cấp khi demo (VD: `hotfix/fix-hikari-timeout`).
+
+---
+
+### 7. ⚡ Thói quen 7: Immediate Atomic Commit (Hoàn thành đâu, Commit ngay đó)
+- **Quy tắc**: **KHÔNG GOM CODE CẢ NGÀY MỚI COMMIT 1 LẦN**. Ngay khi hoàn thành 1 file hoặc 1 hàm nhỏ chạy thông suốt:
+  1. Chạy `git status` để kiểm tra file thay đổi.
+  2. Chạy `git add <file>` để stage đúng file vừa sửa.
+  3. Chạy `git commit -m "feat: <mô-tả-ngắn>"` ngay lập tức!
+
+---
+
 ## 📅 SPRINT BOARD TIẾN ĐỘ DỰ ÁN (AGILE SPRINT ROADMAP)
 
 ### 🔴 SPRINT 1: CƠ SỞ DỮ LIỆU & BỘ KHUNG (ĐẠT CHECKPOINT 1 - 17/08)
