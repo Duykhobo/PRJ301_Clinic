@@ -214,3 +214,61 @@ body {
 .animate-fade-in {
     animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* 11. FLATPICKR GLASSMORPHISM DATEPICKER STYLES */
+.flatpickr-calendar {
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+    border-radius: 16px !important;
+    color: #f8fafc !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 8px !important;
+}
+
+.flatpickr-months {
+    background: transparent !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    color: #38bdf8 !important;
+    fill: #38bdf8 !important;
+    font-weight: 700 !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-radius: 8px !important;
+}
+
+.flatpickr-day {
+    color: #e2e8f0 !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease !important;
+}
+
+.flatpickr-day.today {
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(59, 130, 246, 0.3) !important;
+    border-color: transparent !important;
+}
+
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+    color: rgba(255, 255, 255, 0.2) !important;
+    background: transparent !important;
+}
+

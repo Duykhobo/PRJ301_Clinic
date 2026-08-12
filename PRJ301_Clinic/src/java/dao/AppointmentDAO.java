@@ -69,12 +69,20 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     public boolean createBookingAtomic(Appointment app) throws SlotAlreadyBookedException {
         try {
             return executeTransaction(conn -> {
-                // Bước 1: Khóa Slot bằng SQL WITH (UPDLOCK, HOLDLOCK)
-                String lockSql = "SELECT is_available FROM DoctorSchedules WITH (UPDLOCK, HOLDLOCK) WHERE id = ?";
-                Boolean isAvailable = queryOne(conn, lockSql, rs -> rs.getBoolean("is_available"), app.getScheduleId());
-                if (isAvailable == null || !isAvailable) {
+                // Bước 1: Khóa Slot bằng SQL WITH (UPDLOCK, HOLDLOCK) & Lấy start_time tự động
+                String lockSql = "SELECT is_available, start_time FROM DoctorSchedules WITH (UPDLOCK, HOLDLOCK) WHERE id = ?";
+                java.sql.Time slotStartTime = queryOne(conn, lockSql, rs -> {
+                    boolean isAvail = rs.getBoolean("is_available");
+                    if (!isAvail) return null;
+                    return rs.getTime("start_time");
+                }, app.getScheduleId());
+
+                if (slotStartTime == null) {
                     throw new SlotAlreadyBookedException(
                             "Khung giờ này vừa được người khác đặt! Vui lòng chọn khung giờ khác.");
+                }
+                if (app.getStartTime() == null) {
+                    app.setStartTime(slotStartTime);
                 }
                 // Bước 2: Insert Appointment và lấy ID tự động tăng
                 String insertSql = "INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

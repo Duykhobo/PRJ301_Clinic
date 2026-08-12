@@ -137,6 +137,10 @@ public class BookingServlet extends HttpServlet {
                 }
             }
 
+            // Nạp thông tin Slot để lấy start_time chính xác
+            dao.DoctorScheduleDAO scheduleDAO = new dao.DoctorScheduleDAO();
+            model.DoctorSchedule selectedSchedule = scheduleDAO.findById(scheduleId);
+
             // 3. Lưu thông tin cuộc hẹn
             Appointment app = new Appointment();
             app.setPatientId(user.getId());
@@ -144,6 +148,7 @@ public class BookingServlet extends HttpServlet {
             app.setServiceId(serviceId);
             app.setScheduleId(scheduleId);
             app.setAppointmentDate(appointmentDate);
+            app.setStartTime(selectedSchedule != null ? selectedSchedule.getStartTime() : null);
             app.setTotalPrice(selectedService != null ? selectedService.getPrice() : java.math.BigDecimal.ZERO);
             app.setStatus(SystemConstant.STATUS_PENDING);
             app.setPaymentStatus(SystemConstant.PAYMENT_UNPAID);

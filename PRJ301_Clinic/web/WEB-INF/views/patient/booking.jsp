@@ -27,29 +27,44 @@
             <%-- Bước 1: Chọn Dịch vụ --%>
             <div class="mb-3">
                 <label class="form-label text-muted">1. Chọn Dịch Vụ Khám / Spa (*)</label>
-                <select name="serviceId" id="serviceSelect" class="form-select form-control-glass">
-                    <option value="">-- Chọn dịch vụ --</option>
-                    <c:forEach items="${services}" var="s">
-                        <option value="${s.id}">${s.serviceName} - ${s.price} VNĐ</option>
-                    </c:forEach>
-                </select>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                        <i class="fa-solid fa-teeth text-info"></i>
+                    </span>
+                    <select name="serviceId" id="serviceSelect" class="form-select form-control-glass border-start-0 ps-0">
+                        <option value="">-- Chọn dịch vụ --</option>
+                        <c:forEach items="${services}" var="s">
+                            <option value="${s.id}">${s.serviceName} - ${s.price} VNĐ</option>
+                        </c:forEach>
+                    </select>
+                </div>
             </div>
 
             <%-- Bước 2: Chọn Bác sĩ --%>
             <div class="mb-3">
                 <label class="form-label text-muted">2. Chọn Bác Sĩ (*)</label>
-                <select name="doctorId" id="doctorSelect" class="form-select form-control-glass" onchange="fetchSlots()">
-                    <option value="">-- Chọn bác sĩ --</option>
-                    <c:forEach items="${doctors}" var="d">
-                        <option value="${d.id}">${d.doctorName} (${d.specialty})</option>
-                    </c:forEach>
-                </select>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                        <i class="fa-solid fa-user-doctor text-info"></i>
+                    </span>
+                    <select name="doctorId" id="doctorSelect" class="form-select form-control-glass border-start-0 ps-0" onchange="fetchSlots()">
+                        <option value="">-- Chọn bác sĩ --</option>
+                        <c:forEach items="${doctors}" var="d">
+                            <option value="${d.id}">${d.doctorName} (${d.specialty})</option>
+                        </c:forEach>
+                    </select>
+                </div>
             </div>
 
-            <%-- Bước 3: Chọn Ngày Khám --%>
+            <%-- Bước 3: Chọn Ngày Khám (Flatpickr Custom Glassmorphic Datepicker) --%>
             <div class="mb-3">
                 <label class="form-label text-muted">3. Chọn Ngày Khám (*)</label>
-                <input type="date" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass" onchange="fetchSlots()">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                        <i class="fa-regular fa-calendar-days text-info"></i>
+                    </span>
+                    <input type="text" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass border-start-0 ps-0" placeholder="Bấm chọn ngày khám...">
+                </div>
             </div>
 
             <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
@@ -83,7 +98,7 @@
                 <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập tình trạng sức khỏe hoặc yêu cầu thêm..."></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary-gradient w-100">
+            <button type="submit" class="btn btn-primary-gradient w-100 py-3 fs-6">
                 <i class="fa-solid fa-credit-card me-2"></i>Bấm Đặt Lịch Hẹn & Thanh Toán VietQR
             </button>
         </form>
@@ -95,6 +110,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tích hợp Flatpickr Custom Glassmorphism Datepicker
+        flatpickr("#appointmentDate", {
+            locale: "vn",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            altInputClass: "form-control form-control-glass border-start-0 ps-0",
+            minDate: "today",
+            disableMobile: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                fetchSlots();
+            }
+        });
+    });
+
     function validateBookingForm(event) {
         const serviceId = document.getElementById('serviceSelect').value;
         const doctorId = document.getElementById('doctorSelect').value;
