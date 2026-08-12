@@ -44,6 +44,7 @@ public class SepayWebhookServlet extends HttpServlet {
             String payload = sb.toString();
             LOGGER.info("Nhan Payload Webhook SePay: " + payload);
 
+            String transferType = parseJsonField(payload, "transferType");
             String content = parseJsonField(payload, "content");
             if (content == null || content.isEmpty()) {
                 content = parseJsonField(payload, "description");
@@ -51,6 +52,14 @@ public class SepayWebhookServlet extends HttpServlet {
             String transactionCode = parseJsonField(payload, "referenceCode");
             if (transactionCode == null || transactionCode.isEmpty()) {
                 transactionCode = parseJsonField(payload, "id");
+            }
+
+            // Chỉ xử lý giao dịch tiền vào (transferType = "in") theo chuẩn SePay Developer Docs
+            if (transferType != null && !"in".equalsIgnoreCase(transferType)) {
+                LOGGER.info("Bo qua giao dich tien ra (transferType = " + transferType + ")");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"status\": 200, \"message\": \"Ignored non-incoming transaction\"}");
+                return;
             }
 
             int appointmentId = extractAppointmentId(content, request.getParameter("appointmentId"));
