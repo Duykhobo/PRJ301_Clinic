@@ -38,6 +38,8 @@ public class SystemConstant {
     public static final String KEY_SEPAY_BANK_NAME = "SEPAY_BANK_NAME";
     public static final String KEY_SEPAY_BANK_ACC = "SEPAY_BANK_ACC";
     public static final String KEY_SEPAY_ACCOUNT_HOLDER = "SEPAY_ACCOUNT_HOLDER";
+    public static final String KEY_SEPAY_SECRET_KEY = "SEPAY_SECRET_KEY";
+    public static final String KEY_SEPAY_API_KEY = "SEPAY_API_KEY";
 
     // Default Fallbacks
     public static final int DEFAULT_SLOT_DURATION_MINUTES = 60;

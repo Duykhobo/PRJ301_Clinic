@@ -30,8 +30,14 @@ public class SepayWebhookServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SepayWebhookServlet.class.getName());
     private final BookingService bookingService = new BookingService();
 
-    // Secret Key cấu hình trên SePay Dashboard (Có thể thay đổi hoặc cấu hình động từ DB)
-    private static final String SEPAY_SECRET_KEY = System.getProperty("SEPAY_SECRET_KEY", "");
+    // Secret Key cấu hình động từ Biến Môi Trường (System.getenv / System.getProperty) để chống lộ Key
+    private String getSepaySecretKey() {
+        String key = System.getenv("SEPAY_SECRET_KEY");
+        if (key == null || key.trim().isEmpty()) {
+            key = System.getProperty("SEPAY_SECRET_KEY", "");
+        }
+        return key;
+    }
 
     /**
      * Xử lý Webhook POST chính thức do SePay gửi về hệ thống.
@@ -52,15 +58,17 @@ public class SepayWebhookServlet extends HttpServlet {
             String payload = sb.toString();
             LOGGER.info("Nhan Payload Webhook SePay: " + payload);
 
-            // 2. Kiểm tra Xác thực Bảo mật HMAC-SHA256 (Nếu SePay có gửi X-SePay-Signature)
+            // 2. Kiểm tra Xác thực Bảo mật HMAC-SHA256 (Nếu SePay có gửi X-SePay-Signature và đã cấu hình Secret Key)
             String signature = request.getHeader("X-SePay-Signature");
             if (signature == null) signature = request.getHeader("x-sepay-signature");
 
             String timestamp = request.getHeader("X-SePay-Timestamp");
             if (timestamp == null) timestamp = request.getHeader("x-sepay-timestamp");
 
-            if (signature != null && timestamp != null && !SEPAY_SECRET_KEY.isEmpty()) {
-                boolean isValidSignature = verifyHmacSignature(payload, timestamp, signature, SEPAY_SECRET_KEY);
+            String secretKey = getSepaySecretKey();
+
+            if (signature != null && timestamp != null && secretKey != null && !secretKey.isEmpty()) {
+                boolean isValidSignature = verifyHmacSignature(payload, timestamp, signature, secretKey);
                 if (!isValidSignature) {
                     LOGGER.warning("Xac thuc HMAC-SHA256 SePay THAT BAI! Chữ ký không hợp lệ.");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
