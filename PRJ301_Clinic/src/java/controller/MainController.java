@@ -38,9 +38,11 @@ public class MainController extends HttpServlet {
             }
 
             switch (action) {
+                case "login-page":
                 case "login":
                     url = RouterConstant.ROUTE_LOGIN;
                     break;
+                case "register-page":
                 case "register":
                     url = RouterConstant.ROUTE_REGISTER;
                     break;
@@ -51,6 +53,7 @@ public class MainController extends HttpServlet {
                 case "booking":
                     url = RouterConstant.ROUTE_BOOKING;
                     break;
+                case "history-page":
                 case "history":
                     url = RouterConstant.ROUTE_HISTORY;
                     break;
