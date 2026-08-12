@@ -103,4 +103,20 @@ public class ServiceDAO extends BaseDAO<Service> {
         String sql = "UPDATE Services SET status = ? WHERE id = ?";
         return executeUpdate(sql, status, id);
     }
+
+    /**
+     * Lấy toàn bộ danh sách Dịch vụ (bao gồm cả Dịch vụ bị Ẩn) cho Admin.
+     */
+    public List<Service> findAllForAdmin() {
+        String sql = "SELECT * FROM Services ORDER BY id DESC";
+        return queryList(sql, this::mapResultSetToService);
+    }
+
+    /**
+     * Đảo trạng thái Ẩn / Hiện Dịch vụ.
+     */
+    public boolean toggleStatus(int id) {
+        String sql = "UPDATE Services SET status = CASE WHEN status = 1 THEN 0 ELSE 1 END WHERE id = ?";
+        return executeUpdate(sql, id);
+    }
 }

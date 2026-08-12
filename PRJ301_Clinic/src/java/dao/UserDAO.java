@@ -126,7 +126,23 @@ public class UserDAO extends BaseDAO<User> {
      * @return Danh sách tất cả Users
      */
     public List<User> findAll() {
-        String sql = "SELECT * FROM Users";
+        String sql = "SELECT * FROM Users ORDER BY id DESC";
         return queryList(sql, this::mapResultSetToUser);
+    }
+
+    /**
+     * Đảo trạng thái tài khoản (Active <-> Banned).
+     */
+    public boolean toggleStatus(int userId) {
+        String sql = "UPDATE Users SET status = CASE WHEN status = 1 THEN 0 ELSE 1 END WHERE id = ?";
+        return executeUpdate(sql, userId);
+    }
+
+    /**
+     * Cập nhật Vai trò người dùng (PATIENT, DOCTOR, RECEPTIONIST, ADMIN).
+     */
+    public boolean updateRole(int userId, String newRole) {
+        String sql = "UPDATE Users SET role = ? WHERE id = ?";
+        return executeUpdate(sql, newRole, userId);
     }
 }

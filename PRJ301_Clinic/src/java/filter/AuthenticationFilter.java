@@ -85,12 +85,12 @@ public class AuthenticationFilter implements Filter {
      * không.
      */
     private boolean isProtectedUri(String path) {
-        return path.startsWith("/admin/")
-                || path.startsWith("/doctor/")
-                || path.startsWith("/patient/")
-                || path.startsWith("/receptionist/")
-                || path.equals("/booking")
-                || path.startsWith("/booking");
+        return path.startsWith("/admin")
+                || path.startsWith("/doctor")
+                || path.startsWith("/patient")
+                || path.startsWith("/receptionist")
+                || path.startsWith("/booking")
+                || path.startsWith("/history");
     }
 
     @Override

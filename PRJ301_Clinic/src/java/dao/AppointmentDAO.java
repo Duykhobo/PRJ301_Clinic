@@ -252,4 +252,21 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         String sql = "UPDATE Appointments SET payment_status = ?, payment_method = ? WHERE id = ?";
         return executeUpdate(sql, paymentStatus, paymentMethod, appointmentId);
     }
+
+    /**
+     * Gọi Stored Procedure sp_GetClinicRevenueReport để lấy báo cáo doanh thu Admin.
+     */
+    public model.RevenueReport getRevenueReport(java.sql.Date startDate, java.sql.Date endDate) {
+        String sql = "EXEC dbo.sp_GetClinicRevenueReport ?, ?";
+        model.RevenueReport report = queryOne(sql, rs -> new model.RevenueReport(
+                rs.getInt("total_appointments"),
+                rs.getInt("completed_appointments"),
+                rs.getInt("cancelled_appointments"),
+                rs.getBigDecimal("total_revenue_paid"),
+                rs.getBigDecimal("sepay_revenue"),
+                rs.getBigDecimal("cash_revenue")
+        ), startDate, endDate);
+
+        return report != null ? report : new model.RevenueReport();
+    }
 }
