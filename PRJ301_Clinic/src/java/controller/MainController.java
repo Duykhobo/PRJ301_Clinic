@@ -57,6 +57,9 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_HISTORY;
                     break;
                 default:
+                    service.ClinicService clinicService = new service.ClinicService();
+                    request.setAttribute("services", clinicService.getActiveServices());
+                    request.setAttribute("doctors", clinicService.getAllDoctors());
                     url = RouterConstant.HOME_JSP;
                     break;
             }

@@ -38,7 +38,7 @@
                         <i class="fa-solid fa-user-doctor me-1 text-info"></i>Đội Ngũ Bác Sĩ
                     </a>
                 </li>
-                <c:if test="${not empty sessionScope.SESSION_USER}">
+                <c:if test="${not empty sessionScope.LOGIN_USER}">
                     <li class="nav-item">
                         <a class="nav-link text-white-50 text-white-hover px-3 py-2 rounded-3 transition-all" 
                            href="${pageContext.request.contextPath}/MainController?action=history">
@@ -51,7 +51,7 @@
             <%-- Right User Auth Actions --%>
             <div class="d-flex align-items-center gap-3">
                 <c:choose>
-                    <c:when test="${empty sessionScope.SESSION_USER}">
+                    <c:when test="${empty sessionScope.LOGIN_USER}">
                         <a href="${pageContext.request.contextPath}/MainController?action=login-page" 
                            class="btn btn-outline-glass px-4 rounded-pill">
                             <i class="fa-solid fa-right-to-bracket me-1"></i>Đăng Nhập
@@ -67,14 +67,14 @@
                             <button class="btn btn-outline-glass dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-2" 
                                     type="button" data-bs-toggle="dropdown">
                                 <div class="avatar-circle bg-info text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    ${sessionScope.SESSION_USER.fullname.substring(0,1).toUpperCase()}
+                                    ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
                                 </div>
-                                <span class="fw-semibold text-white me-1">${sessionScope.SESSION_USER.fullname}</span>
+                                <span class="fw-semibold text-white me-1">${sessionScope.LOGIN_USER.fullname}</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end glass-dropdown border-0 shadow-lg mt-2 p-2 rounded-4">
                                 <li class="dropdown-header text-muted px-3 py-2">
                                     <small>Vai trò đăng nhập:</small><br>
-                                    <strong class="text-info">${sessionScope.SESSION_USER.role}</strong>
+                                    <strong class="text-info">${sessionScope.LOGIN_USER.role}</strong>
                                 </li>
                                 <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
                                 <li>

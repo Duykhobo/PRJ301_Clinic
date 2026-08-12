@@ -17,17 +17,17 @@
             <i class="fa-solid fa-calendar-check text-info me-2"></i>Đặt Lịch Khám Trực Tuyến
         </h3>
 
-        <%-- Nhúng Component Banner Thông Báo Lỗi --%>
+        <%-- Nhúng Component Banner Thông Báo Lỗi & Toast Notification --%>
         <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-        <form action="${pageContext.request.contextPath}/booking" method="POST">
+        <form id="bookingForm" action="${pageContext.request.contextPath}/booking" method="POST" novalidate onsubmit="return validateBookingForm(event)">
             <input type="hidden" name="csrfToken" value="${csrfToken}">
-            <input type="hidden" id="selectedScheduleId" name="scheduleId" required>
+            <input type="hidden" id="selectedScheduleId" name="scheduleId">
 
             <%-- Bước 1: Chọn Dịch vụ --%>
             <div class="mb-3">
                 <label class="form-label text-muted">1. Chọn Dịch Vụ Khám / Spa (*)</label>
-                <select name="serviceId" class="form-select form-control-glass" required>
+                <select name="serviceId" id="serviceSelect" class="form-select form-control-glass">
                     <option value="">-- Chọn dịch vụ --</option>
                     <c:forEach items="${services}" var="s">
                         <option value="${s.id}">${s.serviceName} - ${s.price} VNĐ</option>
@@ -38,7 +38,7 @@
             <%-- Bước 2: Chọn Bác sĩ --%>
             <div class="mb-3">
                 <label class="form-label text-muted">2. Chọn Bác Sĩ (*)</label>
-                <select name="doctorId" id="doctorSelect" class="form-select form-control-glass" onchange="fetchSlots()" required>
+                <select name="doctorId" id="doctorSelect" class="form-select form-control-glass" onchange="fetchSlots()">
                     <option value="">-- Chọn bác sĩ --</option>
                     <c:forEach items="${doctors}" var="d">
                         <option value="${d.id}">${d.doctorName} (${d.specialty})</option>
@@ -49,7 +49,7 @@
             <%-- Bước 3: Chọn Ngày Khám --%>
             <div class="mb-3">
                 <label class="form-label text-muted">3. Chọn Ngày Khám (*)</label>
-                <input type="date" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass" onchange="fetchSlots()" required>
+                <input type="date" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass" onchange="fetchSlots()">
             </div>
 
             <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
@@ -95,6 +95,42 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    function validateBookingForm(event) {
+        const serviceId = document.getElementById('serviceSelect').value;
+        const doctorId = document.getElementById('doctorSelect').value;
+        const appointmentDate = document.getElementById('appointmentDate').value;
+        const scheduleId = document.getElementById('selectedScheduleId').value;
+
+        if (!serviceId) {
+            showToast('Vui lòng chọn Dịch vụ khám / Spa!');
+            document.getElementById('serviceSelect').focus();
+            event.preventDefault();
+            return false;
+        }
+
+        if (!doctorId) {
+            showToast('Vui lòng chọn Bác sĩ phụ trách!');
+            document.getElementById('doctorSelect').focus();
+            event.preventDefault();
+            return false;
+        }
+
+        if (!appointmentDate) {
+            showToast('Vui lòng chọn Ngày khám mong muốn!');
+            document.getElementById('appointmentDate').focus();
+            event.preventDefault();
+            return false;
+        }
+
+        if (!scheduleId) {
+            showToast('Vui lòng bấm chọn một Ca khám 60 phút còn trống (nút màu xanh)!');
+            event.preventDefault();
+            return false;
+        }
+
+        return true;
+    }
+
     function selectSlot(scheduleId, btnElement) {
         document.getElementById('selectedScheduleId').value = scheduleId;
         document.querySelectorAll('.slot-pill').forEach(btn => {

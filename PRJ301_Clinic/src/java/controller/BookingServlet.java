@@ -94,12 +94,38 @@ public class BookingServlet extends HttpServlet {
         User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
         try {
-            // 2. Lấy data từ form
-            int serviceId = Integer.parseInt(request.getParameter("serviceId"));
-            int doctorId = Integer.parseInt(request.getParameter("doctorId"));
-            int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
-            Date appointmentDate = Date.valueOf(request.getParameter("appointmentDate"));
+            String serviceIdStr = request.getParameter("serviceId");
+            String doctorIdStr = request.getParameter("doctorId");
+            String scheduleIdStr = request.getParameter("scheduleId");
+            String appointmentDateStr = request.getParameter("appointmentDate");
             String notes = request.getParameter("notes");
+
+            // 2. Fail-fast Validation báo lý do lỗi chi tiết 100%
+            if (serviceIdStr == null || serviceIdStr.trim().isEmpty()) {
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn Dịch vụ khám / Spa!");
+                doGet(request, response);
+                return;
+            }
+            if (doctorIdStr == null || doctorIdStr.trim().isEmpty()) {
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn Bác sĩ phụ trách!");
+                doGet(request, response);
+                return;
+            }
+            if (appointmentDateStr == null || appointmentDateStr.trim().isEmpty()) {
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn Ngày khám mong muốn!");
+                doGet(request, response);
+                return;
+            }
+            if (scheduleIdStr == null || scheduleIdStr.trim().isEmpty()) {
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng bấm chọn một Ca khám 60 phút khả dụng (nút màu xanh)!");
+                doGet(request, response);
+                return;
+            }
+
+            int serviceId = Integer.parseInt(serviceIdStr);
+            int doctorId = Integer.parseInt(doctorIdStr);
+            int scheduleId = Integer.parseInt(scheduleIdStr);
+            Date appointmentDate = Date.valueOf(appointmentDateStr);
 
             // Tìm dịch vụ lấy đơn giá
             List<Service> services = clinicService.getActiveServices();
@@ -131,14 +157,14 @@ public class BookingServlet extends HttpServlet {
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
             } else {
-                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Không thể đặt lịch. Vui lòng thử lại!");
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Khung giờ này vừa được đăng ký thành công bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
                 doGet(request, response);
             }
         } catch (SlotAlreadyBookedException e) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Thông tin đặt lịch không hợp lệ!");
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Thông tin nhập vào không hợp lệ. Vui lòng kiểm tra lại ngày và ca khám!");
             doGet(request, response);
         }
     }
