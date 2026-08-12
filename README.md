@@ -63,6 +63,7 @@
 PRJ301_Assignment/
 ├── database.sql                    # Script CSDL SQL Server (Schema 7 Bảng + Mock Data + Triggers/Procedures)
 ├── Topic_Proposal_PRJ301.md        # Bản Đề xuất Đề tài & Đặc tả SRS chi tiết
+├── Agile_Development_Guide.md      # Hướng dẫn Quản lý Dự án Agile & Thói quen Code Sạch
 ├── README.md                       # Tài liệu hướng dẫn dự án
 ├── .gitignore                      # File cấu hình bỏ qua file build tạm của NetBeans
 └── PRJ301_Clinic/                  # THƯ MỤC DỰ ÁN NETBEANS ANT JAVA WEB
