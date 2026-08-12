@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -12,15 +13,17 @@ import javax.servlet.http.HttpSession;
 
 import constant.RouterConstant;
 import constant.SystemConstant;
+import exception.SlotAlreadyBookedException;
+import model.Appointment;
 import model.DoctorProfile;
 import model.Service;
+import model.User;
 import service.BookingService;
 import service.ClinicService;
 
 /**
  * TODO: BookingServlet - Điều hướng & Xử lý Đặt Lịch Hẹn Khám Bệnh Nhân
- * (/booking).
- * Chuẩn mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
+ * (/booking). Chuẩn mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
  */
 @WebServlet(name = "BookingServlet", urlPatterns = { "/booking" })
 public class BookingServlet extends HttpServlet {
@@ -35,17 +38,25 @@ public class BookingServlet extends HttpServlet {
     }
 
     /**
-     * TODO 1: Nạp Giao diện Đặt Lịch Hẹn (GET)
-     * Gợi ý Flow 3 Tầng:
-     * 1. Check param action=="payment" -> chuyển hướng xử lý trang VietQR.
-     * 2. Gọi clinicService.getActiveServices() lấy danh sách Dịch vụ.
-     * 3. Gọi clinicService.getAllDoctors() lấy danh sách Bác sĩ.
-     * 4. Gán request.setAttribute("services", services) và ("doctors", doctors).
-     * 5. Forward sang RouterConstant.BOOKING_JSP.
+     * TODO 1: Nạp Giao diện Đặt Lịch Hẹn (GET) Gợi ý Flow 3 Tầng: 1. Check
+     * param action=="payment" -> chuyển hướng xử lý trang VietQR. 2. Gọi
+     * clinicService.getActiveServices() lấy danh sách Dịch vụ. 3. Gọi
+     * clinicService.getAllDoctors() lấy danh sách Bác sĩ. 4. Gán
+     * request.setAttribute("services", services) và ("doctors", doctors). 5.
+     * Forward sang RouterConstant.BOOKING_JSP.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("payment".equals(action)) {
+            handlePaymentPage(request, response);
+            return;
+        }
+        if ("get-slots".equals(action)) {
+            handleGetSlots(request, response);
+            return;
+        }
         // 1. Lấy danh sách Dịch vụ Nha khoa & Spa hoạt động từ ClinicService
         List<Service> services = clinicService.getActiveServices();
         // 2. Lấy danh sách Bác sĩ từ ClinicService
@@ -58,15 +69,13 @@ public class BookingServlet extends HttpServlet {
     }
 
     /**
-     * TODO 2: Xử lý Đặt Lịch Hẹn Nguyên Tử chống trùng Slot khi Submit Form (POST)
-     * Quy trình 5 bước:
-     * Bước 1: Check Session User (nếu null -> redirect /login)
-     * Bước 2: Lấy form data (serviceId, doctorId, scheduleId, appointmentDate,
-     * notes)
-     * Bước 3: Đóng gói đối tượng Appointment (gán status PENDING, paymentStatus
-     * UNPAID)
-     * Bước 4: Gọi bookingService.createBookingAtomic(app)
-     * Bước 5: Nếu thành công -> redirect sang /booking?action=payment&id=...
+     * TODO 2: Xử lý Đặt Lịch Hẹn Nguyên Tử chống trùng Slot khi Submit Form
+     * (POST) Quy trình 5 bước: Bước 1: Check Session User (nếu null -> redirect
+     * /login) Bước 2: Lấy form data (serviceId, doctorId, scheduleId,
+     * appointmentDate, notes) Bước 3: Đóng gói đối tượng Appointment (gán
+     * status PENDING, paymentStatus UNPAID) Bước 4: Gọi
+     * bookingService.createBookingAtomic(app) Bước 5: Nếu thành công ->
+     * redirect sang /booking?action=payment&id=...
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -77,6 +86,94 @@ public class BookingServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=/booking");
             return;
         }
+        User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
+        try {
+            // 2. lấy data từ form
+            int serviceId = Integer.parseInt(request.getParameter("serviceId"));
+            int doctorId = Integer.parseInt(request.getParameter("doctorId"));
+            int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
+            Date appointmentDate = Date.valueOf(request.getParameter("appointmentDate"));
+            String notes = request.getParameter("notes");
+
+            // Tìm dịch vụ lấy đơn giá
+            List<Service> services = clinicService.getActiveServices();
+            Service selectedService = null;
+            for (Service service : services) {
+                if (service.getId() == serviceId) {
+                    selectedService = service;
+                    break;
+                }
+            }
+
+            // 3. Lưu thông tin cuộc hẹn
+            Appointment app = new Appointment();
+            app.setPatientId(user.getId());
+            app.setDoctorId(doctorId);
+            app.setServiceId(serviceId);
+            app.setScheduleId(scheduleId);
+            app.setAppointmentDate(appointmentDate);
+            app.setTotalPrice(selectedService != null ? selectedService.getPrice() : java.math.BigDecimal.ZERO);
+            app.setStatus(SystemConstant.STATUS_PENDING);
+            app.setPaymentStatus(SystemConstant.PAYMENT_UNPAID);
+            app.setPaymentMethod(SystemConstant.METHOD_SEPAY_QR);
+            app.setNotes(notes);
+
+            // 4. Gọi service đặt lịch đã kiểm tra chống trùng slot
+            boolean success = bookingService.createBookingAtomic(app);
+
+            // 5. Điều hướng sang trang thanh toán Sepay nếu thành công
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
+            } else {
+                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Không thể đặt lịch. Vui lòng thử lại!");
+                doGet(request, response);
+            }
+        } catch (SlotAlreadyBookedException e) {
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, e.getMessage());
+            doGet(request, response);
+        } catch (Exception e) {
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Thông tin đặt lịch không hợp lệ!");
+            doGet(request, response);
+        }
+
+    }
+
+    // Hàm hỗ trợ nạp lịch hẹn cho trang thanh toán
+    private void handlePaymentPage(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            int appointmentId = Integer.parseInt(request.getParameter("id"));
+            Appointment appointment = bookingService.getAppointmentById(appointmentId);
+            request.setAttribute("appointment", appointment);
+            request.getRequestDispatcher(RouterConstant.PAYMENT_JSP).forward(request, response);
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HOME);
+        }
+    }
+
+    // Hàm AJAX nạp danh sách slot động dạng JSON
+    private void handleGetSlots(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        try {
+            int doctorId = Integer.parseInt(request.getParameter("doctorId"));
+            Date date = Date.valueOf(request.getParameter("date"));
+            List<model.DoctorSchedule> slots = clinicService.getSchedules(doctorId, date);
+
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < slots.size(); i++) {
+                model.DoctorSchedule s = slots.get(i);
+                json.append(String.format("{\"id\":%d,\"startTime\":\"%s\",\"endTime\":\"%s\",\"isAvailable\":%b}",
+                        s.getId(), s.getStartTime().toString(), s.getEndTime().toString(), s.isIsAvailable()));
+                if (i < slots.size() - 1) {
+                    json.append(",");
+                }
+            }
+            json.append("]");
+            response.getWriter().write(json.toString());
+        } catch (Exception e) {
+            response.getWriter().write("[]");
+        }
     }
 }

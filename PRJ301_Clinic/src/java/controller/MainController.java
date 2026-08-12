@@ -1,13 +1,18 @@
 package controller;
 
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import constant.RouterConstant;
+import constant.SystemConstant;
+import model.Appointment;
+import model.User;
 
 /**
  * MainController - Mô hình Front Controller Chuẩn môn PRJ301 (FPT University).
@@ -49,6 +54,13 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_BOOKING;
                     break;
                 case "history":
+                    HttpSession session = request.getSession(false);
+                    if (session != null && session.getAttribute(SystemConstant.SESSION_USER) != null) {
+                        User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
+                        service.BookingService bookingService = new service.BookingService();
+                        List<Appointment> historyList = bookingService.getPatientAppointmentHistory(user.getId());
+                        request.setAttribute("historyList", historyList);
+                    }
                     url = RouterConstant.HISTORY_JSP;
                     break;
                 default:

@@ -35,4 +35,8 @@ public class ClinicService {
     public List<DoctorSchedule> getAvailableSlots(int doctorProfileId, Date date) {
         return doctorScheduleDAO.findAvailableSlotsByDoctorAndDate(doctorProfileId, date);
     }
+
+    public List<DoctorSchedule> getSchedules(int doctorProfileId, Date date) {
+        return doctorScheduleDAO.findSchedulesByDoctorAndDate(doctorProfileId, date);
+    }
 }

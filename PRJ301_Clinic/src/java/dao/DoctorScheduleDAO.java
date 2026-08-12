@@ -86,6 +86,14 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     }
 
     /**
+     * Lấy tất cả Slot 60 phút (cả rảnh và đã đặt) của Bác sĩ theo Ngày để hiển thị sơ đồ trực quan.
+     */
+    public List<DoctorSchedule> findSchedulesByDoctorAndDate(int doctorId, Date workDate) {
+        String sql = "SELECT * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? ORDER BY start_time ASC";
+        return queryList(sql, this::mapResultSetToSchedule, doctorId, workDate);
+    }
+
+    /**
      * Cập nhật trạng thái Khóa / Mở Slot làm việc của Bác sĩ.
      *
      * @param id          Mã Slot (Schedule ID)
