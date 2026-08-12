@@ -1,0 +1,145 @@
+/* ============================================================================
+   PRJ301 CLINIC & SPA - GLOBAL DESIGN SYSTEM & COMPONENT STYLES
+   ============================================================================ */
+
+/* 1. CSS VARIABLES & TOKENS */
+:root {
+    --bg-dark-start: #0f172a;
+    --bg-dark-end: #1e293b;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --primary-blue: #3b82f6;
+    --primary-blue-hover: #2563eb;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f97316;
+    --text-main: #f8fafc;
+    --text-muted: #cbd5e1; /* High-contrast light slate color for dark mode */
+    --glass-blur: blur(16px);
+    --border-radius-lg: 24px;
+    --border-radius-md: 12px;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. BASE STYLES */
+body {
+    background: linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* 3. REUSABLE GLASSMORPHISM CARD COMPONENT */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--card-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 2.5rem;
+    transition: var(--transition-smooth);
+}
+
+.glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+/* 4. REUSABLE BUTTON COMPONENTS */
+.btn-primary-gradient {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-purple) 100%);
+    color: var(--text-main);
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+    color: var(--text-main);
+}
+
+.btn-outline-glass {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    border: 1px solid var(--card-border);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.btn-outline-glass:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 5. FORM CONTROL & FLOATING INPUT STYLES */
+.form-control-glass {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-smooth);
+}
+
+.form-control-glass:focus {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: var(--primary-blue);
+    color: var(--text-main);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+}
+
+.form-control-glass::placeholder {
+    color: #94a3b8;
+}
+
+/* 6. PASSWORD TOGGLE EYE BUTTON - PERFECT VERTICAL CENTERING */
+.input-password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.btn-password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: var(--transition-smooth);
+}
+
+.btn-password-toggle:hover {
+    color: var(--text-main);
+}
+
+/* 7. CUSTOM ANIMATIONS */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
