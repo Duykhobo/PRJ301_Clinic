@@ -87,9 +87,17 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
 
     /**
      * Lấy tất cả Slot 60 phút (cả rảnh và đã đặt) của Bác sĩ theo Ngày để hiển thị sơ đồ trực quan.
+     * Tự động kiểm tra bảng Appointments: nếu đã có cuộc hẹn Hợp lệ (PENDING, CONFIRMED, COMPLETED) -> Khóa slot (is_available = 0).
      */
     public List<DoctorSchedule> findSchedulesByDoctorAndDate(int doctorId, Date workDate) {
-        String sql = "SELECT * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? ORDER BY start_time ASC";
+        String sql = "SELECT ds.id, ds.doctor_id, ds.work_date, ds.start_time, ds.end_time, "
+                + "CASE WHEN EXISTS ( "
+                + "    SELECT 1 FROM Appointments a "
+                + "    WHERE a.schedule_id = ds.id AND a.status IN ('PENDING', 'CONFIRMED', 'COMPLETED') "
+                + ") THEN 0 ELSE ds.is_available END AS is_available "
+                + "FROM DoctorSchedules ds "
+                + "WHERE ds.doctor_id = ? AND ds.work_date = ? "
+                + "ORDER BY ds.start_time ASC";
         return queryList(sql, this::mapResultSetToSchedule, doctorId, workDate);
     }
 

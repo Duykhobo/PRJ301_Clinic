@@ -164,18 +164,19 @@
                 let html = '';
                 for (let i = 0; i < slots.length; i++) {
                     const slot = slots[i];
-                    const isAvailable = slot.isAvailable;
+                    const isAvailable = slot.isAvailable === true || slot.isAvailable === 1;
                     const btnClass = isAvailable ? 'slot-btn-available' : 'slot-btn-booked';
-                    const icon = isAvailable ? 'fa-clock' : 'fa-lock';
+                    const icon = isAvailable ? 'fa-regular fa-clock' : 'fa-solid fa-lock';
                     const disabledStr = isAvailable ? '' : 'disabled';
+                    const statusText = isAvailable ? '' : ' (Đã được đặt)';
                     const startTimeStr = slot.startTime ? slot.startTime.substring(0,5) : '';
                     const endTimeStr = slot.endTime ? slot.endTime.substring(0,5) : '';
 
                     html += '<div class="col-6 col-md-4">' +
                             '<button type="button" class="btn w-100 py-2 slot-pill ' + btnClass + '" ' +
                             'onclick="selectSlot(' + slot.id + ', this)" ' + disabledStr + '>' +
-                            '<i class="fa-regular ' + icon + ' me-1"></i>' +
-                            startTimeStr + ' - ' + endTimeStr +
+                            '<i class="' + icon + ' me-1"></i>' +
+                            startTimeStr + ' - ' + endTimeStr + statusText +
                             '</button>' +
                             '</div>';
                 }
