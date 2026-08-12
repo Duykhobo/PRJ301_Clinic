@@ -135,6 +135,106 @@ CREATE TABLE ClinicSettings (
 GO
 
 -- ============================================================================
+-- INDEXES (PHÂN TÍCH TỪ QUERY THỰC TẾ TRONG DAO LAYER)
+-- Lý thuyết: Index tăng tốc SELECT bằng B-Tree lookup, đánh đổi bằng
+-- overhead nhỏ khi INSERT/UPDATE. Chỉ tạo index trên cột thực sự dùng
+-- trong WHERE / JOIN / ORDER BY của ứng dụng.
+-- ============================================================================
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: Users
+-- ─────────────────────────────────────────────────
+-- WHY: UserDAO.findByUsername() gọi mỗi lần login → mỗi request xác thực.
+--      username đã có UNIQUE constraint → SQL Server tự tạo Unique Index.
+--      email cũng UNIQUE → tự có index. Không cần thêm thủ công.
+
+-- WHY: UserDAO.findByRole() dùng để Admin lọc danh sách Bác sĩ/Lễ tân.
+--      role là cột low-cardinality (4 giá trị) nhưng bảng Users nhỏ (<1000)
+--      → Index giúp tránh Full Table Scan khi mở rộng.
+CREATE INDEX IX_Users_Role ON Users(role);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: Appointments
+-- ─────────────────────────────────────────────────
+-- WHY: HistoryServlet → AppointmentDAO.getByPatientIdPaginated()
+--      Query: WHERE a.patient_id = ? ORDER BY a.appointment_date DESC
+--      Đây là query tần suất cao nhất: mỗi lần bệnh nhân vào /history.
+--      INCLUDE snapshot columns để tránh Key Lookup vào clustered index.
+CREATE INDEX IX_Appointments_PatientId_Date
+    ON Appointments(patient_id, appointment_date DESC)
+    INCLUDE (status, payment_status, payment_method, total_price);
+GO
+
+-- WHY: AppointmentDAO.countByPatientId() — đếm tổng cho Pagination.
+--      Query: SELECT COUNT(*) FROM Appointments WHERE patient_id = ?
+--      Index trên patient_id giúp COUNT không cần scan toàn bảng.
+--      (Đã covered bởi IX_Appointments_PatientId_Date phía trên)
+
+-- WHY: DoctorServlet → AppointmentDAO.getByDoctorIdAndDate()
+--      Query: WHERE dp.user_id = ? AND a.appointment_date = ?
+--      doctor_id + appointment_date là cặp filter mỗi lần Bác sĩ vào dashboard.
+CREATE INDEX IX_Appointments_DoctorId_Date
+    ON Appointments(doctor_id, appointment_date)
+    INCLUDE (patient_id, service_id, schedule_id, status, payment_status, payment_method, start_time);
+GO
+
+-- WHY: ReceptionistServlet → AppointmentDAO.getAllByDate()
+--      Query: WHERE a.appointment_date = ?
+--      Lễ tân xem toàn bộ ca trong ngày → filter chỉ theo ngày.
+CREATE INDEX IX_Appointments_Date
+    ON Appointments(appointment_date)
+    INCLUDE (patient_id, doctor_id, status, payment_status, payment_method);
+GO
+
+-- WHY: SepayWebhookServlet → BookingService.updatePaymentSuccess()
+--      Tra cứu Appointment theo appointment_id (PK) → đã có Clustered Index.
+--      Không cần thêm.
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: DoctorSchedules
+-- ─────────────────────────────────────────────────
+-- WHY: DoctorScheduleDAO.getByDoctorAndDate()
+--      Query: WHERE ds.doctor_id = ? AND ds.work_date = ?
+--      Đây là query cốt lõi của Booking: load tất cả slot của Bác sĩ theo ngày.
+--      Composite index (doctor_id, work_date) cho phép Range Scan rất nhanh.
+--      (Unique Constraint UQ_Doctor_Schedule đã tạo index này → SQL Server tự dùng)
+--      Thêm INCLUDE để Covering Index, tránh Key Lookup thêm lần nữa.
+CREATE INDEX IX_DoctorSchedules_DoctorId_WorkDate
+    ON DoctorSchedules(doctor_id, work_date)
+    INCLUDE (start_time, end_time, is_available);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: MedicalRecords
+-- ─────────────────────────────────────────────────
+-- WHY: MedicalRecordDAO.getByAppointmentId()
+--      Query: WHERE appointment_id = ?
+--      appointment_id là UNIQUE → SQL Server tự tạo Unique Index.
+--      Không cần thêm thủ công.
+
+-- WHY: Nếu sau này cần lấy toàn bộ hồ sơ của 1 bệnh nhân (Admin/Bác sĩ xem lịch sử).
+--      Query: WHERE patient_id = ?
+CREATE INDEX IX_MedicalRecords_PatientId ON MedicalRecords(patient_id);
+GO
+
+-- WHY: Bác sĩ xem lại hồ sơ các ca mình đã khám.
+--      Query: WHERE doctor_id = ?
+CREATE INDEX IX_MedicalRecords_DoctorId ON MedicalRecords(doctor_id);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: Services
+-- ─────────────────────────────────────────────────
+-- WHY: ServiceDAO.getAllActive() → WHERE status = 1 ORDER BY service_name ASC
+--      status low-cardinality (0/1), nhưng Filtered Index giúp
+--      chỉ index các dòng status = 1 → nhỏ gọn & hiệu quả hơn Full Index.
+CREATE INDEX IX_Services_Status_Active
+    ON Services(service_name ASC)
+    WHERE status = 1;
+GO
+
+-- ============================================================================
 -- DỮ LIỆU MẪU (SEED DATA CHUYÊN NGHIỆP DÀNH CHO DỰ ÁN PRJ301)
 -- Mật khẩu hash BCrypt cho tất cả tài khoản mẫu bên dưới là "123456":
 -- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
