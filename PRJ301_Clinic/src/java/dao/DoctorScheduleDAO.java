@@ -1,12 +1,8 @@
 package dao;
 
-import config.DBContext;
-import model.DoctorSchedule;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,9 +10,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import config.DBContext;
+import model.DoctorSchedule;
+
 /**
- * Lớp DoctorScheduleDAO quản lý Khung giờ làm việc 60 phút của Bác sĩ (DoctorSchedules).
- * Tích hợp gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate (Điểm cộng 10/10).
+ * Lớp DoctorScheduleDAO quản lý Khung giờ làm việc 60 phút của Bác sĩ
+ * (DoctorSchedules).
+ * Tích hợp gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate (Điểm cộng
+ * 10/10).
  */
 public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
 
@@ -44,21 +45,37 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     // =========================================================================
 
     /**
-     * TODO 1: Gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate lấy danh sách Slot 60m còn trống
+     * TODO 1: Gọi Stored Procedure sp_GetAvailableSlotsByDoctorAndDate lấy danh
+     * sách Slot 60m còn trống
      * Gợi ý SQL Stored Proc: "{call sp_GetAvailableSlotsByDoctorAndDate(?, ?)}"
-     * Cú pháp JDBC: 
+     * Cú pháp JDBC:
      * try (Connection conn = DBContext.getConnection();
-     *      CallableStatement cs = conn.prepareCall("{call sp_GetAvailableSlotsByDoctorAndDate(?, ?)}")) {
-     *     cs.setInt(1, doctorId);
-     *     cs.setDate(2, workDate);
-     *     try (ResultSet rs = cs.executeQuery()) {
-     *         while (rs.next()) list.add(mapResultSetToSchedule(rs));
-     *     }
+     * CallableStatement cs = conn.prepareCall("{call
+     * sp_GetAvailableSlotsByDoctorAndDate(?, ?)}")) {
+     * cs.setInt(1, doctorId);
+     * cs.setDate(2, workDate);
+     * try (ResultSet rs = cs.executeQuery()) {
+     * while (rs.next()) list.add(mapResultSetToSchedule(rs));
+     * }
      * }
      */
     public List<DoctorSchedule> findAvailableSlotsByDoctorAndDate(int doctorId, Date workDate) {
-        // TODO: Bạn tự gõ code tại đây
-        return new ArrayList<>();
+        List<DoctorSchedule> list = new ArrayList<>();
+        String sql = "{call sp_GetAvailableSlotsByDoctorAndDate(?, ?)}";
+        try (Connection conn = DBContext.getConnection();
+                CallableStatement cs = conn.prepareCall(sql)) {
+            cs.setInt(1, doctorId);
+            cs.setDate(2, workDate);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToSchedule(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Loi khi goi Stored Proc sp_GetAvailableSlotsByDoctorAndDate", e);
+        }
+        return list;
     }
 
     /**
@@ -66,8 +83,8 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      * Gợi ý: SELECT * FROM DoctorSchedules WHERE id = ?
      */
     public DoctorSchedule findById(int id) {
-        // TODO: Bạn tự gõ code tại đây
-        return null;
+        String sql = "SELECT * FROM DoctorSchedules WHERE id = ?";
+        return queryOne(sql, this::mapResultSetToSchedule, id);
     }
 
     /**
@@ -75,7 +92,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      * Gợi ý: UPDATE DoctorSchedules SET is_available = ? WHERE id = ?
      */
     public boolean updateSlotAvailability(int id, boolean isAvailable) {
-        // TODO: Bạn tự gõ code tại đây
-        return false;
+        String sql = "UPDATE DoctorSchedules SET is_available = ? WHERE id = ?";
+        return executeUpdate(sql, isAvailable, id);
     }
 }
