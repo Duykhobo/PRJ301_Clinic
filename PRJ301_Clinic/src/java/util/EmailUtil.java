@@ -26,13 +26,13 @@ public class EmailUtil {
     private static final Logger LOGGER = Logger.getLogger(EmailUtil.class.getName());
     private static final ExecutorService executor = Executors.newFixedThreadPool(3);
 
-    // Cấu hình Nạp Key từ Env key với Fallback
+    // Cấu hình Nạp Key từ Env Variable (Bảo mật 100% chống lộ Key)
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
     private static final String SENDER_EMAIL = System.getenv("MAIL_USERNAME") != null 
-            ? System.getenv("MAIL_USERNAME") : "prj301.clinic.spa@gmail.com";
+            ? System.getenv("MAIL_USERNAME") : "nthanhduy310@gmail.com";
     private static final String SENDER_PASSWORD = System.getenv("MAIL_PASSWORD") != null 
-            ? System.getenv("MAIL_PASSWORD") : "demoapppassword123";
+            ? System.getenv("MAIL_PASSWORD") : "";
 
     /**
      * Gửi Email HTML Xác Nhận Đặt Lịch Hẹn Khám Bệnh (Async).
@@ -42,10 +42,6 @@ public class EmailUtil {
         
         executor.submit(() -> {
             try {
-                // 🧪 KIỂM THỬ ASYNC NON-BLOCKING: Giả lập tiến trình gửi mail tốn 5 giây
-                Thread.sleep(5000);
-                LOGGER.info("[ASYNC VERIFIED] Thread ngầm đã hoàn thành 5 giây chờ mà không làm chậm trang web!");
-
                 if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
                     LOGGER.info("Bệnh nhân không có Email hợp lệ, bỏ qua gửi mail.");
                     return;
