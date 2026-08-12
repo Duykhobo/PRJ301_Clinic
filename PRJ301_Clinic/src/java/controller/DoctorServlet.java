@@ -52,7 +52,7 @@ public class DoctorServlet extends HttpServlet {
             }
         } catch (NumberFormatException ignored) {}
 
-        int pageSize = 10;
+        int pageSize = 5;
         int totalRecords = appointmentDAO.countAppointmentsByDoctorUserAndDate(loginUser.getId(), dateParam);
         int totalPages = Math.max(1, (int) Math.ceil((double) totalRecords / pageSize));
         if (page > totalPages) page = totalPages;

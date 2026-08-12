@@ -30,7 +30,7 @@ public class AdminServlet extends HttpServlet {
     private final ClinicSettingDAO clinicSettingDAO = new ClinicSettingDAO();
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
