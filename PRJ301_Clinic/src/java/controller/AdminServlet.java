@@ -30,6 +30,8 @@ public class AdminServlet extends HttpServlet {
     private final ClinicSettingDAO clinicSettingDAO = new ClinicSettingDAO();
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
 
+    private static final int PAGE_SIZE = 10;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -46,14 +48,44 @@ public class AdminServlet extends HttpServlet {
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        // 2. FETCH DATA FOR DASHBOARD
+        // 2. PAGINATION & TAB PARAMETERS (UX Protection for dual tables)
+        int pageUser = 1;
+        int pageService = 1;
+        try {
+            if (request.getParameter("pageUser") != null) {
+                pageUser = Math.max(1, Integer.parseInt(request.getParameter("pageUser")));
+            }
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            if (request.getParameter("pageService") != null) {
+                pageService = Math.max(1, Integer.parseInt(request.getParameter("pageService")));
+            }
+        } catch (NumberFormatException ignored) {}
+
+        String activeTab = request.getParameter("tab");
+        if (activeTab == null || activeTab.trim().isEmpty()) {
+            activeTab = "users";
+        }
+
+        // 3. FETCH PAGINATED DATA & COUNTS
+        int totalUsers = userDAO.countAll();
+        int totalPagesUser = Math.max(1, (int) Math.ceil((double) totalUsers / PAGE_SIZE));
+        if (pageUser > totalPagesUser) pageUser = totalPagesUser;
+        int offsetUser = (pageUser - 1) * PAGE_SIZE;
+
+        int totalServices = serviceDAO.countAllForAdmin();
+        int totalPagesService = Math.max(1, (int) Math.ceil((double) totalServices / PAGE_SIZE));
+        if (pageService > totalPagesService) pageService = totalPagesService;
+        int offsetService = (pageService - 1) * PAGE_SIZE;
+
         RevenueReport revenueReport = appointmentDAO.getRevenueReport(startDate, endDate);
-        List<User> usersList = userDAO.findAll();
-        List<Service> servicesList = serviceDAO.findAllForAdmin();
+        List<User> usersList = userDAO.findPaginated(offsetUser, PAGE_SIZE);
+        List<Service> servicesList = serviceDAO.findAllForAdminPaginated(offsetService, PAGE_SIZE);
         List<ClinicSetting> settingsList = clinicSettingDAO.getAllSettings();
         Map<String, String> settingsMap = clinicSettingDAO.getSettingsMap();
 
-        // 3. SET REQUEST ATTRIBUTES
+        // 4. SET REQUEST ATTRIBUTES
         request.setAttribute("startDate", startLocalDate.toString());
         request.setAttribute("endDate", endLocalDate.toString());
         request.setAttribute("revenueReport", revenueReport);
@@ -61,6 +93,13 @@ public class AdminServlet extends HttpServlet {
         request.setAttribute("servicesList", servicesList);
         request.setAttribute("settingsList", settingsList);
         request.setAttribute("settingsMap", settingsMap);
+
+        // Pagination Attributes
+        request.setAttribute("currentPageUser", pageUser);
+        request.setAttribute("totalPagesUser", totalPagesUser);
+        request.setAttribute("currentPageService", pageService);
+        request.setAttribute("totalPagesService", totalPagesService);
+        request.setAttribute("activeTab", activeTab);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
     }
@@ -71,6 +110,10 @@ public class AdminServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         if (action == null) action = "";
+
+        String pageUserParam = request.getParameter("pageUser");
+        String pageServiceParam = request.getParameter("pageService");
+        String tabParam = request.getParameter("tab");
 
         switch (action) {
             case "toggle-user-status": {
@@ -127,6 +170,10 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+        String redirectUrl = request.getContextPath() + "/admin/dashboard?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
+                + "&pageService=" + (pageServiceParam != null ? pageServiceParam : "1")
+                + "&tab=" + (tabParam != null ? tabParam : "users");
+
+        response.sendRedirect(redirectUrl);
     }
 }

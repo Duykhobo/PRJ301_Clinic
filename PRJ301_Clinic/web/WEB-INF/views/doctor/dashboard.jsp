@@ -216,6 +216,22 @@
                                                     </tbody>
                                                 </table>
                                             </div>
+
+                                            <%-- DOCTOR PAGINATION BAR --%>
+                                            <c:if test="${totalPages > 1}">
+                                                <div class="d-flex justify-content-center p-3 border-top border-secondary opacity-75">
+                                                    <nav>
+                                                        <ul class="pagination pagination-sm m-0">
+                                                            <c:forEach var="p" begin="1" end="${totalPages}">
+                                                                <li class="page-item ${p == currentPage ? 'active' : ''}">
+                                                                    <a class="page-link bg-dark text-white border-secondary" href="${pageContext.request.contextPath}/doctor/dashboard?date=${selectedDate}&page=${p}">${p}</a>
+                                                                </li>
+                                                            </c:forEach>
+                                                        </ul>
+                                                    </nav>
+                                                </div>
+                                            </c:if>
+
                                         </div>
 
                                         <%-- ── MEDICAL MODAL (GLASSMORPHISM STYLE) ── --%>

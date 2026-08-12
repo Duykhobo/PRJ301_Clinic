@@ -145,4 +145,25 @@ public class UserDAO extends BaseDAO<User> {
         String sql = "UPDATE Users SET role = ? WHERE id = ?";
         return executeUpdate(sql, newRole, userId);
     }
+
+    /**
+     * Lấy danh sách Người dùng có Phân Trang (SQL Server OFFSET...FETCH NEXT).
+     */
+    public List<User> findPaginated(int offset, int limit) {
+        String sql = "SELECT * FROM Users ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        return queryList(sql, this::mapResultSetToUser, offset, limit);
+    }
+
+    /**
+     * Đếm tổng số lượng Người dùng trong hệ thống.
+     */
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM Users";
+        try (java.sql.Connection conn = config.DBContext.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException ignored) {}
+        return 0;
+    }
 }

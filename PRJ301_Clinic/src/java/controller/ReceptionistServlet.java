@@ -40,14 +40,28 @@ public class ReceptionistServlet extends HttpServlet {
             dateParam = LocalDate.now().toString();
         }
 
-        List<Appointment> appointments = appointmentDAO.findAllAppointmentsByDate(dateParam);
+        int page = 1;
+        try {
+            if (request.getParameter("page") != null) {
+                page = Math.max(1, Integer.parseInt(request.getParameter("page")));
+            }
+        } catch (NumberFormatException ignored) {}
 
-        int totalCount = appointments.size();
+        int pageSize = 10;
+        int totalRecords = appointmentDAO.countAllAppointmentsByDate(dateParam);
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalRecords / pageSize));
+        if (page > totalPages) page = totalPages;
+        int offset = (page - 1) * pageSize;
+
+        List<Appointment> appointments = appointmentDAO.findAllAppointmentsByDatePaginated(dateParam, offset, pageSize);
+        List<Appointment> allDayApps = appointmentDAO.findAllAppointmentsByDate(dateParam);
+
+        int totalCount = allDayApps.size();
         int paidCount = 0;
         int cashUnpaidCount = 0;
         int completedCount = 0;
 
-        for (Appointment app : appointments) {
+        for (Appointment app : allDayApps) {
             if (SystemConstant.PAYMENT_PAID.equalsIgnoreCase(app.getPaymentStatus())) {
                 paidCount++;
             } else {
@@ -64,6 +78,8 @@ public class ReceptionistServlet extends HttpServlet {
         request.setAttribute("paidCount", paidCount);
         request.setAttribute("cashUnpaidCount", cashUnpaidCount);
         request.setAttribute("completedCount", completedCount);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
 
         request.getRequestDispatcher("/WEB-INF/views/receptionist/dashboard.jsp").forward(request, response);
     }

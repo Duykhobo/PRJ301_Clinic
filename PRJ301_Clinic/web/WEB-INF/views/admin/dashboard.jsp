@@ -43,6 +43,9 @@
 
                     <%-- DATE RANGE FILTER FOR REVENUE REPORT --%>
                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" class="filter-bar">
+                        <input type="hidden" name="pageUser" value="${currentPageUser}">
+                        <input type="hidden" name="pageService" value="${currentPageService}">
+                        <input type="hidden" name="tab" value="${activeTab}">
                         <div class="filter-wrap">
                             <i class="fa-solid fa-calendar-days fi"></i>
                             <input type="text" name="startDate" class="filter-input flatpickr-date" value="${startDate}" placeholder="Từ ngày" autocomplete="off">
@@ -106,20 +109,20 @@
                 </div>
             </div>
 
-            <%-- ── TAB NAVIGATION ── --%>
+            <%-- ── TAB NAVIGATION (ĐƯỢC BẢO VỆ STATE UX) ── --%>
             <ul class="nav nav-pills mb-4 gap-2" id="adminTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active px-4 py-2 rounded-pill fw-bold text-white" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-panel" type="button" role="tab" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
-                        <i class="fa-solid fa-users me-2"></i>Quản Lý Người Dùng (${usersList.size()})
+                    <button class="nav-link ${activeTab == 'users' or empty activeTab ? 'active' : ''} px-4 py-2 rounded-pill fw-bold text-white" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-panel" type="button" role="tab" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
+                        <i class="fa-solid fa-users me-2"></i>Quản Lý Người Dùng
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-4 py-2 rounded-pill fw-bold text-white" id="services-tab" data-bs-toggle="pill" data-bs-target="#services-panel" type="button" role="tab" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
-                        <i class="fa-solid fa-concierge-bell me-2"></i>Quản Lý Dịch Vụ (${servicesList.size()})
+                    <button class="nav-link ${activeTab == 'services' ? 'active' : ''} px-4 py-2 rounded-pill fw-bold text-white" id="services-tab" data-bs-toggle="pill" data-bs-target="#services-panel" type="button" role="tab" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                        <i class="fa-solid fa-concierge-bell me-2"></i>Quản Lý Dịch Vụ
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-4 py-2 rounded-pill fw-bold text-white" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings-panel" type="button" role="tab" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                    <button class="nav-link ${activeTab == 'settings' ? 'active' : ''} px-4 py-2 rounded-pill fw-bold text-white" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings-panel" type="button" role="tab" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
                         <i class="fa-solid fa-gears me-2"></i>Cấu Hình Hệ Thống
                     </button>
                 </li>
@@ -129,11 +132,11 @@
             <div class="tab-content" id="adminTabsContent">
 
                 <%-- TAB 1: QUẢN LÝ NGƯỜI DÙNG --%>
-                <div class="tab-pane fade show active" id="users-panel" role="tabpanel">
+                <div class="tab-pane fade ${activeTab == 'users' or empty activeTab ? 'show active' : ''}" id="users-panel" role="tabpanel">
                     <div class="panel animate-fade-in mb-4">
                         <div class="panel-header d-flex justify-content-between align-items-center">
                             <div class="panel-title">
-                                <i class="fa-solid fa-users text-danger me-2"></i>Danh Sách Người Dùng Toàn Hệ Thống
+                                <i class="fa-solid fa-users text-danger me-2"></i>Danh Sách Người Dùng (Trang ${currentPageUser} / ${totalPagesUser})
                             </div>
                         </div>
                         <div style="overflow-x:auto;">
@@ -165,6 +168,9 @@
                                                 <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="d-inline-flex align-items-center gap-1">
                                                     <input type="hidden" name="action" value="update-user-role">
                                                     <input type="hidden" name="userId" value="${u.id}">
+                                                    <input type="hidden" name="pageUser" value="${currentPageUser}">
+                                                    <input type="hidden" name="pageService" value="${currentPageService}">
+                                                    <input type="hidden" name="tab" value="users">
                                                     <select name="role" class="form-select form-select-sm bg-dark text-white border-secondary" style="font-size:.78rem; width:auto;" onchange="this.form.submit()">
                                                         <option value="PATIENT" ${u.role == 'PATIENT' ? 'selected' : ''}>PATIENT</option>
                                                         <option value="DOCTOR" ${u.role == 'DOCTOR' ? 'selected' : ''}>DOCTOR</option>
@@ -188,6 +194,9 @@
                                                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="d-inline">
                                                         <input type="hidden" name="action" value="toggle-user-status">
                                                         <input type="hidden" name="userId" value="${u.id}">
+                                                        <input type="hidden" name="pageUser" value="${currentPageUser}">
+                                                        <input type="hidden" name="pageService" value="${currentPageService}">
+                                                        <input type="hidden" name="tab" value="users">
                                                         <button type="submit" class="btn btn-sm ${u.status ? 'btn-outline-danger' : 'btn-outline-success'} rounded-pill px-3" style="font-size:.78rem;">
                                                             <i class="fa-solid ${u.status ? 'fa-lock' : 'fa-unlock'} me-1"></i>${u.status ? 'Khóa' : 'Mở Khóa'}
                                                         </button>
@@ -199,15 +208,31 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <%-- USER PAGINATION BAR (BẢO TỒN STATE PAGE SERVICE) --%>
+                        <c:if test="${totalPagesUser > 1}">
+                            <div class="d-flex justify-content-center p-3 border-top border-secondary opacity-75">
+                                <nav>
+                                    <ul class="pagination pagination-sm m-0">
+                                        <c:forEach var="p" begin="1" end="${totalPagesUser}">
+                                            <li class="page-item ${p == currentPageUser ? 'active' : ''}">
+                                                <a class="page-link bg-dark text-white border-secondary" href="${pageContext.request.contextPath}/admin/dashboard?pageUser=${p}&pageService=${currentPageService}&tab=users">${p}</a>
+                                            </li>
+                                        </c:forEach>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </c:if>
+
                     </div>
                 </div>
 
                 <%-- TAB 2: QUẢN LÝ DỊCH VỤ --%>
-                <div class="tab-pane fade" id="services-panel" role="tabpanel">
+                <div class="tab-pane fade ${activeTab == 'services' ? 'show active' : ''}" id="services-panel" role="tabpanel">
                     <div class="panel animate-fade-in mb-4">
                         <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div class="panel-title">
-                                <i class="fa-solid fa-concierge-bell text-warning me-2"></i>Danh Mục Dịch Vụ Khám &amp; Spa
+                                <i class="fa-solid fa-concierge-bell text-warning me-2"></i>Danh Mục Dịch Vụ (Trang ${currentPageService} / ${totalPagesService})
                             </div>
                             <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold px-3" data-bs-toggle="modal" data-bs-target="#addServiceModal">
                                 <i class="fa-solid fa-plus me-1"></i>Thêm Dịch Vụ Mới
@@ -251,6 +276,9 @@
                                                 <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="d-inline">
                                                     <input type="hidden" name="action" value="toggle-service-status">
                                                     <input type="hidden" name="serviceId" value="${s.id}">
+                                                    <input type="hidden" name="pageUser" value="${currentPageUser}">
+                                                    <input type="hidden" name="pageService" value="${currentPageService}">
+                                                    <input type="hidden" name="tab" value="services">
                                                     <button type="submit" class="btn btn-sm ${s.status ? 'btn-outline-secondary' : 'btn-outline-warning'} rounded-pill px-3" style="font-size:.78rem;">
                                                         <i class="fa-solid ${s.status ? 'fa-eye-slash' : 'fa-eye'} me-1"></i>${s.status ? 'Ẩn Dịch Vụ' : 'Hiện Dịch Vụ'}
                                                     </button>
@@ -261,11 +289,27 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <%-- SERVICE PAGINATION BAR (BẢO TỒN STATE PAGE USER) --%>
+                        <c:if test="${totalPagesService > 1}">
+                            <div class="d-flex justify-content-center p-3 border-top border-secondary opacity-75">
+                                <nav>
+                                    <ul class="pagination pagination-sm m-0">
+                                        <c:forEach var="p" begin="1" end="${totalPagesService}">
+                                            <li class="page-item ${p == currentPageService ? 'active' : ''}">
+                                                <a class="page-link bg-dark text-white border-secondary" href="${pageContext.request.contextPath}/admin/dashboard?pageUser=${currentPageUser}&pageService=${p}&tab=services">${p}</a>
+                                            </li>
+                                        </c:forEach>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </c:if>
+
                     </div>
                 </div>
 
                 <%-- TAB 3: CẤU HÌNH HỆ THỐNG --%>
-                <div class="tab-pane fade" id="settings-panel" role="tabpanel">
+                <div class="tab-pane fade ${activeTab == 'settings' ? 'show active' : ''}" id="settings-panel" role="tabpanel">
                     <div class="panel animate-fade-in mb-4">
                         <div class="panel-header">
                             <div class="panel-title">
@@ -275,6 +319,9 @@
                         <div class="p-4">
                             <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST">
                                 <input type="hidden" name="action" value="update-settings">
+                                <input type="hidden" name="pageUser" value="${currentPageUser}">
+                                <input type="hidden" name="pageService" value="${currentPageService}">
+                                <input type="hidden" name="tab" value="settings">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-6">
                                         <label class="form-label text-white-50">Tên Phòng Khám &amp; Spa</label>
@@ -331,6 +378,9 @@
                 </div>
                 <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST">
                     <input type="hidden" name="action" value="add-service">
+                    <input type="hidden" name="pageUser" value="${currentPageUser}">
+                    <input type="hidden" name="pageService" value="${currentPageService}">
+                    <input type="hidden" name="tab" value="services">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label text-white-50">Tên Dịch Vụ (*)</label>

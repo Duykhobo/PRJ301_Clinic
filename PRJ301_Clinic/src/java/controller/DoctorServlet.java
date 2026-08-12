@@ -45,30 +45,54 @@ public class DoctorServlet extends HttpServlet {
             dateParam = LocalDate.now().toString();
         }
 
-        List<Appointment> appointments = appointmentDAO.findAppointmentsByDoctorUserAndDate(loginUser.getId(), dateParam);
+        int page = 1;
+        try {
+            if (request.getParameter("page") != null) {
+                page = Math.max(1, Integer.parseInt(request.getParameter("page")));
+            }
+        } catch (NumberFormatException ignored) {}
+
+        int pageSize = 10;
+        int totalRecords = appointmentDAO.countAppointmentsByDoctorUserAndDate(loginUser.getId(), dateParam);
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalRecords / pageSize));
+        if (page > totalPages) page = totalPages;
+        int offset = (page - 1) * pageSize;
+
+        List<Appointment> appointments = appointmentDAO.findAppointmentsByDoctorUserAndDatePaginated(loginUser.getId(), dateParam, offset, pageSize);
+        List<Appointment> allDayApps = appointmentDAO.findAppointmentsByDoctorUserAndDate(loginUser.getId(), dateParam);
 
         // Map lưu Hồ sơ bệnh án theo mã Cuộc hẹn
         Map<Integer, MedicalRecord> recordsMap = new HashMap<>();
         int completedCount = 0;
         int pendingCount = 0;
+        int cancelledCount = 0;
+
+        for (Appointment app : allDayApps) {
+            if (SystemConstant.STATUS_COMPLETED.equalsIgnoreCase(app.getStatus())) {
+                completedCount++;
+            } else if (SystemConstant.STATUS_CANCELLED.equalsIgnoreCase(app.getStatus())) {
+                cancelledCount++;
+            } else {
+                pendingCount++;
+            }
+        }
 
         for (Appointment app : appointments) {
             MedicalRecord record = medicalRecordDAO.getRecordByAppointmentId(app.getId());
             if (record != null) {
                 recordsMap.put(app.getId(), record);
             }
-            if (SystemConstant.STATUS_COMPLETED.equalsIgnoreCase(app.getStatus())) {
-                completedCount++;
-            } else if (!SystemConstant.STATUS_CANCELLED.equalsIgnoreCase(app.getStatus())) {
-                pendingCount++;
-            }
         }
 
         request.setAttribute("appointments", appointments);
         request.setAttribute("recordsMap", recordsMap);
         request.setAttribute("selectedDate", dateParam);
+        request.setAttribute("totalCount", allDayApps.size());
         request.setAttribute("completedCount", completedCount);
         request.setAttribute("pendingCount", pendingCount);
+        request.setAttribute("cancelledCount", cancelledCount);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
 
         request.getRequestDispatcher("/WEB-INF/views/doctor/dashboard.jsp").forward(request, response);
     }

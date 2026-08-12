@@ -119,4 +119,25 @@ public class ServiceDAO extends BaseDAO<Service> {
         String sql = "UPDATE Services SET status = CASE WHEN status = 1 THEN 0 ELSE 1 END WHERE id = ?";
         return executeUpdate(sql, id);
     }
+
+    /**
+     * Lấy danh sách Dịch vụ có Phân Trang cho Admin (SQL Server OFFSET...FETCH NEXT).
+     */
+    public List<Service> findAllForAdminPaginated(int offset, int limit) {
+        String sql = "SELECT * FROM Services ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        return queryList(sql, this::mapResultSetToService, offset, limit);
+    }
+
+    /**
+     * Đếm tổng số lượng Dịch vụ trong hệ thống.
+     */
+    public int countAllForAdmin() {
+        String sql = "SELECT COUNT(*) FROM Services";
+        try (java.sql.Connection conn = config.DBContext.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException ignored) {}
+        return 0;
+    }
 }
