@@ -88,7 +88,9 @@ public class AuthenticationFilter implements Filter {
         return path.startsWith("/admin/")
                 || path.startsWith("/doctor/")
                 || path.startsWith("/patient/")
-                || path.startsWith("/receptionist/");
+                || path.startsWith("/receptionist/")
+                || path.equals("/booking")
+                || path.startsWith("/booking");
     }
 
     @Override

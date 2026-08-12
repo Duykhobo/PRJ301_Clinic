@@ -46,6 +46,14 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Bắt buộc Đăng nhập ngay từ đầu khi vào trang đặt lịch (Cách 2)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=/booking");
+            return;
+        }
+
         String action = request.getParameter("action");
         if ("payment".equals(action)) {
             handlePaymentPage(request, response);
