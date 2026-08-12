@@ -12,7 +12,7 @@
 
 <jsp:include page="/WEB-INF/views/components/navbar.jsp" />
 
-<div class="container my-4 flex-grow-1">
+<div class="container px-2 px-sm-3 my-3 my-sm-4 flex-grow-1">
 
     <%-- ── HERO BANNER ── --%>
     <div class="reception-hero mb-4 animate-fade-in">

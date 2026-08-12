@@ -317,6 +317,8 @@
 @media (max-width: 767.98px) {
   .ws-sidebar {
     transform: translateX(-100%);
+    width: 260px;
+    max-width: 82vw;
   }
 
   .ws-sidebar.open {
@@ -329,5 +331,53 @@
 
   .sb-hamburger {
     display: flex;
+    width: 40px;
+    height: 40px;
+    font-size: 1.05rem;
+    border-radius: 10px;
+  }
+
+  .ws-topbar {
+    padding: 0 0.85rem;
+  }
+
+  .topbar-breadcrumb {
+    display: none;
+  }
+
+  .topbar-page-title {
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 425px) {
+  .ws-topbar {
+    padding: 0 0.5rem;
+    height: 52px;
+  }
+
+  .topbar-date {
+    display: none;
+  }
+
+  .topbar-clock {
+    font-size: 0.75rem;
+  }
+
+  .topbar-page-title {
+    font-size: 0.82rem;
+    max-width: 125px;
+  }
+
+  .ws-topbar-right {
+    gap: 0.4rem;
+  }
+
+  .ws-topbar-left {
+    gap: 0.4rem;
   }
 }

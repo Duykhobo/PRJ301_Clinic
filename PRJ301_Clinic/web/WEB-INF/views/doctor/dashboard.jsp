@@ -15,7 +15,7 @@
                     <jsp:include page="/WEB-INF/views/components/sidebar-doctor.jsp" />
 
                     <%-- 2. NỘI DUNG CHÍNH CỦA DASHBOARD (Nằm gọn trong ws-main) --%>
-                        <div class="container-fluid px-4 py-4 flex-grow-1">
+                        <div class="container-fluid px-2 px-sm-4 py-3 py-sm-4 flex-grow-1">
 
                             <%-- ── HERO BANNER ── --%>
                                 <div class="doctor-hero mb-4 animate-fade-in">
