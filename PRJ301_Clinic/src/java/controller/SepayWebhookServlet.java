@@ -105,6 +105,17 @@ public class SepayWebhookServlet extends HttpServlet {
                 return;
             }
 
+            String code = parseJsonField(payload, "code");
+            if (code == null) code = request.getParameter("code");
+
+            // Kiểm tra nếu là Test Webhook Ping từ SePay Dashboard (Nút "Gửi test")
+            if ("SEPAYTEST".equalsIgnoreCase(code) || (content != null && content.toUpperCase().contains("SEPAY TEST"))) {
+                LOGGER.info("Nhan Test Webhook Ping tu SePay Dashboard. Phan hoi HTTP 200 OK!");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"status\": 200, \"message\": \"SePay Test Webhook Ping Received Successfully!\"}");
+                return;
+            }
+
             // 5. Giải mã Mã Lịch hẹn từ Nội dung chuyển khoản (CLINIC<ID> hoặc CLN<ID>)
             int appointmentId = extractAppointmentId(content, request.getParameter("appointmentId"));
 
