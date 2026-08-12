@@ -1,14 +1,20 @@
 package dao;
 
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import config.DBContext;
 import constant.SystemConstant;
 import exception.SlotAlreadyBookedException;
 import model.Appointment;
+import model.RevenueReport;
 
 /**
  * Lớp AppointmentDAO quản lý Đặt lịch hẹn và Giao dịch Thanh toán. ⚡ TÍCH HỢP
@@ -68,7 +74,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
             return executeTransaction(conn -> {
                 // Bước 1: Khóa Slot bằng SQL WITH (UPDLOCK, HOLDLOCK) & Lấy start_time tự động
                 String lockSql = "SELECT is_available, start_time FROM DoctorSchedules WITH (UPDLOCK, HOLDLOCK) WHERE id = ?";
-                java.sql.Time slotStartTime = queryOne(conn, lockSql, rs -> {
+                Time slotStartTime = queryOne(conn, lockSql, rs -> {
                     boolean isAvail = rs.getBoolean("is_available");
                     if (!isAvail) return null;
                     return rs.getTime("start_time");
@@ -174,8 +180,8 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
      */
     public int countPatientAppointments(int patientId) {
         String sql = "SELECT COUNT(*) FROM Appointments WHERE patient_id = ?";
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, patientId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -256,9 +262,9 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     /**
      * Gọi Stored Procedure sp_GetClinicRevenueReport để lấy báo cáo doanh thu Admin.
      */
-    public model.RevenueReport getRevenueReport(java.sql.Date startDate, java.sql.Date endDate) {
+    public RevenueReport getRevenueReport(Date startDate, Date endDate) {
         String sql = "EXEC dbo.sp_GetClinicRevenueReport ?, ?";
-        model.RevenueReport report = queryOne(sql, rs -> new model.RevenueReport(
+        RevenueReport report = queryOne(sql, rs -> new RevenueReport(
                 rs.getInt("total_appointments"),
                 rs.getInt("completed_appointments"),
                 rs.getInt("cancelled_appointments"),

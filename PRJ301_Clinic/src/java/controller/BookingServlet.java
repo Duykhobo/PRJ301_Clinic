@@ -121,31 +121,17 @@ public class BookingServlet extends HttpServlet {
                 return;
             }
             if (scheduleIdStr == null || scheduleIdStr.trim().isEmpty()) {
-                request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng bấm chọn một Ca khám 60 phút khả dụng (nút màu xanh)!");
-                doGet(request, response);
-                return;
-            }
-
-            int serviceId = Integer.parseInt(serviceIdStr);
-            int doctorId = Integer.parseInt(doctorIdStr);
-            int scheduleId = Integer.parseInt(scheduleIdStr);
-            Date appointmentDate = Date.valueOf(appointmentDateStr);
-
-            // Tìm dịch vụ lấy đơn giá
-            List<Service> services = clinicService.getActiveServices();
+            List<Service> services = clinicService.getAllActiveServices();
             Service selectedService = null;
-            for (Service service : services) {
-                if (service.getId() == serviceId) {
-                    selectedService = service;
+            for (Service s : services) {
+                if (s.getId() == serviceId) {
+                    selectedService = s;
                     break;
                 }
             }
 
-            // Nạp thông tin Slot để lấy start_time chính xác
-            dao.DoctorScheduleDAO scheduleDAO = new dao.DoctorScheduleDAO();
-            model.DoctorSchedule selectedSchedule = scheduleDAO.findById(scheduleId);
+            DoctorSchedule selectedSchedule = scheduleDAO.findById(scheduleId);
 
-            // 3. Lưu thông tin cuộc hẹn
             Appointment app = new Appointment();
             app.setPatientId(user.getId());
             app.setDoctorId(doctorId);
@@ -153,16 +139,14 @@ public class BookingServlet extends HttpServlet {
             app.setScheduleId(scheduleId);
             app.setAppointmentDate(appointmentDate);
             app.setStartTime(selectedSchedule != null ? selectedSchedule.getStartTime() : null);
-            app.setTotalPrice(selectedService != null ? selectedService.getPrice() : java.math.BigDecimal.ZERO);
+            app.setTotalPrice(selectedService != null ? selectedService.getPrice() : BigDecimal.ZERO);
             app.setStatus(SystemConstant.STATUS_PENDING);
             app.setPaymentStatus(SystemConstant.PAYMENT_UNPAID);
             app.setPaymentMethod(SystemConstant.METHOD_SEPAY_QR);
             app.setNotes(notes);
 
-            // 4. Gọi service đặt lịch đã kiểm tra chống trùng slot
             boolean success = bookingService.createBookingAtomic(app);
 
-            // 5. Điều hướng sang trang thanh toán Sepay nếu thành công
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
             } else {
@@ -178,9 +162,6 @@ public class BookingServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Hàm hỗ trợ nạp lịch hẹn cho trang thanh toán SePay VietQR.
-     */
     private void handlePaymentPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -193,20 +174,17 @@ public class BookingServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Hàm AJAX nạp danh sách slot động dạng JSON.
-     */
     private void handleGetSlots(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         try {
             int doctorId = Integer.parseInt(request.getParameter("doctorId"));
             Date date = Date.valueOf(request.getParameter("date"));
-            List<model.DoctorSchedule> slots = clinicService.getSchedules(doctorId, date);
+            List<DoctorSchedule> slots = clinicService.getSchedules(doctorId, date);
 
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < slots.size(); i++) {
-                model.DoctorSchedule s = slots.get(i);
+                DoctorSchedule s = slots.get(i);
                 json.append(String.format("{\"id\":%d,\"startTime\":\"%s\",\"endTime\":\"%s\",\"isAvailable\":%b}",
                         s.getId(), s.getStartTime().toString(), s.getEndTime().toString(), s.isIsAvailable()));
                 if (i < slots.size() - 1) {

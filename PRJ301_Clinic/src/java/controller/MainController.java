@@ -13,6 +13,7 @@ import constant.RouterConstant;
 import constant.SystemConstant;
 import model.Appointment;
 import model.User;
+import service.ClinicService;
 
 /**
  * MainController - Mô hình Front Controller Chuẩn môn PRJ301 (FPT University).
@@ -25,23 +26,20 @@ public class MainController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String action = request.getParameter("action");
         String url = RouterConstant.HOME_JSP;
 
-        if (action == null || action.trim().isEmpty()) {
-            action = "home";
-        }
-
         try {
+            if (action == null || action.trim().isEmpty()) {
+                action = "home";
+            }
+
             switch (action) {
-                case "login-page":
-                    url = RouterConstant.LOGIN_JSP;
-                    break;
                 case "login":
                     url = RouterConstant.ROUTE_LOGIN;
-                    break;
-                case "register-page":
-                    url = RouterConstant.REGISTER_JSP;
                     break;
                 case "register":
                     url = RouterConstant.ROUTE_REGISTER;
@@ -57,9 +55,9 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_HISTORY;
                     break;
                 default:
-                    service.ClinicService clinicService = new service.ClinicService();
-                    request.setAttribute("services", clinicService.getActiveServices());
-                    request.setAttribute("doctors", clinicService.getAllDoctors());
+                    ClinicService clinicService = new ClinicService();
+                    request.setAttribute("services", clinicService.getAllActiveServices());
+                    request.setAttribute("doctors", clinicService.getAllDoctorProfiles());
                     url = RouterConstant.HOME_JSP;
                     break;
             }
