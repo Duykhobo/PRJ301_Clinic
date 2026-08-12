@@ -20,6 +20,24 @@ Trong thời đại công nghệ số, việc đăng ký và quản lý lịch h
 
 ---
 
+### 3. Mô hình Phát triển Phần mềm (Software Development Methodology)
+
+Dựa trên quy mô bài tập cá nhân, giới hạn thời gian ngắn (2-3 tuần) và yêu cầu đánh giá theo từng mốc Checkpoint môn học, dự án áp dụng **Mô hình Agile/Scrum Rút gọn (Lightweight Agile - Incremental SDLC Model)** với 2 Sprints cốt lõi:
+
+```mermaid
+graph LR
+    A[Phân tích Yêu cầu & SRS] --> B[Sprint 1: CSDL & Frame Layout<br/>Slot 12 -> Checkpoint 1]
+    B --> C[Sprint 2: Core MVC-V2 & SePay & Testing<br/>Checkpoint 1 -> Final LMS]
+    C --> D[Bàn giao & Bảo vệ Vấn đáp]
+```
+
+- **Rationale (Lý do chọn Agile/Incremental)**:
+  - **Tương thích 100% với các mốc Đánh giá (Milestone Alignment)**: Chia nhỏ khối lượng công việc theo 2 Sprint song song với mốc Checkpoint 1 (17/08) và Checkpoint 2/Final (22/08) của giảng viên.
+  - **Kiểm thử Liên tục (Early & Frequent Testing)**: Mỗi module hoàn thành (CSDL $\rightarrow$ DAO $\rightarrow$ Servlet $\rightarrow$ JSP) đều được chạy Unit Test với JUnit 5 và Postman ngay lập tức, triệt tiêu nguy cơ dồn lỗi vào cuối kỳ như mô hình Thác nước (Waterfall).
+  - **Quản lý Rủi ro Đồ án (Risk Management)**: Thiết lập sẵn các kịch bản dự phòng (Fallback Strategy: Nút Giả lập Webhook & Nút Tiền mặt) ngay từ Sprint 2 để đảm bảo buổi bảo vệ thành công tuyệt đối.
+
+---
+
 ## II. BẢNG CHI TIẾT TECH STACK & QUY ĐỊNH KỸ THUẬT (HARD RULES)
 
 ### 1. Danh mục Công nghệ & Thư viện (Đã chốt 100%)
