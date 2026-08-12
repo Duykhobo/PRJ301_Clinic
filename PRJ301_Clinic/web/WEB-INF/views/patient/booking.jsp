@@ -6,98 +6,102 @@
     <title>Đặt Lịch Khám | PRJ301 Clinic</title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
-<body class="d-flex align-items-center justify-content-center py-5">
+<body class="d-flex flex-column min-vh-100">
 
-<div class="glass-card animate-fade-in" style="max-width: 650px; width: 90%;">
-    <h3 class="fw-bold mb-4 text-center">
-        <i class="fa-solid fa-calendar-check text-info me-2"></i>Đặt Lịch Khám Trực Tuyến
-    </h3>
+<%-- Dynamic Navbar Component --%>
+<jsp:include page="/WEB-INF/views/components/navbar.jsp" />
 
-    <%-- Nhúng Component Banner Thông Báo Lỗi --%>
-    <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
+<div class="container my-auto py-4">
+    <div class="glass-card animate-fade-in mx-auto" style="max-width: 650px; width: 100%;">
+        <h3 class="fw-bold mb-4 text-center">
+            <i class="fa-solid fa-calendar-check text-info me-2"></i>Đặt Lịch Khám Trực Tuyến
+        </h3>
 
-    <form action="${pageContext.request.contextPath}/booking" method="POST">
-        <input type="hidden" name="csrfToken" value="${csrfToken}">
-        <input type="hidden" id="selectedScheduleId" name="scheduleId" required>
+        <%-- Nhúng Component Banner Thông Báo Lỗi --%>
+        <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-        <%-- Bước 1: Chọn Dịch vụ --%>
-        <div class="mb-3">
-            <label class="form-label text-muted">1. Chọn Dịch Vụ Khám / Spa (*)</label>
-            <select name="serviceId" class="form-select form-control-glass" required>
-                <option value="">-- Chọn dịch vụ --</option>
-                <c:forEach items="${services}" var="s">
-                    <option value="${s.id}">${s.serviceName} - ${s.price} VNĐ</option>
-                </c:forEach>
-            </select>
-        </div>
+        <form action="${pageContext.request.contextPath}/booking" method="POST">
+            <input type="hidden" name="csrfToken" value="${csrfToken}">
+            <input type="hidden" id="selectedScheduleId" name="scheduleId" required>
 
-        <%-- Bước 2: Chọn Bác sĩ --%>
-        <div class="mb-3">
-            <label class="form-label text-muted">2. Chọn Bác Sĩ (*)</label>
-            <select name="doctorId" id="doctorSelect" class="form-select form-control-glass" onchange="fetchSlots()" required>
-                <option value="">-- Chọn bác sĩ --</option>
-                <c:forEach items="${doctors}" var="d">
-                    <option value="${d.id}">${d.doctorName} (${d.specialty})</option>
-                </c:forEach>
-            </select>
-        </div>
-
-        <%-- Bước 3: Chọn Ngày Khám --%>
-        <div class="mb-3">
-            <label class="form-label text-muted">3. Chọn Ngày Khám (*)</label>
-            <input type="date" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass" onchange="fetchSlots()" required>
-        </div>
-
-        <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
-        <div class="mb-4">
-            <label class="form-label text-muted d-block">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
-            
-            <%-- Thanh Chú Giải (Legend Badge Bar) --%>
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-3 fs-7">
-                <span class="badge slot-btn-available px-3 py-2 rounded-pill">
-                    <i class="fa-solid fa-circle me-1"></i>Khả dụng (Còn trống)
-                </span>
-                <span class="badge slot-btn-selected px-3 py-2 rounded-pill">
-                    <i class="fa-solid fa-circle-check me-1"></i>Đang chọn
-                </span>
-                <span class="badge slot-btn-booked px-3 py-2 rounded-pill">
-                    <i class="fa-solid fa-lock me-1"></i>Đã được đặt
-                </span>
+            <%-- Bước 1: Chọn Dịch vụ --%>
+            <div class="mb-3">
+                <label class="form-label text-muted">1. Chọn Dịch Vụ Khám / Spa (*)</label>
+                <select name="serviceId" class="form-select form-control-glass" required>
+                    <option value="">-- Chọn dịch vụ --</option>
+                    <c:forEach items="${services}" var="s">
+                        <option value="${s.id}">${s.serviceName} - ${s.price} VNĐ</option>
+                    </c:forEach>
+                </select>
             </div>
 
-            <%-- Ma trận Nút Bấm Khung Giờ (Dynamic Slot Grid Matrix) --%>
-            <div class="row g-2" id="slotMatrixGrid">
-                <div class="col-12 text-center text-muted py-3 border border-dashed rounded-3" style="border-color: rgba(255,255,255,0.1) !important;">
-                    <i class="fa-solid fa-info-circle me-1"></i>Vui lòng chọn Bác sĩ và Ngày khám để xem danh sách ca rảnh.
+            <%-- Bước 2: Chọn Bác sĩ --%>
+            <div class="mb-3">
+                <label class="form-label text-muted">2. Chọn Bác Sĩ (*)</label>
+                <select name="doctorId" id="doctorSelect" class="form-select form-control-glass" onchange="fetchSlots()" required>
+                    <option value="">-- Chọn bác sĩ --</option>
+                    <c:forEach items="${doctors}" var="d">
+                        <option value="${d.id}">${d.doctorName} (${d.specialty})</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <%-- Bước 3: Chọn Ngày Khám --%>
+            <div class="mb-3">
+                <label class="form-label text-muted">3. Chọn Ngày Khám (*)</label>
+                <input type="date" name="appointmentDate" id="appointmentDate" class="form-control form-control-glass" onchange="fetchSlots()" required>
+            </div>
+
+            <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
+            <div class="mb-4">
+                <label class="form-label text-muted d-block">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
+                
+                <%-- Thanh Chú Giải (Legend Badge Bar) --%>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 fs-7">
+                    <span class="badge slot-btn-available px-3 py-2 rounded-pill">
+                        <i class="fa-solid fa-circle me-1"></i>Khả dụng (Còn trống)
+                    </span>
+                    <span class="badge slot-btn-selected px-3 py-2 rounded-pill">
+                        <i class="fa-solid fa-circle-check me-1"></i>Đang chọn
+                    </span>
+                    <span class="badge slot-btn-booked px-3 py-2 rounded-pill">
+                        <i class="fa-solid fa-lock me-1"></i>Đã được đặt
+                    </span>
+                </div>
+
+                <%-- Ma trận Nút Bấm Khung Giờ (Dynamic Slot Grid Matrix) --%>
+                <div class="row g-2" id="slotMatrixGrid">
+                    <div class="col-12 text-center text-muted py-3 border border-dashed rounded-3" style="border-color: rgba(255,255,255,0.1) !important;">
+                        <i class="fa-solid fa-info-circle me-1"></i>Vui lòng chọn Bác sĩ và Ngày khám để xem danh sách ca rảnh.
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <%-- Bước 5: Ghi chú --%>
-        <div class="mb-4">
-            <label class="form-label text-muted">5. Ghi Chú Cho Bác Sĩ (Tùy chọn)</label>
-            <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập tình trạng sức khỏe hoặc yêu cầu thêm..."></textarea>
-        </div>
+            <%-- Bước 5: Ghi chú --%>
+            <div class="mb-4">
+                <label class="form-label text-muted">5. Ghi Chú Cho Bác Sĩ (Tùy chọn)</label>
+                <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập tình trạng sức khỏe hoặc yêu cầu thêm..."></textarea>
+            </div>
 
-        <button type="submit" class="btn btn-primary-gradient w-100">
-            <i class="fa-solid fa-credit-card me-2"></i>Bấm Đặt Lịch Hẹn & Thanh Toán VietQR
-        </button>
-    </form>
+            <button type="submit" class="btn btn-primary-gradient w-100">
+                <i class="fa-solid fa-credit-card me-2"></i>Bấm Đặt Lịch Hẹn & Thanh Toán VietQR
+            </button>
+        </form>
+    </div>
 </div>
 
+<%-- Dynamic Footer Component --%>
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function selectSlot(scheduleId, btnElement) {
-        // Gán mã ID vào hidden input
         document.getElementById('selectedScheduleId').value = scheduleId;
-
-        // Reset màu tất cả các nút rảnh
         document.querySelectorAll('.slot-pill').forEach(btn => {
             if (!btn.disabled) {
                 btn.className = 'btn w-100 py-2 slot-pill slot-btn-available';
             }
         });
-
-        // Highlight nút được chọn thành màu xanh dương đốm bừng
         btnElement.className = 'btn w-100 py-2 slot-pill slot-btn-selected';
     }
 

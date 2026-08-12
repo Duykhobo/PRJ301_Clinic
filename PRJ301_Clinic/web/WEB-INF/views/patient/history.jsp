@@ -7,10 +7,13 @@
     <title>Lịch Sử Đặt Lịch Khám | PRJ301 Clinic</title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
-<body class="d-flex flex-column min-vh-100 py-5">
+<body class="d-flex flex-column min-vh-100">
 
-<div class="container my-auto">
-    <div class="glass-card animate-fade-in mx-auto p-4 p-md-5" style="max-width: 1000px;">
+<%-- Dynamic Navbar Component --%>
+<jsp:include page="/WEB-INF/views/components/navbar.jsp" />
+
+<div class="container my-auto py-4">
+    <div class="glass-card animate-fade-in mx-auto p-4 p-md-5" style="max-width: 1000px; width: 100%;">
         
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             <h3 class="fw-bold mb-0">
@@ -110,5 +113,9 @@
     </div>
 </div>
 
+<%-- Dynamic Footer Component --%>
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

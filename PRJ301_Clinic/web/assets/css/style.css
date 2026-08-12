@@ -167,7 +167,45 @@ body {
     cursor: not-allowed !important;
 }
 
-/* 8. CUSTOM ANIMATIONS */
+/* 8. GLOBAL NAVBAR & FOOTER STYLES */
+.navbar-glass {
+    background: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--card-border);
+    transition: var(--transition-smooth);
+}
+
+.text-white-hover:hover {
+    color: #ffffff !important;
+}
+
+.transition-all {
+    transition: var(--transition-smooth);
+}
+
+.glass-dropdown {
+    background: rgba(30, 41, 59, 0.95) !important;
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--card-border) !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 9. CARD HOVER MICRO-ANIMATIONS */
+.hover-lift {
+    transition: var(--transition-smooth);
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.35);
+    border-color: rgba(96, 165, 250, 0.4) !important;
+}
+
+/* 10. CUSTOM ANIMATIONS */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
