@@ -42,6 +42,10 @@ public class EmailUtil {
         
         executor.submit(() -> {
             try {
+                // 🧪 KIỂM THỬ ASYNC NON-BLOCKING: Giả lập tiến trình gửi mail tốn 5 giây
+                Thread.sleep(5000);
+                LOGGER.info("[ASYNC VERIFIED] Thread ngầm đã hoàn thành 5 giây chờ mà không làm chậm trang web!");
+
                 if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
                     LOGGER.info("Bệnh nhân không có Email hợp lệ, bỏ qua gửi mail.");
                     return;
