@@ -45,7 +45,8 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_LOGOUT;
                     break;
                 case "booking-page":
-                    url = RouterConstant.BOOKING_JSP;
+                case "booking":
+                    url = RouterConstant.ROUTE_BOOKING;
                     break;
                 case "history":
                     url = RouterConstant.HISTORY_JSP;

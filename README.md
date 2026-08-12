@@ -51,7 +51,7 @@
 
 | Mức độ Ưu tiên | Hạng mục Tính năng & Kỹ thuật | Trạng thái |
 | :--- | :--- | :--- |
-| 🔴 **MỨC 1: BẮT BUỘC** *(Core Hard Rules)* | • MVC-V2 NetBeans Ant Project.<br/>• Pure JDBC (`PreparedStatement`) & HikariCP SQL Server.<br/>• BCrypt Hashing & 3 Filters (`Encoding`, `Auth`, `Role`).<br/>• Phân quyền 4 Roles (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).<br/>• 100% CRUD trên 7 Bảng CSDL.<br/>• Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** (Tiêu chí qua môn) |
+| 🔴 **MỨC 1: BẮT BUỘC** *(Core Hard Rules)* | • **Enterprise 3-Tier Architecture** (`Controller` $\rightarrow$ `Service` $\rightarrow$ `DAO`).<br/>• Pure JDBC (`PreparedStatement`) & HikariCP SQL Server.<br/>• BCrypt Hashing & 3 Filters (`Encoding`, `Auth`, `Role`).<br/>• Phân quyền 4 Roles (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).<br/>• 100% CRUD trên 7 Bảng CSDL.<br/>• Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** (Tiêu chí qua môn) |
 | 🟡 **MỨC 2: QUAN TRỌNG** *(Real-World MVP)* | • Thanh toán tự động SePay VietQR Động (`CLINIC<id>`).<br/>• Webhook SePay đối soát tự động & Manual Verify cho Admin.<br/>• Bảng `ClinicSettings` Cấu hình Động.<br/>• Phân quyền Bảo mật Y tế (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP** (Tiêu chí thực tế) |
 | 🟢 **MỨC 3: MỞ RỘNG** *(Advanced 10/10)* | • 4 thành phần SQL Server nâng cao (Trigger `trg_UpdateSlotStatusOnAppointment`, Stored Procs `sp_GetClinicRevenueReport`, `sp_GetAvailableSlotsByDoctorAndDate`, Function `fn_GetDoctorAverageRating`).<br/>• Bộ kiểm thử JUnit 5, Postman, Apache JMeter Concurrency Test, JaCoCo Coverage Report, Cypress E2E UI Test & Lighthouse. | **ĐIỂM CỘNG NÂNG CAO** (Tiêu chí Điểm 10/10) |
 

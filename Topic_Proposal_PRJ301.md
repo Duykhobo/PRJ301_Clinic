@@ -59,7 +59,7 @@ graph LR
 | Hạng mục | Yêu cầu Đề bài (PRJ301) | Giải pháp Thực hiện trong Dự án |
 | :-- | :-- | :-- |
 | **Số lượng Models** | Tối thiểu 4 – 6 models | **Đầy đủ 7 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100% |
-| **Kiến trúc** | MVC-V2 chuẩn phân tầng | Tách biệt Model - View (JSP) - Controller (Servlet) - DAO Layer |
+| **Kiến trúc** | MVC-V2 3-Tier chuẩn Doanh Nghiệp | Tách biệt 3 Tầng độc lập: **Controller (Servlet)** $\rightarrow$ **Service (Business Logic)** $\rightarrow$ **DAO (Pure JDBC SQL Server)** |
 | **ORM / Database** | JDBC thuần (Không dùng JPA/Hibernate) | Dùng`PreparedStatement`, `try-with-resources`, **Microsoft SQL Server** |
 | **Connection Pool** | HikariCP hoặc DBCP | Kết nối CSDL tối ưu bằng**HikariCP Connection Pool** |
 | **Mã hóa mật khẩu** | BCrypt hoặc SHA-256 | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`) |
@@ -108,7 +108,8 @@ graph TD
 
 - **S - Single Responsibility Principle (Đơn trách nhiệm)**:
   - Tầng **DAO** chỉ đảm nhận nhiệm vụ tương tác SQL Server (`PreparedStatement`). Không chứa logic HTTP Session hay giao diện.
-  - Tầng **Servlet** chỉ làm Lễ tân tiếp nhận Request, validate sơ bộ và điều hướng View. Không viết câu SQL trong Servlet.
+  - Tầng **Service** chứa 100% Logic Nghiệp Vụ (Business Rules, Validation, Atomic Booking, VietQR Code Generation), coordinations giữa các DAO.
+  - Tầng **Servlet (Controller)** chỉ làm Lễ tân tiếp nhận Request, validate sơ bộ HTTP, gọi tầng Service và điều hướng JSP View.
   - Tầng **Model POJO** chỉ chứa thuộc tính, Getter/Setter.
 - **O - Open/Closed Principle (Mở rộng/Đóng đổi)**:
   - Tầng Service và Servlet được thiết kế để mở rộng tính năng mới mà không phải sửa đổi cấu trúc cốt lõi hiện có.

@@ -12,8 +12,8 @@ import constant.MessageConstant;
 import constant.RoleConstant;
 import constant.RouterConstant;
 import constant.SystemConstant;
-import dao.UserDAO;
 import model.User;
+import service.UserService;
 import util.ValidationUtil;
 
 /**
@@ -22,11 +22,11 @@ import util.ValidationUtil;
 @WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
 public class RegisterServlet extends HttpServlet {
 
-    private UserDAO userDAO;
+    private UserService userService;
 
     @Override
     public void init() throws ServletException {
-        this.userDAO = new UserDAO();
+        this.userService = new UserService();
     }
 
     @Override
@@ -89,14 +89,14 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        // 2. Kiểm tra trùng lặp trong CSDL
-        if (userDAO.existsByUsername(username.trim())) {
+        // 2. Kiểm tra trùng lặp qua Tầng Service
+        if (userService.existsByUsername(username.trim())) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_USERNAME_EXISTS);
             request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
             return;
         }
 
-        if (email != null && !email.trim().isEmpty() && userDAO.existsByEmail(email.trim())) {
+        if (email != null && !email.trim().isEmpty() && userService.existsByEmail(email.trim())) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_EMAIL_EXISTS);
             request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
             return;
@@ -112,8 +112,8 @@ public class RegisterServlet extends HttpServlet {
         newUser.setRole(RoleConstant.PATIENT);
         newUser.setStatus(true);
 
-        // 4. Lưu vào CSDL
-        boolean created = userDAO.register(newUser);
+        // 4. Đăng ký qua Tầng Service
+        boolean created = userService.registerPatient(newUser);
 
         if (created) {
             response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?registered=success");

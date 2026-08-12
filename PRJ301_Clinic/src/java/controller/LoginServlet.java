@@ -13,8 +13,8 @@ import constant.MessageConstant;
 import constant.RoleConstant;
 import constant.RouterConstant;
 import constant.SystemConstant;
-import dao.UserDAO;
 import model.User;
+import service.UserService;
 import util.ValidationUtil;
 
 /**
@@ -23,11 +23,11 @@ import util.ValidationUtil;
 @WebServlet(name = "LoginServlet", urlPatterns = { "/login" })
 public class LoginServlet extends HttpServlet {
 
-    private UserDAO userDAO;
+    private UserService userService;
 
     @Override
     public void init() throws ServletException {
-        this.userDAO = new UserDAO();
+        this.userService = new UserService();
     }
 
     /**
@@ -57,7 +57,7 @@ public class LoginServlet extends HttpServlet {
      * Bước 1: Lấy thông tin username, password từ request.getParameter()
      * Bước 2: Fail-fast Validation dùng ValidationUtil.isValidUsername(), check
      * null password
-     * Bước 3: Gọi userDAO.login(username, password)
+     * Bước 3: Gọi userService.login(username, password)
      * Bước 4: Nếu user != null -> lưu session.setAttribute(SESSION_USER, user),
      * chuyển hướng theo Role
      */
@@ -84,8 +84,8 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // 2. Xác thực tài khoản CSDL
-        User user = userDAO.login(username.trim(), password);
+        // 2. Xác thực tài khoản qua Tầng Service
+        User user = userService.login(username.trim(), password);
         if (user == null) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_LOGIN_FAILED);
             request.setAttribute("username", username);
