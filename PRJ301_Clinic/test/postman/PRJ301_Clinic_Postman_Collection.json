@@ -1,0 +1,146 @@
+{
+	"info": {
+		"_postman_id": "a8f34b21-8902-4e99-876b-123456789abc",
+		"name": "PRJ301_Clinic_API_Webhook_Collection",
+		"description": "Bộ Collection API Test & SePay Webhook HMAC-SHA256 Simulation cho Dự án PRJ301_ClinicDB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "POST Login Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "admin", "type": "text" },
+								{ "key": "password", "value": "123456", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/login",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "login"]
+						}
+					}
+				},
+				{
+					"name": "POST Login Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "drminh", "type": "text" },
+								{ "key": "password", "value": "123456", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/login",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Workspaces & Dashboards",
+			"item": [
+				{
+					"name": "GET Doctor Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/doctor/dashboard",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "doctor", "dashboard"]
+						}
+					}
+				},
+				{
+					"name": "GET Receptionist Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/receptionist/dashboard",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "receptionist", "dashboard"]
+						}
+					}
+				},
+				{
+					"name": "GET Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/admin/dashboard",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "admin", "dashboard"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. SePay Webhook Simulation",
+			"item": [
+				{
+					"name": "POST SePay Webhook Payment Callback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-SePay-Signature",
+								"value": "SIMULATED_HMAC_SHA256_HASH_HERE"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 9901,\n  \"gateway\": \"Sacombank\",\n  \"transactionDate\": \"2026-08-12 23:15:00\",\n  \"accountNumber\": \"070148520060\",\n  \"code\": null,\n  \"content\": \"CLN101 chuyen tien kham benh\",\n  \"transferType\": \"in\",\n  \"transferAmount\": 500000,\n  \"accumulated\": 5000000,\n  \"subAccount\": null,\n  \"referenceCode\": \"FT26225102938101\",\n  \"description\": \"CLN101 NGUYEN THANH DUY CHUYEN TIEN\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/PRJ301_Clinic/sepay-webhook",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["PRJ301_Clinic", "sepay-webhook"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

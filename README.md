@@ -305,7 +305,7 @@ Module 7 — Testing Suite           ░░░░░░░░░░░░░░�
 | 5 | **History Page** | Lịch sử Glassmorphism, Xem Đơn Thuốc, Thanh Toán QR | ✅ Done |
 | 5 | **Pagination** | SQL Server OFFSET/FETCH NEXT, Bootstrap Paginator | ✅ Done |
 | 6 | **Admin Dashboard** | User/Service Management, Stored Proc Revenue Report, System Settings | ✅ Done |
-| 7 | **Testing** | JUnit 5, Postman, JMeter Concurrency, Lighthouse | 🔲 Todo |
+| 7 | **Testing** | JUnit 5 Unit Tests, Postman Collection, JMeter Concurrency Script | ✅ Done |
 
 ---
 
