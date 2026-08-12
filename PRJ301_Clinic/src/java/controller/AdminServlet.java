@@ -36,7 +36,7 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. DATE RANGE FOR REVENUE REPORT (Default 30 days window)
+        // 1. DATE RANGE FOR REVENUE REPORT
         String startStr = request.getParameter("startDate");
         String endStr = request.getParameter("endDate");
 
@@ -48,7 +48,7 @@ public class AdminServlet extends HttpServlet {
         Date startDate = Date.valueOf(startLocalDate);
         Date endDate = Date.valueOf(endLocalDate);
 
-        // 2. PAGINATION & TAB PARAMETERS (UX Protection for dual tables)
+        // 2. PAGINATION & TAB PARAMETERS
         int pageUser = 1;
         int pageService = 1;
         try {
@@ -94,7 +94,6 @@ public class AdminServlet extends HttpServlet {
         request.setAttribute("settingsList", settingsList);
         request.setAttribute("settingsMap", settingsMap);
 
-        // Pagination Attributes
         request.setAttribute("currentPageUser", pageUser);
         request.setAttribute("totalPagesUser", totalPagesUser);
         request.setAttribute("currentPageService", pageService);
@@ -108,6 +107,10 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || "true".equalsIgnoreCase(request.getParameter("ajax"));
+
         String action = request.getParameter("action");
         if (action == null) action = "";
 
@@ -115,23 +118,36 @@ public class AdminServlet extends HttpServlet {
         String pageServiceParam = request.getParameter("pageService");
         String tabParam = request.getParameter("tab");
 
+        boolean success = false;
+        String message = "Thao tác thất bại!";
+        boolean newStatus = false;
+        String newRoleStr = "";
+
         switch (action) {
             case "toggle-user-status": {
                 int userId = Integer.parseInt(request.getParameter("userId"));
-                userDAO.toggleStatus(userId);
+                success = userDAO.toggleStatus(userId);
+                User updatedUser = userDAO.findById(userId);
+                newStatus = updatedUser != null && updatedUser.isStatus();
+                message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
                 break;
             }
             case "update-user-role": {
                 int userId = Integer.parseInt(request.getParameter("userId"));
                 String newRole = request.getParameter("role");
                 if (newRole != null && !newRole.trim().isEmpty()) {
-                    userDAO.updateRole(userId, newRole.trim().toUpperCase());
+                    newRoleStr = newRole.trim().toUpperCase();
+                    success = userDAO.updateRole(userId, newRoleStr);
+                    message = "Đã cập nhật vai trò người dùng #" + userId + " thành " + newRoleStr;
                 }
                 break;
             }
             case "toggle-service-status": {
                 int serviceId = Integer.parseInt(request.getParameter("serviceId"));
-                serviceDAO.toggleStatus(serviceId);
+                success = serviceDAO.toggleStatus(serviceId);
+                Service updatedSvc = serviceDAO.findById(serviceId);
+                newStatus = updatedSvc != null && updatedSvc.isStatus();
+                message = newStatus ? "Đã HIỂN THỊ dịch vụ #" + serviceId : "Đã ẨN dịch vụ #" + serviceId;
                 break;
             }
             case "add-service": {
@@ -154,7 +170,8 @@ public class AdminServlet extends HttpServlet {
                     newService.setImageUrl(imageUrl != null && !imageUrl.trim().isEmpty() ? imageUrl.trim() : "assets/images/default-service.jpg");
                     newService.setStatus(true);
 
-                    serviceDAO.insert(newService);
+                    success = serviceDAO.insert(newService);
+                    message = "Thêm mới dịch vụ thành công!";
                 }
                 break;
             }
@@ -166,8 +183,19 @@ public class AdminServlet extends HttpServlet {
                         clinicSettingDAO.updateSetting(key, val.trim());
                     }
                 }
+                success = true;
+                message = "Cập nhật cấu hình hệ thống thành công!";
                 break;
             }
+        }
+
+        if (isAjax) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(String.format(
+                    "{\"success\":%b,\"message\":\"%s\",\"newStatus\":%b,\"newRole\":\"%s\"}",
+                    success, message, newStatus, newRoleStr
+            ));
+            return;
         }
 
         String redirectUrl = request.getContextPath() + "/admin/dashboard?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
