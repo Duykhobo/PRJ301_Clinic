@@ -150,6 +150,11 @@ public class BookingServlet extends HttpServlet {
             boolean success = bookingService.createBookingAtomic(app);
 
             if (success) {
+                util.EmailUtil.sendBookingConfirmationAsync(user.getEmail(), user.getFullname(),
+                        app.getDoctorName() != null ? app.getDoctorName() : "Bác sĩ chuyên khoa",
+                        selectedService != null ? selectedService.getServiceName() : "Dịch vụ khám",
+                        app.getAppointmentDate(), app.getStartTime(), app.getTotalPrice());
+
                 response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
             } else {
                 request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Khung giờ này vừa được đăng ký thành công bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");

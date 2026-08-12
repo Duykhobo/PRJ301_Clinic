@@ -126,6 +126,15 @@ public class SepayWebhookServlet extends HttpServlet {
             if (appointmentId > 0) {
                 boolean updated = bookingService.updatePaymentSuccess(appointmentId, transactionCode != null ? transactionCode : "SEPAY_AUTO");
                 if (updated) {
+                    model.Appointment app = bookingService.getAppointmentById(appointmentId);
+                    if (app != null) {
+                        dao.UserDAO userDAO = new dao.UserDAO();
+                        model.User patient = userDAO.findById(app.getPatientId());
+                        if (patient != null) {
+                            util.EmailUtil.sendPaymentSuccessAsync(patient.getEmail(), patient.getFullname(),
+                                    transactionCode != null ? transactionCode : "SEPAY_" + appointmentId, app.getTotalPrice());
+                        }
+                    }
                     LOGGER.info("Xac thuc thanh toan VietQR SePay thanh cong cho cuoc hen #" + appointmentId);
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("{\"success\": true, \"message\": \"Payment processed successfully for appointment #" + appointmentId + "\"}");
