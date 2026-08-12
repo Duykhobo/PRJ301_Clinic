@@ -25,6 +25,7 @@ public class RouterConstant {
     public static final String ROUTE_LOGOUT = "/logout";
     public static final String ROUTE_HOME = "/home";
     public static final String ROUTE_BOOKING = "/booking";
+    public static final String ROUTE_HISTORY = "/history";
     
     // Role Redirect Dashboards
     public static final String DASHBOARD_ADMIN = "/admin/dashboard";

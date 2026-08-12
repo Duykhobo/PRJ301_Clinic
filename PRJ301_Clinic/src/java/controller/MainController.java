@@ -54,14 +54,7 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_BOOKING;
                     break;
                 case "history":
-                    HttpSession session = request.getSession(false);
-                    if (session != null && session.getAttribute(SystemConstant.SESSION_USER) != null) {
-                        User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
-                        service.BookingService bookingService = new service.BookingService();
-                        List<Appointment> historyList = bookingService.getPatientAppointmentHistory(user.getId());
-                        request.setAttribute("historyList", historyList);
-                    }
-                    url = RouterConstant.HISTORY_JSP;
+                    url = RouterConstant.ROUTE_HISTORY;
                     break;
                 default:
                     url = RouterConstant.HOME_JSP;
