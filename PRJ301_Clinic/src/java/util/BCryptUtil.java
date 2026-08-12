@@ -2,9 +2,6 @@ package util;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-/**
- * BCryptUtil - Tiện ích Mã hóa Mật khẩu an toàn với BCrypt & Salt ngẫu nhiên.
- */
 public class BCryptUtil {
 
     private static final int BCRYPT_WORK_FACTOR = 10;

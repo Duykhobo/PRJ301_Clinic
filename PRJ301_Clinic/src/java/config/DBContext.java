@@ -5,10 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/**
- * DBContext - HikariCP Connection Pool Manager cho Microsoft SQL Server. Quản
- * lý kết nối CSDL tối ưu hiệu năng và an toàn thread cho dự án PRJ301.
- */
 public class DBContext {
 
     private static HikariDataSource dataSource;
@@ -54,9 +50,6 @@ public class DBContext {
         return dataSource.getConnection();
     }
 
-    /**
-     * Đóng Connection Pool khi ứng dụng shutdown.
-     */
     public static void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();

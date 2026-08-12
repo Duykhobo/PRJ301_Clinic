@@ -1,6 +1,6 @@
 # BẢN ĐỀ XUẤT ĐỀ TÀI & THIẾT KẾ HỆ THỐNG (TOPIC PROPOSAL & SRS)
 
-**Môn học**: PRJ301 – Java Web Application Development **Hình thức**: Bài tập cá nhân (Individual Assignment) **Tên đề tài**: **Hệ thống Đặt lịch Phòng khám & Spa trực tuyến tích hợp Thanh toán QR SePay (PRJ301_ClinicDB)** **Loại dự án**: NetBeans Java Web (Ant Build Project) **Hệ quản trị CSDL**: Microsoft SQL Server **Kiến trúc hệ thống**: Java Web EE MVC-V2 (Pure JDBC, Servlet, JSP, EL, JSTL, Bootstrap 5) **Tác giả**: Sinh viên thực hiện 100% độc lập
+**Môn học**: PRJ301 – Java Web Application Development **Hình thức**: Bài tập cá nhân (Individual Assignment) **Tên đề tài**: **Hệ thống Đặt lịch Phòng khám & Spa trực tuyến tích hợp Thanh toán QR SePay (PRJ301_ClinicDB)** **Loại dự án**: NetBeans Java Web (Ant Build Project) **Hệ quản trị CSDL**: Microsoft SQL Server **Kiến trúc hệ thống**: Java Web EE MVC-V2 (Pure JDBC, Servlet, JSP, EL, JSTL, Bootstrap 5) **Tác giả**: Nguyễn Thanh Duy - SE2031514
 
 ---
 
@@ -54,33 +54,33 @@ Trong thời đại công nghệ số, việc đăng ký và quản lý lịch h
 
 ```mermaid
 graph TD
-    P[Ma trận Tính năng PRJ301] --> P1[🔴 MỨC 1: BẮT BUỘC / THIẾT YẾU<br/>Core PRJ301 Hard Rules]
-    P --> P2[🟡 MỨC 2: QUAN TRỌNG / THỰC TẾ<br/>Real-World Automation & Business Logic]
-    P --> P3[🟢 MỨC 3: MỞ RỘNG / ĐIỂM CỘNG 10/10<br/>Advanced Extensions & Testing Suite]
+    P["Ma trận Tính năng PRJ301"] --> P1["🔴 MỨC 1: BẮT BUỘC / THIẾT YẾU<br/>Core PRJ301 Hard Rules"]
+    P --> P2["🟡 MỨC 2: QUAN TRỌNG / THỰC TẾ<br/>Real-World Automation & Business Logic"]
+    P --> P3["🟢 MỨC 3: MỞ RỘNG / ĐIỂM CỘNG 10/10<br/>Advanced Extensions & Testing Suite"]
 
-    P1 --> P1_1[Kiến trúc MVC-V2 & NetBeans Ant]
-    P1 --> P1_2[JDBC thuần HikariCP & SQL Server]
-    P1 --> P1_3[Mã hóa BCrypt & 3 Filters Bảo mật]
-    P1 --> P1_4[Phân quyền 4 Roles: Admin, Doctor, Patient, Receptionist]
-    P1 --> P1_5[CRUD 100% trên 7 Bảng CSDL]
-    P1 --> P1_6[Chống Race Condition: WITH UPDLOCK & UNIQUE schedule_id]
+    P1 --> P1_1["Kiến trúc MVC-V2 & NetBeans Ant"]
+    P1 --> P1_2["JDBC thuần HikariCP & SQL Server"]
+    P1 --> P1_3["Mã hóa BCrypt & 3 Filters Bảo mật"]
+    P1 --> P1_4["Phân quyền 4 Roles: Admin, Doctor, Patient, Receptionist"]
+    P1 --> P1_5["CRUD 100% trên 7 Bảng CSDL"]
+    P1 --> P1_6["Chống Race Condition: WITH UPDLOCK & UNIQUE schedule_id"]
 
-    P2 --> P2_1[Tự động thanh toán SePay VietQR & Tự sinh mã CLINIC_ID]
-    P2 --> P2_2[Đối soát Webhook SePay Tự động & Manual Verify Fallback]
-    P2 --> P2_3[Bảng ClinicSettings Cấu hình Động Hệ thống]
-    P2 --> P2_4[Bảo mật Dữ liệu Y tế Medical Privacy Scoping DAO]
+    P2 --> P2_1["Tự động thanh toán SePay VietQR & Tự sinh mã CLINIC_ID"]
+    P2 --> P2_2["Đối soát Webhook SePay Tự động & Manual Verify Fallback"]
+    P2 --> P2_3["Bảng ClinicSettings Cấu hình Động Hệ thống"]
+    P2 --> P2_4["Bảo mật Dữ liệu Y tế Medical Privacy Scoping DAO"]
 
-    P3 --> P3_1[Trigger tự động khóa/mở slot DoctorSchedules]
-    P3 --> P3_2[Stored Procedures Thống kê Doanh thu & Slot Khả dụng]
-    P3 --> P3_3[Function tính sao trung bình Bác sĩ]
-    P3 --> P3_4[Bộ kiểm thử JUnit 5, Postman, JMeter, JaCoCo, Cypress]
+    P3 --> P3_1["Trigger tự động khóa/mở slot DoctorSchedules"]
+    P3 --> P3_2["Stored Procedures Thống kê Doanh thu & Slot Khả dụng"]
+    P3 --> P3_3["Function tính sao trung bình Bác sĩ"]
+    P3 --> P3_4["Bộ kiểm thử JUnit 5, Postman, JMeter, JaCoCo, Cypress"]
 ```
 
 | Mức độ Ưu tiên | Nhóm Tính năng & Kỹ thuật | Trạng thái & Phạm vi Thực hiện | Mục tiêu Đạt được |
 | :-- | :-- | :-- | :-- |
-| 🔴**MỨC 1: BẮT BUỘC** _(Mandatory / Core Rules)_ | • Phân tầng MVC-V2 trên NetBeans Java Web (Ant).• JDBC thuần `PreparedStatement` & HikariCP SQL Server.• BCrypt password hashing & 3 Filters (`Encoding`, `Auth`, `Role`).• Phân quyền 4 vai trò (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).• CRUD 100% trên 7 Bảng (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).• Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** (Tiêu chí qua môn & Pass Hard Rules) | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 |
-| 🟡**MỨC 2: QUAN TRỌNG** _(High Priority / Real-world)_ | • Thanh toán tự động SePay VietQR Động.• Tự động sinh mã `payment_content = "CLINIC" + id`.• đối soát Webhook SePay tự động & Manual Verify cho Admin.• Bảng `ClinicSettings` Cấu hình Động (giờ mở cửa, duration slot...).• Phân quyền Bảo mật Y tế (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP** (Tiêu chí thực tế & tự động hóa) | Tạo trải nghiệm ứng dụng thực tế chuyên nghiệp |
-| 🟢**MỨC 3: MỞ RỘNG** _(Optional / Advanced 10/10)_ | • 4 thành phần SQL Server nâng cao: Trigger`trg_UpdateSlotStatusOnAppointment`, Stored Procs `sp_GetClinicRevenueReport`, `sp_GetAvailableSlotsByDoctorAndDate`, Function `fn_GetDoctorAverageRating`.• Bộ kiểm thử JUnit 5, Postman, Apache JMeter Concurrency Test, JaCoCo Coverage Report, Cypress E2E UI Test & Lighthouse. | **ĐIỂM CỘNG NÂNG CAO** (Tiêu chí chinh phục Điểm 10/10) | Thuyết phục tuyệt đối Giảng viên môn PRJ301 khi bảo vệ vấn đáp |
+| 🔴 **MỨC 1: BẮT BUỘC**<br>_(Mandatory / Core Rules)_ | - Phân tầng **MVC-V2** trên NetBeans Java Web (Ant).<br>- JDBC thuần `PreparedStatement` & **HikariCP** SQL Server.<br>- **BCrypt** password hashing & **3 Filters** (`Encoding`, `Auth`, `Role`).<br>- Phân quyền **4 vai trò** (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).<br>- **CRUD 100% trên 7 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).<br>- Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%**<br>_(Tiêu chí qua môn & Pass Hard Rules)_ | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 |
+| 🟡 **MỨC 2: QUAN TRỌNG**<br>_(High Priority / Real-world)_ | - Thanh toán tự động **SePay VietQR Động**.<br>- Tự động sinh mã `payment_content = "CLINIC" + id`.<br>- Đối soát **Webhook SePay** tự động & Manual Verify cho Admin.<br>- Bảng `ClinicSettings` **Cấu hình Động** (giờ mở cửa, duration slot,...).<br>- Phân quyền **Bảo mật Y tế** (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP**<br>_(Tiêu chí thực tế & tự động hóa)_ | Tạo trải nghiệm ứng dụng thực tế chuyên nghiệp |
+| 🟢 **MỨC 3: MỞ RỘNG**<br>_(Optional / Advanced 10/10)_ | - **4 thành phần SQL Server nâng cao**:<br> _ Trigger `trg_UpdateSlotStatusOnAppointment`<br> _ Stored Proc `sp_GetClinicRevenueReport`<br> _ Stored Proc `sp_GetAvailableSlotsByDoctorAndDate`<br> _ Function `fn_GetDoctorAverageRating`<br>- **Bộ kiểm thử nâng cao**: JUnit 5, Postman, Apache JMeter Concurrency Test, JaCoCo Coverage Report, Cypress E2E UI Test & Lighthouse. | **ĐIỂM CỘNG NÂNG CAO**<br>_(Tiêu chí chinh phục Điểm 10/10)_ | Thuyết phục tuyệt đối Giảng viên môn PRJ301 khi bảo vệ vấn đáp |
 
 ---
 
@@ -97,7 +97,13 @@ erDiagram
     Services ||--o{ Appointments : "1 - N (Booked Service)"
     DoctorSchedules ||--o| Appointments : "1 - 1 (Slot Usage)"
     Appointments ||--o| MedicalRecords : "1 - 1 (Clinical Result)"
-    ClinicSettings ||--o{ Users : "System Configuration"
+
+    %% Bảng cấu hình độc lập, không cần nối dây trực tiếp vào Users để tránh sai thực thể
+    ClinicSettings {
+        int setting_id PK
+        string key
+        string value
+    }
 ```
 
 ### 1. Chi tiết Thiết kế 7 Bảng CSDL (7 Models):
@@ -378,6 +384,120 @@ public class SystemConstant {
 
 ---
 
+### 4. Kiến trúc Xử lý Ngoại lệ Tập trung (Centralized Exception Handling)
+
+Để tránh tình trạng văng lỗi hệ thống (Stacktrace) lộ thông tin nhạy cảm cho người dùng cuối và đảm bảo trải nghiệm ứng dụng mượt mà, hệ thống được thiết kế theo kiến trúc **Centralized Exception Handling 2 tầng**:
+
+```mermaid
+graph TD
+    Client[Khách hàng / Web Request] --> Servlet[Java Servlet Controller]
+    Servlet -->|Call| Service[Service / DAO Layer]
+    Service -->|Throw Custom Exception| Catch[Try-Catch Block trong Servlet]
+    Catch -->|Catch SlotAlreadyBookedException| Redirect1[Redirect sang /patient/booking kèm errorMsg]
+    Catch -->|Catch UnauthorizedException| Redirect2[Redirect sang /login kèm 403 Access Denied]
+    Catch -->|Unhandled Exception / 500| GlobalErr[Global Error Page Dispatcher web.xml]
+    GlobalErr --> Page404[404.jsp - Not Found]
+    GlobalErr --> Page403[403.jsp - Forbidden]
+    GlobalErr --> Page500[500.jsp - Internal Server Error]
+```
+
+- **Các Lớp Ngoại lệ Tùy chỉnh (Custom Exception Classes in `src/java/exception/`)**:
+  - `AppException.java`: Lớp ngoại lệ gốc kế thừa `Exception`.
+  - `SlotAlreadyBookedException.java`: Ném ra khi phát hiện trùng lịch do Race Condition.
+  - `UnauthorizedException.java`: Ném ra khi người dùng cố truy cập tài nguyên không đủ thẩm quyền.
+  - `EntityNotFoundException.java`: Ném ra khi không tìm thấy dữ liệu (User, Service, Appointment).
+- **Cấu hình Global Error Page trong `web.xml`**:
+  ```xml
+  <error-page>
+      <error-code>403</error-code>
+      <location>/WEB-INF/views/common/403.jsp</location>
+  </error-page>
+  <error-page>
+      <error-code>404</error-code>
+      <location>/WEB-INF/views/common/404.jsp</location>
+  </error-page>
+  <error-page>
+      <error-code>500</error-code>
+      <location>/WEB-INF/views/common/500.jsp</location>
+  </error-page>
+  <error-page>
+      <exception-type>java.lang.Throwable</exception-type>
+      <location>/WEB-INF/views/common/500.jsp</location>
+  </error-page>
+  ```
+
+---
+
+### 5. Đặc tả Giao diện & Wireframe Màn hình (UI Wireframe Specifications)
+
+Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive First**, chuẩn **Bootstrap 5.3**, tông màu chủ đạo **Thẩm mỹ Y tế & Spa (Healthcare Teal & Blue)**:
+
+#### 🖼️ Wireframe 1: Trang Đặt lịch Hẹn Bệnh nhân (`/patient/booking`)
+```text
++-----------------------------------------------------------------------------------+
+|  [LOGO PRJ301 CLINIC]      Trang Chủ   Dịch Vụ   Bác Sĩ   [Xin chào, Nam! (Patient)]|
++-----------------------------------------------------------------------------------+
+|                                                                                   |
+|   ĐẶT LỊCH HẸN KHÁM & CHĂM SÓC SPA                                                |
+|   -----------------------------------------------------------------------------   |
+|   Bước 1: Chọn Dịch Vụ       : [ Khám & Tẩy trắng răng Laser Whitening - 1,500,000đ ]|
+|   Bước 2: Chọn Bác Sĩ Chuyên Khám: [ BS. Bùi Văn Minh - Chuyên khoa Nha Khoa    ]|
+|   Bước 3: Chọn Ngày Khám     : [ 2026-08-15 ] (Lịch rảnh từ T2 - CN)              |
+|                                                                                   |
+|   Bước 4: Chọn Khung Giờ Khả Dụng (Slot 60 Phút Cố Định):                         |
+|   +------------------+  +------------------+  +------------------+                |
+|   |   08:00 - 09:00  |  |   09:00 - 10:00  |  |   10:00 - 11:00  |                |
+|   |   [  Đã Đặt  ]   |  |   [   CHỌN   ]   |  |   [   CHỌN   ]   |                |
+|   +------------------+  +------------------+  +------------------+                |
+|   +------------------+  +------------------+  +------------------+                |
+|   |   14:00 - 15:00  |  |   15:00 - 16:00  |  |   16:00 - 17:00  |                |
+|   |   [   CHỌN   ]   |  |   [   CHỌN   ]   |  |   [   CHỌN   ]   |                |
+|   +------------------+  +------------------+  +------------------+                |
+|                                                                                   |
+|   Ghi chú cho Bác sĩ: [ Khách muốn tẩy trắng răng trước ngày cưới...           ]  |
+|                                                                                   |
+|                        [  BẤM ĐẶT LỊCH HẸN & THANH TOÁN  ]                       |
++-----------------------------------------------------------------------------------+
+```
+
+#### 🖼️ Wireframe 2: Màn hình Thanh toán SePay VietQR Động (`/patient/payment`)
+```text
++-----------------------------------------------------------------------------------+
+|  XÁC NHẬN THANH TOÁN VÀ XÁC NHẬN LỊCH HẸN (MÃ HẸN: #15)                          |
++--------------------------------------------------+--------------------------------+
+|  CỘT TÁCH: MÃ QR SEPAY VIETQR TỰ ĐỘNG            | THÔNG TIN LỊCH HẸN            |
+|  +--------------------------------------------+  | - Dịch vụ: Tẩy trắng răng Laser|
+|  |  [ IMAGE: MA_VIETQR_SEPAY_DYNAMIC.PNG ]    |  | - Bác sĩ: BS. Bùi Văn Minh     |
+|  |  (Mã QR đã nhúng sẵn 1,500,000đ & CLINIC15)   |  | - Thời gian: 09:00 15/08/2026  |
+|  +--------------------------------------------+  | - Số tiền: 1,500,000 VNĐ       |
+|  Ngân hàng: MBBank (Nha Khoa PRJ301)            | - Trạng thái: PENDING          |
+|  Số tài khoản: 0901234567                         | ------------------------------ |
+|  Nội dung chuyển khoản: CLINIC15 (Tự khóa)        | [⏱️ Tự đối soát SePay: 02:45s] |
+|                                                  |                                |
+|  [ 🔴 GIẢ LẬP SEPAY WEBHOOK (DEMO) ]             | [ 💳 CHỌN TIỀN MẶT KHI ĐẾN ]   |
++--------------------------------------------------+--------------------------------+
+```
+
+#### 🖼️ Wireframe 3: Dashboard Quản trị Admin & Thống kê (`/admin/dashboard`)
+```text
++-----------------------------------------------------------------------------------+
+| [ADMIN PANEL]  | Dashboard  | Users  | Services  | Appointments  | Settings       |
++-----------------------------------------------------------------------------------+
+|  BÁO CÁO THỐNG KÊ DOANH THU PHÒNG KHÁM                                            |
+|  +-------------------+  +-------------------+  +-------------------+              |
+|  | Tổng Số Lịch Hẹn |  | Doanh Thu SePay   |  | Doanh Thu Tiền Mặt|              |
+|  |     128 ca        |  |  145,000,000 VNĐ  |  |   32,000,000 VNĐ  |              |
+|  +-------------------+  +-------------------+  +-------------------+              |
+|                                                                                   |
+|  DANH SÁCH LỊCH HẸN CẦN XÁC NHẬN / DUYỆT TAY (MANUAL VERIFY)                      |
+|  | ID | Bệnh nhân   | Dịch vụ    | Số tiền     | SePay Code | Thao tác            |
+|  | 15 | Lê Hoàng Nam| Tẩy trắng  | 1,500,000đ  | CLINIC15   | [Duyệt Tay (Paid)]  |
+|  | 16 | Phạm Mai    | Skin Care  |   850,000đ  | --         | [Xác nhận Tiền Mặt] |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
 ## VI. CÁC CÔNG CỤ KIỂM THỬ BẮT BUỘC & MỞ RỘNG (TESTING TOOLS & FRAMEWORKS)
 
 ```mermaid
@@ -430,6 +550,7 @@ PRJ301_Assignment/
 │   ├── service/                    # UserService.java, AppointmentService.java, MedicalRecordService.java, SePayService.java, ClinicSettingService.java
 │   ├── controller/                 # AuthServlet.java, PatientServlet.java, DoctorServlet.java, AdminServlet.java, PaymentWebhookServlet.java
 │   ├── filter/                     # EncodingFilter.java, AuthenticationFilter.java, AuthorizationFilter.java
+│   ├── exception/                  # AppException.java, SlotAlreadyBookedException.java, UnauthorizedException.java, EntityNotFoundException.java
 │   └── util/                       # BCryptUtil.java, CSRFUtil.java, DateUtil.java, ValidationUtil.java, SePayQRUtil.java
 ├── test/                           # BỘ TEST JUNIT 5 (NETBEANS ANT TEST PACKAGE)
 │   ├── dao/                        # UserDAOTest.java, AppointmentDAOTest.java
