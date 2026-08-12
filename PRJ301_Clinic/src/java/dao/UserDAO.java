@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lớp UserDAO triển khai Interface IUserDAO (Chuẩn Interface-Based Design).
+ * Lớp UserDAO quản lý trực tiếp các thao tác CSDL cho bảng Users.
+ * Tối ưu tốc độ phát triển sát Deadline (Pragmatic Feature-First Strategy).
  * Áp dụng nguyên tắc DRY qua hàm helper mapResultSetToUser.
  */
-public class UserDAO implements IUserDAO {
+public class UserDAO {
 
     // =========================================================================
     // 🧱 1. ÁP DỤNG DRY (DON'T REPEAT YOURSELF) - HELPER MAPPER
@@ -38,7 +39,7 @@ public class UserDAO implements IUserDAO {
     }
 
     // =========================================================================
-    // 🔑 2. TRIỂN KHAI CÁC HÀM TỪ INTERFACE IUserDAO (TODO BẠN TỰ GÕ CODE)
+    // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP, ĐĂNG KÝ & KIỂM TRA (BẠN TỰ TAY GÕ CODE)
     // =========================================================================
 
     /**
@@ -50,7 +51,6 @@ public class UserDAO implements IUserDAO {
      * - Check BCryptUtil.checkPassword(rawPassword, dbHash)
      * - Trả về mapResultSetToUser(rs)
      */
-    @Override
     public User login(String username, String rawPassword) {
         // TODO: Bạn tự gõ code tại đây
         return null;
@@ -64,7 +64,6 @@ public class UserDAO implements IUserDAO {
      * - Set các tham số 1..7
      * - executeUpdate() > 0
      */
-    @Override
     public boolean register(User user) {
         // TODO: Bạn tự gõ code tại đây
         return false;
@@ -73,7 +72,6 @@ public class UserDAO implements IUserDAO {
     /**
      * TODO 3: Kiểm tra trùng username
      */
-    @Override
     public boolean existsByUsername(String username) {
         // TODO: Bạn tự gõ code tại đây
         return false;
@@ -82,7 +80,6 @@ public class UserDAO implements IUserDAO {
     /**
      * TODO 4: Kiểm tra trùng email
      */
-    @Override
     public boolean existsByEmail(String email) {
         // TODO: Bạn tự gõ code tại đây
         return false;
@@ -91,7 +88,6 @@ public class UserDAO implements IUserDAO {
     /**
      * TODO 5: Tìm User theo ID
      */
-    @Override
     public User findById(int id) {
         // TODO: Bạn tự gõ code tại đây
         return null;
@@ -100,7 +96,6 @@ public class UserDAO implements IUserDAO {
     /**
      * TODO 6: Cập nhật trạng thái Active/Banned
      */
-    @Override
     public boolean updateStatus(int id, boolean status) {
         // TODO: Bạn tự gõ code tại đây
         return false;
@@ -109,7 +104,6 @@ public class UserDAO implements IUserDAO {
     /**
      * TODO 7: Lấy toàn bộ danh sách Users (Admin)
      */
-    @Override
     public List<User> findAll() {
         // TODO: Bạn tự gõ code tại đây
         return new ArrayList<>();
