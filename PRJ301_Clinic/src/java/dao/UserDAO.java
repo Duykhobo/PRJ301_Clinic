@@ -3,6 +3,8 @@ package dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import constant.RoleConstant;
 import model.User;
@@ -12,6 +14,8 @@ import util.BCryptUtil;
  * Lớp UserDAO quản lý các thao tác CSDL cho bảng Users.
  */
 public class UserDAO extends BaseDAO<User> {
+
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
     // =========================================================================
     // 🧱 1. HELPER MAPPER (CHUẨN DRY)
@@ -42,7 +46,8 @@ public class UserDAO extends BaseDAO<User> {
      *
      * @param username    Tên đăng nhập
      * @param rawPassword Mật khẩu người dùng nhập vào
-     * @return Đối tượng User nếu thành công và tài khoản Active, ngược lại trả về null
+     * @return Đối tượng User nếu thành công và tài khoản Active, ngược lại trả về
+     *         null
      */
     public User login(String username, String rawPassword) {
         String sql = "SELECT * FROM Users WHERE username = ?";
@@ -149,7 +154,8 @@ public class UserDAO extends BaseDAO<User> {
      */
     public boolean toggleStatus(int userId) {
         User user = findById(userId);
-        if (user == null) return false;
+        if (user == null)
+            return false;
         String sql = "UPDATE Users SET status = ? WHERE id = ?";
         return executeUpdate(sql, !user.isStatus(), userId);
     }
@@ -170,26 +176,9 @@ public class UserDAO extends BaseDAO<User> {
         return queryList(sql, this::mapResultSetToUser, offset, limit);
     }
 
-    /**
-     * Đếm tổng số lượng Người dùng trong hệ thống.
-     */
-    // =========================================================================
-    // TODO [BƯỚC 7a — queryCount]: Refactor countAll()
-    // =========================================================================
-    // Hiện tại hàm này viết thủ công JDBC. Sau khi có queryCount() trong BaseDAO:
-    //
-    //   public int countAll() {
-    //       return queryCount("SELECT COUNT(*) FROM Users");
-    //   }
-    // =========================================================================
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM Users";
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException ignored) {}
-        return 0;
+        return queryCount(sql);
     }
 
     /**
@@ -217,7 +206,8 @@ public class UserDAO extends BaseDAO<User> {
      * @return Đối tượng User hoặc null nếu chưa có tài khoản
      */
     public User findByPhone(String phone) {
-        if (phone == null || phone.trim().isEmpty()) return null;
+        if (phone == null || phone.trim().isEmpty())
+            return null;
         String sql = "SELECT * FROM Users WHERE phone = ?";
         return queryOne(sql, this::mapResultSetToUser, phone.trim());
     }
@@ -229,57 +219,21 @@ public class UserDAO extends BaseDAO<User> {
      * @param user Đối tượng User cần tạo mới
      * @return ID người dùng mới tạo, hoặc -1 nếu thất bại
      */
-    // =========================================================================
-    // TODO [BƯỚC 7b — refactor]: insertAndGetId() dùng executeInsertAndGetGeneratedKey()
-    // =========================================================================
-    // Vấn đề: Hàm này tự mở Connection thủ công + tạo Logger riêng (duplicate!)
-    // trong khi BaseDAO đã có executeInsertAndGetGeneratedKey() làm việc đó.
-    //
-    // ❓ Câu hỏi: Sau khi có ThreadLocal, tại sao không cần truyền conn thủ công nữa?
-    //
-    // ✔ Hướng refactor:
-    // public int insertAndGetId(User user) {
-    //     String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
-    //                + " VALUES(?, ?, ?, ?, ?, ?, 1)";
-    //     String username = ...;  // logic hiện tại giữ nguyên
-    //     String pass = ...;
-    //     try {
-    //         // executeInsertAndGetGeneratedKey() không nhận conn nữa
-    //         // vì BaseDAO sẽ tự lấy từ DBContext.getConnection() (ThreadLocal)
-    //         return executeInsertAndGetGeneratedKey(sql, username, pass, ...);
-    //     } catch (Exception e) {
-    //         LOGGER.log(Level.SEVERE, "insertAndGetId error", e);
-    //         return -1;
-    //     }
-    // }
-    //
-    // ⚠️ Sau khi ThreadLocal sẵn sàng, cần thêm overload executeInsertAndGetGeneratedKey()
-    //     không có tham số Connection vào BaseDAO.
-    // =========================================================================
     public int insertAndGetId(User user) {
         String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
                 + " VALUES(?, ?, ?, ?, ?, ?, 1)";
-        // Dùng số điện thoại làm username (mẫu: walkin_0901234567)
+
         String username = (user.getUsername() != null && !user.getUsername().isEmpty())
-                ? user.getUsername() : "walkin_" + user.getPhone();
+                ? user.getUsername()
+                : "walkin_" + user.getPhone();
         String pass = (user.getPassword() != null) ? user.getPassword() : "WALKIN_" + System.currentTimeMillis();
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql,
-                     java.sql.Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, username);
-            ps.setString(2, pass);
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getFullname());
-            ps.setString(5, user.getPhone());
-            ps.setString(6, user.getRole() != null ? user.getRole() : "PATIENT");
-            ps.executeUpdate();
-            try (ResultSet gen = ps.getGeneratedKeys()) {
-                if (gen.next()) return gen.getInt(1);
-            }
-        } catch (SQLException e) {
-            java.util.logging.Logger.getLogger(UserDAO.class.getName())
-                    .log(java.util.logging.Level.SEVERE, "insertAndGetId error", e);
+
+        try {
+            return executeInsertAndGetGeneratedKey(sql, username, pass, user.getEmail(), user.getFullname(),
+                    user.getPhone(), user.getRole() != null ? user.getRole() : "PATIENT");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);
+            return -1;
         }
-        return -1;
     }
 }

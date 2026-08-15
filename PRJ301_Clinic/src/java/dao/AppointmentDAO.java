@@ -1,11 +1,6 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
@@ -18,35 +13,19 @@ import model.Appointment;
 import model.RevenueReport;
 
 /**
- * Lớp AppointmentDAO quản lý Đặt lịch hẹn và Giao dịch Thanh toán. ⚡ TÍCH HỢP
- * KHÓA NGUYÊN TỬ WITH (UPDLOCK) CHỐNG RACE CONDITION (ĐIỂM CỘNG 10/10).
+ * Lớp AppointmentDAO quản lý Đặt lịch hẹn và Giao dịch Thanh toán.
  */
 public class AppointmentDAO extends BaseDAO<Appointment> {
 
     private static final Logger LOGGER = Logger.getLogger(AppointmentDAO.class.getName());
 
-    // =========================================================================
-    // TODO [BƯỚC 6a — DRY]: Khai báo hằng số BASE_SELECT (SQL JOIN tái sử dụng)
-    // =========================================================================
-    // Vấn đề: Đoạn SQL JOIN này xuất hiện 8 lần trong file này:
-    //   "SELECT a.*, u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-    //   + "u_doc.fullname AS doctor_name, s.service_name "
-    //   + "FROM Appointments a "
-    //   + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-    //   + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-    //   + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-    //   + "JOIN Services s ON a.service_id = s.id "
-    //
-    // ✔ Giải pháp: Đưa vào hằng số private static final String BASE_SELECT = "...";
-    // ✔ Sau đó các method chỉ cần: String sql = BASE_SELECT + "WHERE a.patient_id = ?";
-    //
-    // ❓ Tại sao là private và static và final?
-    //    private = chỉ dùng trong AppointmentDAO
-    //    static  = thuộc về class, không phụ thuộc instance
-    //    final   = không được đổi giá trị sau khi khai báo (hằng số thất sự)
-    // =========================================================================
-    // private static final String BASE_SELECT = ???;
-
+    private static final String BASE_SELECT = "SELECT a.*, u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
+            + "u_doc.fullname AS doctor_name, s.service_name "
+            + "FROM Appointments a "
+            + "JOIN Users u_pat ON a.patient_id = u_pat.id "
+            + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
+            + "JOIN Users u_doc ON dp.user_id = u_doc.id "
+            + "JOIN Services s ON a.service_id = s.id ";
 
     protected Appointment mapResultSetToAppointment(ResultSet rs) throws SQLException {
         Appointment app = new Appointment();
@@ -86,156 +65,111 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         return app;
     }
 
-    public boolean createBookingAtomic(Appointment app) {
-        // =========================================================================
-        // TODO: BÀI TẬP CỘT MỐC 1 & 2 - TRIỂN KHAI ĐẶT LỊCH NGUYÊN TỬ (ATOMIC BOOKING)
-        // =========================================================================
-        // Bước 1: Sử dụng executeTransaction(conn -> { ... }) để mở Transaction chung
-        // connection.
-        // Bước 2: Viết câu SQL Lock Hint: "SELECT is_available, start_time FROM
-        // DoctorSchedules WITH (UPDLOCK, HOLDLOCK) WHERE id = ?"
-        // Bước 3: Thực thi queryOne kiểm tra slot. Nếu null hoặc !is_available -> throw
-        // new SlotAlreadyBookedException(...)
-        // Bước 4: Thực thi executeInsertAndGetGeneratedKey để INSERT vào bảng
-        // Appointments.
-        // Bước 5: Cập nhật mã payment_content dạng "CLN" + newAppId bằng executeUpdate.
-        // Bước 6: Cập nhật is_available = 0 ở bảng DoctorSchedules bằng executeUpdate.
-        // Bước 7: Trả về true khi thành công.
-        // =========================================================================
+    /**
+     * Tạo lịch hẹn mới (Atomic Booking).
+     * Hàm này được quản lý tự động bởi TransactionFilter. Không cần try-catch
+     * rollback thủ công.
+     */
+    public boolean createBookingAtomic(Appointment app) throws SlotAlreadyBookedException {
+
+        // 1. Kiểm tra Slot có rảnh không và khóa Slot (WITH UPDLOCK)
+        String lockSql = "SELECT ds.start_time, "
+                + "CASE "
+                + "  WHEN ds.work_date < CAST(GETDATE() AS DATE) THEN 0 "
+                + "  WHEN ds.work_date = CAST(GETDATE() AS DATE) AND ds.start_time <= CAST(GETDATE() AS TIME) THEN 0 "
+                + "  WHEN EXISTS ( "
+                + "      SELECT 1 FROM Appointments a "
+                + "      WHERE a.schedule_id = ds.id AND a.status IN ('PENDING', 'CONFIRMED', 'COMPLETED') "
+                + "  ) THEN 0 "
+                + "  ELSE ds.is_available "
+                + "END AS is_slot_available "
+                + "FROM DoctorSchedules ds WITH (UPDLOCK, HOLDLOCK) WHERE ds.id = ?";
+
+        Appointment lockedAppt = queryOne(lockSql, rs -> {
+            boolean isSlotAvailable = rs.getInt("is_slot_available") == 1;
+            if (!isSlotAvailable) {
+                return null;
+            }
+
+            Appointment tempAppt = new Appointment();
+            tempAppt.setStartTime(rs.getTime("start_time"));
+            return tempAppt;
+        }, app.getScheduleId());
+
+        if (lockedAppt == null || lockedAppt.getStartTime() == null) {
+            throw new SlotAlreadyBookedException(
+                    "Khung giờ này vừa được đăng ký bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
+        }
+
+        if (app.getStartTime() == null) {
+            app.setStartTime(lockedAppt.getStartTime());
+        }
 
         try {
-            return executeTransaction(conn -> {
-                String lockSql = "SELECT ds.start_time, "
-                        + "CASE "
-                        + "  WHEN ds.work_date < CAST(GETDATE() AS DATE) THEN 0 "
-                        + "  WHEN ds.work_date = CAST(GETDATE() AS DATE) AND ds.start_time <= CAST(GETDATE() AS TIME) THEN 0 "
-                        + "  WHEN EXISTS ( "
-                        + "      SELECT 1 FROM Appointments a "
-                        + "      WHERE a.schedule_id = ds.id AND a.status IN ('PENDING', 'CONFIRMED', 'COMPLETED') "
-                        + "  ) THEN 0 "
-                        + "  ELSE ds.is_available "
-                        + "END AS is_slot_available "
-                        + "FROM DoctorSchedules ds WITH (UPDLOCK, HOLDLOCK) WHERE ds.id = ?";
-                Time slotStarTime = queryOne(conn, lockSql, rs -> {
-                    boolean isSlotAvailable = rs.getInt("is_slot_available") == 1;
-                    if (!isSlotAvailable)
-                        return null;
-                    return rs.getTime("start_time");
-                }, app.getScheduleId());
-                if (slotStarTime == null)
-                    throw new SlotAlreadyBookedException(
-                            "Khung giờ này vừa được đăng ký bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
-                if (app.getStartTime() == null)
-                    app.setStartTime(slotStarTime);
-                String insertSql = "INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, notes)"
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                int newAppId = executeInsertAndGetGeneratedKey(conn, insertSql, app.getPatientId(),
+            // 2. Thực hiện Insert Lịch Hẹn
+            String insertSql = "INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, notes) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        app.getDoctorId(),
+            int newAppId = executeInsertAndGetGeneratedKey(insertSql,
+                    app.getPatientId(),
+                    app.getDoctorId(),
+                    app.getServiceId(),
+                    app.getScheduleId(),
+                    app.getAppointmentDate(),
+                    app.getStartTime(),
+                    app.getTotalPrice(),
+                    app.getStatus() != null ? app.getStatus() : SystemConstant.STATUS_PENDING,
+                    app.getPaymentStatus() != null ? app.getPaymentStatus() : SystemConstant.PAYMENT_UNPAID,
+                    app.getPaymentMethod() != null ? app.getPaymentMethod() : SystemConstant.METHOD_SEPAY_QR,
+                    app.getNotes());
 
-                        app.getServiceId(),
+            if (newAppId <= 0) {
+                return false;
+            }
 
-                        app.getScheduleId(),
+            // 3. Cập nhật mã Payment Content (Dành cho SePay)
+            String paymentContent = "CLN" + newAppId;
+            app.setPaymentContent(paymentContent);
 
-                        app.getAppointmentDate(),
+            String contentSql = "UPDATE Appointments SET payment_content = ? WHERE id = ?";
+            executeUpdate(contentSql, paymentContent, newAppId);
 
-                        app.getStartTime(),
+            // 4. Cập nhật khóa Slot trong Database
+            String slotSql = "UPDATE DoctorSchedules SET is_available = 0 WHERE id = ?";
+            executeUpdate(slotSql, app.getScheduleId());
 
-                        app.getTotalPrice(),
+            return true;
 
-                        app.getStatus() != null ? app.getStatus() : SystemConstant.STATUS_PENDING,
-
-                        app.getPaymentStatus() != null ? app.getPaymentStatus() : SystemConstant.PAYMENT_UNPAID,
-
-                        app.getPaymentMethod() != null ? app.getPaymentMethod() : SystemConstant.METHOD_SEPAY_QR,
-
-                        app.getNotes());
-                app.setId(newAppId);
-                String paymentContent = "CLN" + newAppId;
-                app.setPaymentContent(paymentContent);
-                String contentSql = "UPDATE Appointments SET payment_content = ? WHERE id = ?";
-                executeUpdate(conn, contentSql, paymentContent, newAppId);
-                String slotSql = "UPDATE DoctorSchedules SET is_available = 0 WHERE id = ?";
-                executeUpdate(conn, slotSql, app.getScheduleId());
-                return true;
-            });
-        } catch (SlotAlreadyBookedException e) {
-            throw e;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi tạo booking atomic", e);
-            return false;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi DB khi tạo booking, kích hoạt Rollback qua TransactionFilter", e);
+            throw new RuntimeException("Lỗi thao tác cơ sở dữ liệu khi đặt lịch", e);
         }
     }
 
     public Appointment findById(int id) {
-        String sql = "SELECT a.*, u.fullname AS patient_name, u.phone AS patient_phone, doc_u.fullname AS doctor_name, s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.patient_id = u.id "
-                + "JOIN DoctorProfiles d ON a.doctor_id = d.id "
-                + "JOIN Users doc_u ON d.user_id = doc_u.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE a.id = ?";
         return queryOne(sql, this::mapResultSetToAppointment, id);
     }
 
     public List<Appointment> findByPatientId(int patientId) {
-        String sql = "SELECT a.*, u.fullname AS patient_name, u.phone AS patient_phone, doc_u.fullname AS doctor_name, s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.patient_id = u.id "
-                + "JOIN DoctorProfiles d ON a.doctor_id = d.id "
-                + "JOIN Users doc_u ON d.user_id = doc_u.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE a.patient_id = ? "
                 + "ORDER BY a.created_at DESC";
         return queryList(sql, this::mapResultSetToAppointment, patientId);
     }
 
     public List<Appointment> findPatientAppointmentsPaginated(int patientId, int offset, int limit) {
-        String sql = "SELECT a.*, "
-                + "u.fullname AS patient_name, "
-                + "u.phone AS patient_phone, "
-                + "doc_u.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u ON a.patient_id = u.id "
-                + "JOIN DoctorProfiles d ON a.doctor_id = d.id "
-                + "JOIN Users doc_u ON d.user_id = doc_u.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE a.patient_id = ? "
                 + "ORDER BY a.created_at DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         return queryList(sql, this::mapResultSetToAppointment, patientId, offset, limit);
     }
 
-    // =========================================================================
-    // TODO [BƯỚC 6b — queryCount]: Refactor các method count() dưới đây
-    // =========================================================================
-    // Hiện tại mỗi hàm count viết ~8 dòng JDBC thủ công. Sau khi implement queryCount()
-    // trong BaseDAO, hãy refactor tất cả về 1 dòng:
-    //
-    //   Trước:                              Sau:
-    //   public int countXxx() {           public int countXxx() {
-    //       String sql = "...";               return queryCount("...", params);
-    //       try (Connection conn = ...) {  }
-    //           ...8 dòng...
-    //       }
-    //       return 0;
-    //   }
-    // =========================================================================
     public int countPatientAppointments(int patientId) {
         String sql = "SELECT COUNT(*) FROM Appointments WHERE patient_id = ?";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, patientId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi đếm số lượng cuộc hẹn bệnh nhân", e);
-        }
-        return 0;
+        return queryCount(sql, patientId);
     }
 
     public boolean updatePaymentSuccess(int appointmentId, String transactionCode) {
@@ -245,15 +179,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     public List<Appointment> findAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? AND a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC";
         return queryList(sql, this::mapResultSetToAppointment, doctorUserId, date);
@@ -261,15 +187,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public List<Appointment> findAppointmentsByDoctorUserAndDatePaginated(int doctorUserId, String date, int offset,
             int limit) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? AND a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -278,29 +196,11 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public int countAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {
         String sql = "SELECT COUNT(*) FROM Appointments a JOIN DoctorProfiles dp ON a.doctor_id = dp.id WHERE dp.user_id = ? AND a.appointment_date = ?";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, doctorUserId);
-            ps.setObject(2, date);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next())
-                    return rs.getInt(1);
-            }
-        } catch (SQLException ignored) {
-        }
-        return 0;
+        return queryCount(sql, doctorUserId, date);
     }
 
     public List<Appointment> findAppointmentsByDoctorUserPaginated(int doctorUserId, int offset, int limit) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? "
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -308,15 +208,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     public List<Appointment> findAppointmentsByDoctorUser(int doctorUserId) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? "
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC";
         return queryList(sql, this::mapResultSetToAppointment, doctorUserId);
@@ -324,16 +216,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public int countAppointmentsByDoctorUser(int doctorUserId) {
         String sql = "SELECT COUNT(*) FROM Appointments a JOIN DoctorProfiles dp ON a.doctor_id = dp.id WHERE dp.user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, doctorUserId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next())
-                    return rs.getInt(1);
-            }
-        } catch (SQLException ignored) {
-        }
-        return 0;
+        return queryCount(sql, doctorUserId);
     }
 
     public String findNextOrCurrentAppointmentDateForDoctor(int doctorUserId) {
@@ -341,46 +224,27 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
                 + "WHERE dp.user_id = ? AND a.appointment_date >= CAST(GETDATE() AS DATE) "
                 + "ORDER BY a.appointment_date ASC";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, doctorUserId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    java.sql.Date d = rs.getDate(1);
-                    if (d != null)
-                        return d.toString();
-                }
-            }
-        } catch (SQLException ignored) {
-        }
-        return LocalDate.now().toString();
+
+        Appointment appt = queryOne(sql, rs -> {
+            Appointment a = new Appointment();
+            a.setAppointmentDate(rs.getDate(1));
+            return a;
+        }, doctorUserId);
+
+        return (appt != null && appt.getAppointmentDate() != null)
+                ? appt.getAppointmentDate().toString()
+                : LocalDate.now().toString();
     }
 
     public List<Appointment> findAllAppointmentsByDate(String date) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC";
         return queryList(sql, this::mapResultSetToAppointment, date);
     }
 
     public List<Appointment> findAllAppointmentsByDatePaginated(String date, int offset, int limit) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "WHERE a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -389,58 +253,25 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public int countAllAppointmentsByDate(String date) {
         String sql = "SELECT COUNT(*) FROM Appointments WHERE appointment_date = ?";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setObject(1, date);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next())
-                    return rs.getInt(1);
-            }
-        } catch (SQLException ignored) {
-        }
-        return 0;
+        return queryCount(sql, date);
     }
 
     public List<Appointment> findAllAppointmentsPaginated(int offset, int limit) {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         return queryList(sql, this::mapResultSetToAppointment, offset, limit);
     }
 
     public List<Appointment> findAllAppointments() {
-        String sql = "SELECT a.*, "
-                + "u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
-                + "u_doc.fullname AS doctor_name, "
-                + "s.service_name "
-                + "FROM Appointments a "
-                + "JOIN Users u_pat ON a.patient_id = u_pat.id "
-                + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
-                + "JOIN Users u_doc ON dp.user_id = u_doc.id "
-                + "JOIN Services s ON a.service_id = s.id "
+        String sql = BASE_SELECT
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC";
         return queryList(sql, this::mapResultSetToAppointment);
     }
 
     public int countAllAppointments() {
         String sql = "SELECT COUNT(*) FROM Appointments";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next())
-                    return rs.getInt(1);
-            }
-        } catch (SQLException ignored) {
-        }
-        return 0;
+        return queryCount(sql);
     }
 
     public boolean updateStatus(int appointmentId, String newStatus) {

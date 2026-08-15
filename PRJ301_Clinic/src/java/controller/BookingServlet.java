@@ -16,11 +16,7 @@ import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.DoctorScheduleDAO;
 import exception.SlotAlreadyBookedException;
-import model.Appointment;
-import model.DoctorProfile;
-import model.DoctorSchedule;
-import model.Service;
-import model.User;
+import model.*;
 import service.BookingService;
 import service.ClinicService;
 import util.EmailUtil;
@@ -130,18 +126,6 @@ public class BookingServlet extends HttpServlet {
             app.setPaymentMethod(SystemConstant.METHOD_SEPAY_QR);
             app.setNotes(notes);
 
-            // =========================================================================
-            // TODO: BÀI TẬP CỘT MỐC 4 - TRIỂN KHAI CONTROLLER LAYER (BOOKING SERVLET)
-            //
-            // 1. Parse các parameter: serviceId, doctorId, scheduleId, appointmentDate,
-            // notes
-            // 2. Validate dữ liệu đầu vào. Nếu thiếu -> nạp message lỗi và return
-            // 3. Khởi tạo đối tượng Appointment và set thông tin
-            // 4. Gọi bookingService.createBookingAtomic(app)
-            // 5. Nếu thành công -> gửi mail async và chuyển hướng tới trang thanh toán
-            // 6. Bắt lỗi SlotAlreadyBookedException -> set message lỗi và trả về view
-            // =========================================================================
-
             boolean success = bookingService.createBookingAtomic(app);
 
             if (success) {
@@ -191,9 +175,11 @@ public class BookingServlet extends HttpServlet {
                     String[] parts = dateStr.split("/");
                     if (parts.length == 3) {
                         if (parts[0].length() == 4) { // yyyy/mm/dd
-                            dateStr = parts[0] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-" + String.format("%02d", Integer.parseInt(parts[2]));
+                            dateStr = parts[0] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-"
+                                    + String.format("%02d", Integer.parseInt(parts[2]));
                         } else { // dd/mm/yyyy
-                            dateStr = parts[2] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-" + String.format("%02d", Integer.parseInt(parts[0]));
+                            dateStr = parts[2] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-"
+                                    + String.format("%02d", Integer.parseInt(parts[0]));
                         }
                     }
                 }
