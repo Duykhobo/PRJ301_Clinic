@@ -3,9 +3,6 @@ package model;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-/**
- * Model ClinicSetting - Ánh xạ bảng ClinicSettings trong CSDL SQL Server (System Configs).
- */
 public class ClinicSetting implements Serializable {
 
     private int id;

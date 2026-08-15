@@ -76,6 +76,14 @@ public class DoctorSchedule implements Serializable {
         return isAvailable;
     }
 
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public boolean getIsAvailable() {
+        return isAvailable;
+    }
+
     public void setIsAvailable(boolean isAvailable) {
         this.isAvailable = isAvailable;
     }

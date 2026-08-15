@@ -12,7 +12,12 @@ import java.util.logging.Logger;
 
 /**
  * Lớp trừu tượng BaseDAO giúp triệt tiêu 90% lặp code trong JDBC (DRY Principle).
- * Tự động quản lý Connection Pool HikariCP, try-with-resources và tham số Varargs (Object... params).
+ * Tự động quản lý Connection qua {@link config.DBContext}, try-with-resources và tham số Varargs.
+ *
+ * <p><b>📖 Sau khi tích hợp ThreadLocal (MVC-V2):</b><br>
+ * {@code DBContext.getConnection()} không còn tạo connection mới mỗi lần gọi nữa — nó trả về
+ * connection đang được ThreadLocal giữ cho request hiện tại. Nhờ đó, tất cả các method trong
+ * BaseDAO tự động tham gia vào cùng 1 Transaction mà TransactionFilter đã mở.</p>
  *
  * @param <T> Kiểu dữ liệu Model POJO
  */
@@ -62,6 +67,50 @@ public abstract class BaseDAO<T> {
     }
 
     /**
+     * Truy vấn {@code SELECT COUNT(*)} trả về một số nguyên.
+     *
+     * <p><b>📖 Tại sao cần method này?</b><br>
+     * Hiện tại {@code AppointmentDAO} và {@code UserDAO} có 5–6 hàm {@code countXxx()} đều
+     * viết thủ công JDBC (~8 dòng mỗi hàm). Method này thay thế tất cả bằng 1 dòng gọi.</p>
+     *
+     * <p><b>📖 Logic cần implement — tương tự {@link #queryOne} nhưng trả về int:</b></p>
+     * <ol>
+     *   <li>Mở connection bằng {@code DBContext.getConnection()}.</li>
+     *   <li>Tạo {@code PreparedStatement}, gán params bằng {@code setParameters()}.</li>
+     *   <li>Thực thi và đọc {@code ResultSet}: nếu {@code rs.next()} → trả về {@code rs.getInt(1)}.</li>
+     *   <li>Bắt {@code SQLException} → log lỗi.</li>
+     *   <li>Mặc định trả về {@code 0}.</li>
+     * </ol>
+     *
+     * <p><b>Ví dụ sau khi implement:</b></p>
+     * <pre>
+     * // AppointmentDAO — thay thế 8 dòng JDBC thủ công:
+     * public int countPatientAppointments(int patientId) {
+     *     return queryCount("SELECT COUNT(*) FROM Appointments WHERE patient_id = ?", patientId);
+     * }
+     * </pre>
+     *
+     * @param sql    Câu SQL {@code SELECT COUNT(*)}
+     * @param params Tham số cho PreparedStatement
+     * @return Kết quả đếm, mặc định là {@code 0} nếu có lỗi
+     */
+    protected int queryCount(String sql, Object... params) {
+        // TODO [BƯỚC 2]: Implement queryCount()
+        // Gợi ý cấu trúc:
+        // try (Connection conn = DBContext.getConnection();
+        //      PreparedStatement ps = conn.prepareStatement(sql)) {
+        //     setParameters(ps, params);
+        //     try (ResultSet rs = ps.executeQuery()) {
+        //         if (rs.next()) return rs.getInt(1);
+        //     }
+        // } catch (SQLException e) {
+        //     LOGGER.log(Level.SEVERE, "Lỗi queryCount: " + sql, e);
+        // }
+        // return 0;
+        throw new UnsupportedOperationException("TODO: Implement queryCount()");
+    }
+
+    /**
      * Thực thi lệnh INSERT, UPDATE, DELETE.
      *
      * @return số dòng bị ảnh hưởng (affected rows) > 0 nếu thành công.
@@ -77,6 +126,108 @@ public abstract class BaseDAO<T> {
             LOGGER.log(Level.SEVERE, "Lỗi khi thực thi executeUpdate: " + sql, e);
         }
         return false;
+    }
+
+    /**
+     * Overload queryOne cho phép thực thi chung trong 1 Connection Transaction.
+     */
+    protected <E> E queryOne(Connection conn, String sql, RowMapper<E> mapper, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapper.mapRow(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Overload executeUpdate cho phép thực thi chung trong 1 Connection Transaction.
+     */
+    protected boolean executeUpdate(Connection conn, String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Helper thực thi INSERT và tự động lấy ID sinh tự động (Generated Key) trong 1 Transaction.
+     */
+    protected int executeInsertAndGetGeneratedKey(Connection conn, String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            setParameters(ps, params);
+            int affected = ps.executeUpdate();
+            if (affected > 0) {
+                try (ResultSet gk = ps.getGeneratedKeys()) {
+                    if (gk.next()) {
+                        return gk.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    // =========================================================================
+    // ⚠️ DEPRECATED ZONE — Sau khi implement TransactionFilter
+    // =========================================================================
+    // Các method bên dưới (TransactionCallback + executeTransaction) sẽ trở nên
+    // không cần thiết sau khi TransactionFilter đảm nhiệm toàn bộ việc quản lý
+    // transaction. Giữ lại ở đây để tham khảo trong quá trình học.
+    //
+    // ❓ Câu hỏi tự suy ngẫm:
+    //    Sau khi có TransactionFilter + ThreadLocal, tại sao executeTransaction()
+    //    trở nên thừa? Điều gì thay thế nó?
+    // =========================================================================
+
+    /**
+     * Functional Interface phục vụ thực thi Transaction chung 1 Connection.
+     *
+     * @deprecated Sử dụng TransactionFilter + ThreadLocal thay thế. Giữ lại để tham khảo.
+     */
+    @Deprecated
+    @FunctionalInterface
+    protected interface TransactionCallback<E> {
+        E doInTransaction(Connection conn) throws Exception;
+    }
+
+    /**
+     * Helper quản lý Giao dịch Nguyên tử (Atomic Transaction Helper).
+     * Tự động mở connection, disable auto-commit, commit khi thành công và rollback khi gặp sự cố.
+     */
+    protected <E> E executeTransaction(TransactionCallback<E> action) throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu Transaction
+
+            E result = action.doInTransaction(conn); // Thực thi các bước dùng chung connection này
+
+            conn.commit(); // Commit giao dịch
+            return result;
+
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback an toàn khi gặp sự cố
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi rollback transaction", ex);
+                }
+            }
+            throw e; // Ném lại ngoại lệ cho tầng trên xử lý
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close(); // Đóng connection trả lại Pool
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi đóng connection", ex);
+                }
+            }
+        }
     }
 
     /**

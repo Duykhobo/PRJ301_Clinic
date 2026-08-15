@@ -1,10 +1,17 @@
 package constant;
 
 /**
- * SystemConstant - Quản lý các Hằng số Trạng thái & Default Fallbacks của Hệ
- * thống.
+ * SystemConstant - Quản lý các Hằng số Trạng thái, Key Session, Attributes & Default Fallbacks của Hệ thống.
  */
 public class SystemConstant {
+
+    // Session & Request Attribute Keys
+    public static final String SESSION_USER = "LOGIN_USER";
+    public static final String CSRF_TOKEN_SESSION = "CSRF_TOKEN";
+    public static final String CSRF_TOKEN_REQ_ATTR = "csrfToken";
+    public static final String ERROR_MESSAGE_ATTR = "errorMessage";
+    public static final String SUCCESS_MESSAGE_ATTR = "successMessage";
+    public static final String REDIRECT_PARAM = "redirect";
 
     // Appointment Status
     public static final String STATUS_PENDING = "PENDING";
@@ -15,6 +22,8 @@ public class SystemConstant {
     // Payment Status
     public static final String PAYMENT_UNPAID = "UNPAID";
     public static final String PAYMENT_PAID = "PAID";
+    public static final String PAYMENT_REFUND_PENDING = "REFUND_PENDING";
+    public static final String PAYMENT_REFUNDED = "REFUNDED";
 
     // Payment Methods
     public static final String METHOD_CASH = "CASH";
@@ -31,8 +40,10 @@ public class SystemConstant {
     public static final String KEY_SEPAY_BANK_NAME = "SEPAY_BANK_NAME";
     public static final String KEY_SEPAY_BANK_ACC = "SEPAY_BANK_ACC";
     public static final String KEY_SEPAY_ACCOUNT_HOLDER = "SEPAY_ACCOUNT_HOLDER";
+    public static final String KEY_SEPAY_SECRET_KEY = "SEPAY_SECRET_KEY";
+    public static final String KEY_SEPAY_API_KEY = "SEPAY_API_KEY";
 
-    // Default Fallbacks (Dùng khi Database chưa khởi tạo xong)
+    // Default Fallbacks
     public static final int DEFAULT_SLOT_DURATION_MINUTES = 60;
     public static final String[] DEFAULT_CLINIC_TIME_SLOTS = {
             "08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"

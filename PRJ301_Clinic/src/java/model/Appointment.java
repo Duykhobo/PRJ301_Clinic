@@ -143,6 +143,9 @@ public class Appointment implements Serializable {
     }
 
     public String getPaymentContent() {
+        if (paymentContent == null || paymentContent.trim().isEmpty()) {
+            return id > 0 ? "CLN" + id : "";
+        }
         return paymentContent;
     }
 

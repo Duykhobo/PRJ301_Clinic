@@ -1,0 +1,68 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<footer class="footer-glass mt-auto py-5 border-top" style="border-color: rgba(56, 189, 248, 0.15) !important; background: rgba(11, 19, 43, 0.95);">
+    <div class="container">
+        <div class="row g-4">
+            <%-- Cột 1: Thông tin phòng khám --%>
+            <div class="col-lg-4">
+                <div class="d-flex align-items-center gap-2 fw-bold text-white fs-4 mb-3">
+                    <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
+                        <i class="fa-solid fa-heart-pulse fs-6"></i>
+                    </div>
+                    <span class="fw-bold text-white">${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : 'PRJ301 Clinic & Spa'}</span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Hệ thống Phòng Khám Nha Khoa &amp; Spa Y Khoa Quốc Tế Hàng Đầu. Đội ngũ y bác sĩ chứng chỉ hành nghề, ứng dụng trang thiết bị y khoa hiện đại.
+                </p>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-success bg-opacity-20 text-emerald border border-success border-opacity-30 rounded-pill px-3 py-2 fs-7">
+                        <i class="fa-solid fa-shield-check me-1"></i>Đạt Chuẩn Y Tế Quốc Tế JCI
+                    </span>
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-white-50 text-white-hover fs-5"><i class="fa-brands fa-facebook text-cyan"></i></a>
+                    <a href="#" class="text-white-50 text-white-hover fs-5"><i class="fa-brands fa-youtube text-danger"></i></a>
+                    <a href="#" class="text-white-50 text-white-hover fs-5"><i class="fa-brands fa-tiktok text-white"></i></a>
+                    <a href="#" class="text-white-50 text-white-hover fs-5"><i class="fa-solid fa-envelope text-emerald"></i></a>
+                </div>
+            </div>
+
+            <%-- Cột 2: Điều hướng nhanh --%>
+            <div class="col-6 col-lg-2">
+                <h6 class="fw-bold text-white mb-3">Liên Kết Nhanh</h6>
+                <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                    <li><a href="${pageContext.request.contextPath}/MainController?action=home" class="text-white-50 text-white-hover text-decoration-none">Trang Chủ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/MainController?action=home#services" class="text-white-50 text-white-hover text-decoration-none">Dịch Vụ &amp; Spa</a></li>
+                    <li><a href="${pageContext.request.contextPath}/MainController?action=home#doctors" class="text-white-50 text-white-hover text-decoration-none">Đội Ngũ Bác Sĩ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="text-white-50 text-white-hover text-decoration-none">Đặt Lịch Khám</a></li>
+                </ul>
+            </div>
+
+            <%-- Cột 3: Giờ làm việc --%>
+            <div class="col-6 col-lg-3">
+                <h6 class="fw-bold text-white mb-3">Giờ Làm Việc Y Tế</h6>
+                <ul class="list-unstyled small d-flex flex-column gap-2 text-white-50 mb-0">
+                    <li><i class="fa-regular fa-clock me-2 text-cyan"></i>${not empty clinicSettings['OPENING_HOURS'] ? clinicSettings['OPENING_HOURS'] : '08:00 - 20:00 (Từ Thứ 2 đến Chủ Nhật)'}</li>
+                    <li class="text-emerald fw-semibold"><i class="fa-solid fa-circle-check me-2"></i>Mở cửa khám xuyên Tết &amp; Lễ</li>
+                </ul>
+            </div>
+
+            <%-- Cột 4: Liên hệ --%>
+            <div class="col-lg-3">
+                <h6 class="fw-bold text-white mb-3">Liên Hệ Khám Bệnh</h6>
+                <ul class="list-unstyled small d-flex flex-column gap-2 text-white-50 mb-0">
+                    <li><i class="fa-solid fa-location-dot me-2 text-cyan"></i>${not empty clinicSettings['CLINIC_ADDRESS'] ? clinicSettings['CLINIC_ADDRESS'] : '123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM'}</li>
+                    <li><i class="fa-solid fa-phone me-2 text-cyan"></i>Hotline Khám: <strong class="text-white">${not empty clinicSettings['CLINIC_HOTLINE'] ? clinicSettings['CLINIC_HOTLINE'] : '0901 234 567'}</strong></li>
+                    <li><i class="fa-solid fa-qrcode me-2 text-emerald"></i>Thanh toán tự động VietQR SePay</li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="my-4 border-secondary opacity-25">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center small text-white-50">
+            <p class="mb-0">&copy; 2026 PRJ301 Clinic & Spa Y Khoa. Tất cả quyền được bảo lưu.</p>
+            <p class="mb-0">Hệ Thống Đặt Lịch Y Tế Thông Minh - Đồ Án PRJ301 FPT University</p>
+        </div>
+    </div>
+</footer>
+

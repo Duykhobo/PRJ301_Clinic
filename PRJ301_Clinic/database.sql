@@ -84,19 +84,19 @@ GO
 -- Status: PENDING, CONFIRMED, COMPLETED, CANCELLED
 -- Payment Status: UNPAID, PAID
 -- Payment Method: CASH, SEPAY_QR
--- Ràng buộc UNIQUE(schedule_id): Ngăn chặn 2 cuộc hẹn trỏ cùng 1 slot giờ
+-- Ràng buộc Foreign Key schedule_id (Không dùng UNIQUE cứng để cho phép đặt lại ca đã hủy)
 -- ============================================================================
 CREATE TABLE Appointments (
     id INT IDENTITY(1,1) PRIMARY KEY,
     patient_id INT NOT NULL FOREIGN KEY REFERENCES Users(id),
     doctor_id INT NOT NULL FOREIGN KEY REFERENCES DoctorProfiles(id),
     service_id INT NOT NULL FOREIGN KEY REFERENCES Services(id),
-    schedule_id INT NOT NULL UNIQUE FOREIGN KEY REFERENCES DoctorSchedules(id),
+    schedule_id INT NOT NULL FOREIGN KEY REFERENCES DoctorSchedules(id),
     appointment_date DATE NOT NULL, -- Historical Snapshot
     start_time TIME NOT NULL,       -- Historical Snapshot
     total_price DECIMAL(18,2) NOT NULL, -- Historical Price Snapshot
     status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED')),
-    payment_status VARCHAR(20) DEFAULT 'UNPAID' CHECK (payment_status IN ('UNPAID', 'PAID')),
+    payment_status VARCHAR(20) DEFAULT 'UNPAID' CHECK (payment_status IN ('UNPAID', 'PAID', 'REFUND_PENDING', 'REFUNDED')),
     payment_method VARCHAR(20) DEFAULT 'CASH' CHECK (payment_method IN ('CASH', 'SEPAY_QR')),
     payment_content VARCHAR(100), -- Nội dung chuyển khoản yêu cầu bởi SePay Webhook (Cú pháp: CLINIC<id>)
     transaction_code VARCHAR(50),  -- Mã giao dịch ngân hàng trả về từ SePay Webhook
@@ -135,50 +135,177 @@ CREATE TABLE ClinicSettings (
 GO
 
 -- ============================================================================
--- DỮ LIỆU MẪU (SEED DATA)
--- Mật khẩu hash BCrypt cho tất cả tài khoản mẫu bên dưới là "123456":
--- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+-- INDEXES (PHÂN TÍCH TỪ QUERY THỰC TẾ TRONG DAO LAYER)
+-- Lý thuyết: Index tăng tốc SELECT bằng B-Tree lookup, đánh đổi bằng
+-- overhead nhỏ khi INSERT/UPDATE. Chỉ tạo index trên cột thực sự dùng
+-- trong WHERE / JOIN / ORDER BY của ứng dụng.
 -- ============================================================================
 
--- 1. Chèn Users
-INSERT INTO Users (username, password, email, fullname, phone, role, status) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@clinic.com', N'Quản Trị Viên', '0901234567', 'ADMIN', 1),
-('drminh', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
-('drlan', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
-('patient1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
-('patient2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1);
+-- ─────────────────────────────────────────────────
+-- BẢNG: Users
+-- ─────────────────────────────────────────────────
+-- WHY: UserDAO.findByUsername() gọi mỗi lần login → mỗi request xác thực.
+--      username đã có UNIQUE constraint → SQL Server tự tạo Unique Index.
+--      email cũng UNIQUE → tự có index. Không cần thêm thủ công.
 
--- 2. Chèn Services
+-- WHY: UserDAO.findByRole() dùng để Admin lọc danh sách Bác sĩ/Lễ tân.
+--      role là cột low-cardinality (4 giá trị) nhưng bảng Users nhỏ (<1000)
+--      → Index giúp tránh Full Table Scan khi mở rộng.
+CREATE INDEX IX_Users_Role ON Users(role);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: Appointments
+-- ─────────────────────────────────────────────────
+-- WHY: HistoryServlet → AppointmentDAO.getByPatientIdPaginated()
+--      Query: WHERE a.patient_id = ? ORDER BY a.appointment_date DESC
+--      Đây là query tần suất cao nhất: mỗi lần bệnh nhân vào /history.
+--      INCLUDE snapshot columns để tránh Key Lookup vào clustered index.
+CREATE INDEX IX_Appointments_PatientId_Date
+    ON Appointments(patient_id, appointment_date DESC)
+    INCLUDE (status, payment_status, payment_method, total_price);
+GO
+
+-- WHY: AppointmentDAO.countByPatientId() — đếm tổng cho Pagination.
+--      Query: SELECT COUNT(*) FROM Appointments WHERE patient_id = ?
+--      Index trên patient_id giúp COUNT không cần scan toàn bảng.
+--      (Đã covered bởi IX_Appointments_PatientId_Date phía trên)
+
+-- WHY: DoctorServlet → AppointmentDAO.getByDoctorIdAndDate()
+--      Query: WHERE dp.user_id = ? AND a.appointment_date = ?
+--      doctor_id + appointment_date là cặp filter mỗi lần Bác sĩ vào dashboard.
+CREATE INDEX IX_Appointments_DoctorId_Date
+    ON Appointments(doctor_id, appointment_date)
+    INCLUDE (patient_id, service_id, schedule_id, status, payment_status, payment_method, start_time);
+GO
+
+-- WHY: ReceptionistServlet → AppointmentDAO.getAllByDate()
+--      Query: WHERE a.appointment_date = ?
+--      Lễ tân xem toàn bộ ca trong ngày → filter chỉ theo ngày.
+CREATE INDEX IX_Appointments_Date
+    ON Appointments(appointment_date)
+    INCLUDE (patient_id, doctor_id, status, payment_status, payment_method);
+GO
+
+-- WHY: SepayWebhookServlet → BookingService.updatePaymentSuccess()
+--      Tra cứu Appointment theo appointment_id (PK) → đã có Clustered Index.
+--      Không cần thêm.
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: DoctorSchedules
+-- ─────────────────────────────────────────────────
+-- WHY: DoctorScheduleDAO.getByDoctorAndDate()
+--      Query: WHERE ds.doctor_id = ? AND ds.work_date = ?
+--      Đây là query cốt lõi của Booking: load tất cả slot của Bác sĩ theo ngày.
+--      Composite index (doctor_id, work_date) cho phép Range Scan rất nhanh.
+--      (Unique Constraint UQ_Doctor_Schedule đã tạo index này → SQL Server tự dùng)
+--      Thêm INCLUDE để Covering Index, tránh Key Lookup thêm lần nữa.
+CREATE INDEX IX_DoctorSchedules_DoctorId_WorkDate
+    ON DoctorSchedules(doctor_id, work_date)
+    INCLUDE (start_time, end_time, is_available);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: MedicalRecords
+-- ─────────────────────────────────────────────────
+-- WHY: MedicalRecordDAO.getByAppointmentId()
+--      Query: WHERE appointment_id = ?
+--      appointment_id là UNIQUE → SQL Server tự tạo Unique Index.
+--      Không cần thêm thủ công.
+
+-- WHY: Nếu sau này cần lấy toàn bộ hồ sơ của 1 bệnh nhân (Admin/Bác sĩ xem lịch sử).
+--      Query: WHERE patient_id = ?
+CREATE INDEX IX_MedicalRecords_PatientId ON MedicalRecords(patient_id);
+GO
+
+-- WHY: Bác sĩ xem lại hồ sơ các ca mình đã khám.
+--      Query: WHERE doctor_id = ?
+CREATE INDEX IX_MedicalRecords_DoctorId ON MedicalRecords(doctor_id);
+GO
+
+-- ─────────────────────────────────────────────────
+-- BẢNG: Services
+-- ─────────────────────────────────────────────────
+-- WHY: ServiceDAO.getAllActive() → WHERE status = 1 ORDER BY service_name ASC
+--      status low-cardinality (0/1), nhưng Filtered Index giúp
+--      chỉ index các dòng status = 1 → nhỏ gọn & hiệu quả hơn Full Index.
+CREATE INDEX IX_Services_Status_Active
+    ON Services(service_name ASC)
+    WHERE status = 1;
+GO
+
+-- ============================================================================
+-- DỮ LIỆU MẪU (SEED DATA CHUYÊN NGHIỆP DÀNH CHO DỰ ÁN PRJ301)
+-- Mật khẩu hash BCrypt cho tất cả tài khoản mẫu bên dưới là "123456":
+-- $2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC
+-- ============================================================================
+
+-- 1. Chèn Users (Tài khoản Admin, Doctor, Receptionist, Patients)
+INSERT INTO Users (username, password, email, fullname, phone, role, status) VALUES
+('admin', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'admin@clinic.com', N'Quản Trị Viên Master', '0901234567', 'ADMIN', 1),
+('drminh', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
+('drlan', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
+('receptionist1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'letan@clinic.com', N'Lễ Tân Nguyễn Mai Phương', '0933334444', 'RECEPTIONIST', 1),
+('patient1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
+('patient2', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1),
+('patient3', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient3@gmail.com', N'Vũ Ngọc Anh', '0956789012', 'PATIENT', 1),
+('patient4', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1);
+
+-- 2. Chèn Services (Danh mục Dịch vụ Phòng khám & Spa)
 INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES
+(N'Khám Tư Vấn Thử Nghiệm SePay (Mã Test)', 2000.00, 15, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 2.000 VNĐ.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
+(N'Kiểm Tra Da Mặt Định Kỳ (Mã Test)', 5000.00, 20, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 5.000 VNĐ.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
+(N'Lấy Cao Răng Thử Nghiệm (Mã Test)', 10000.00, 30, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 10.000 VNĐ.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
 (N'Khám & Tẩy Trắng Răng Laser', 1500000.00, 45, N'Tẩy trắng răng công nghệ Laser Whitening không gây ê buốt, sáng bóng tự nhiên.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
 (N'Khám Nha Khoa Tổng Quát', 300000.00, 30, N'Kiểm tra sức khỏe răng miệng, lấy cao răng đánh bóng chuyên sâu.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mặt Deep Cleansing', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mụn & Phục Hồi', 650000.00, 50, N'Điều trị mụn chuyên y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1);
+(N'Chăm Sóc Da Mặt Deep Cleansing Spa', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
+(N'Chăm Sóc Da Mụn & Phục Hồi Y Khoa', 650000.00, 50, N'Điều trị mụn chuyên y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1),
+(N'Trẻ Hóa Da Công Nghệ High Tech', 2500000.00, 90, N'Liệu trình nâng cơ, xóa nhăn và tái tạo collagen cho làn da tuổi trung niên.', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80', 1),
+(N'Niềng Răng Thẩm Mỹ Khám Tư Vấn', 500000.00, 45, N'Chụp X-quang panorama tư vấn phác đồ niềng răng trong suốt và mắc cài.', 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80', 1);
 
--- 3. Chèn DoctorProfiles
+-- 3. Chèn DoctorProfiles (Hồ sơ Bác sĩ)
 INSERT INTO DoctorProfiles (user_id, specialty, experience_years, room_number, bio) VALUES
-(2, N'Nha Khoa Thẩm Mỹ', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
-(3, N'Da Liễu & Thẩm Mỹ Skin Care', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
+(2, N'Nha Khoa Thẩm Mỹ & Phục Hình', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
+(3, N'Da Liễu & Thẩm Mỹ Skin Care Spa', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
 
--- 4. Chèn DoctorSchedules
+-- 4. Chèn DoctorSchedules (Khung giờ làm việc cho Hôm nay, Ngày mai và Ngày kia)
 INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES
+-- Hôm nay (GETDATE())
 (1, CAST(GETDATE() AS DATE), '08:00', '09:00', 0),
 (1, CAST(GETDATE() AS DATE), '09:00', '10:00', 1),
 (1, CAST(GETDATE() AS DATE), '10:00', '11:00', 1),
+(1, CAST(GETDATE() AS DATE), '11:00', '12:00', 1),
+(1, CAST(GETDATE() AS DATE), '14:00', '15:00', 1),
 (2, CAST(GETDATE() AS DATE), '14:00', '15:00', 0),
-(2, CAST(GETDATE() AS DATE), '15:00', '16:00', 1);
+(2, CAST(GETDATE() AS DATE), '15:00', '16:00', 1),
+(2, CAST(GETDATE() AS DATE), '16:00', '17:00', 1),
 
--- 5. Chèn Appointments
+-- Ngày mai (GETDATE() + 1)
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '08:00', '09:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '15:00', '16:00', 1),
+
+-- Ngày kia (GETDATE() + 2)
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '08:00', '09:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '15:00', '16:00', 1);
+
+-- 5. Chèn Appointments (Lịch hẹn mẫu)
 INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, payment_content, transaction_code, notes) VALUES
-(4, 1, 1, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLINIC1', 'FT2408110001', N'Khách hàng muốn tẩy trắng trước ngày cưới.'),
-(5, 2, 3, 4, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLINIC2', 'FT2408110002', N'Da nhạy cảm, dễ dị ứng.');
+(5, 1, 1, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLINIC1', 'FT2408110001', N'Khách hàng muốn tẩy trắng trước ngày cưới.'),
+(6, 2, 3, 6, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLINIC2', 'FT2408110002', N'Da nhạy cảm, dễ dị ứng.');
 
--- 6. Chèn MedicalRecords
+-- 6. Chèn MedicalRecords (Hồ sơ bệnh án mẫu)
 INSERT INTO MedicalRecords (appointment_id, patient_id, doctor_id, diagnosis, prescription_or_result, rating, review_comment) VALUES
-(1, 4, 1, N'Răng ố vàng nhẹ do uống cà phê.', N'Tẩy trắng thành công Laser Whitening. Dùng kem đánh răng chống ê buốt 3 ngày.', 5, N'Bác sĩ Minh rất mát tay, răng trắng sáng đẹp lắm!');
+(1, 5, 1, N'Răng ố vàng nhẹ do uống cà phê.', N'Tẩy trắng thành công Laser Whitening. Dùng kem đánh răng chống ê buốt 3 ngày.', 5, N'Bác sĩ Minh rất mát tay, răng trắng sáng đẹp lắm!');
 GO
 
--- 7. Chèn ClinicSettings (System Configs)
+-- 7. Chèn ClinicSettings (Cấu hình Hệ thống & Ngân hàng VietQR SePay)
 INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
 ('CLINIC_NAME', N'Phòng Khám & Spa Nha Khoa Quốc Tế PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
 ('CLINIC_HOTLINE', '0901234567', N'Số điện thoại tổng đài tư vấn'),
@@ -187,9 +314,9 @@ INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
 ('OPENING_HOURS', N'08:00 - 20:00 (Từ Thứ 2 đến Chủ Nhật)', N'Khung giờ mở cửa hoạt động chung'),
 ('CLINIC_SLOT_DURATION', '60', N'Thời lượng mỗi khung giờ khám (Phút) - Động'),
 ('CLINIC_TIME_SLOTS', '08:00,09:00,10:00,11:00,14:00,15:00,16:00,17:00', N'Danh sách các khung giờ khám khả dụng trong ngày - Động'),
-('SEPAY_BANK_NAME', 'MBBank', N'Tên ngân hàng tài khoản SePay'),
-('SEPAY_BANK_ACC', '0901234567', N'Số tài khoản nhận chuyển khoản SePay'),
-('SEPAY_ACCOUNT_HOLDER', N'PHONG KHAM PRJ301', N'Tên chủ tài khoản nhận tiền');
+('SEPAY_BANK_NAME', 'Sacombank', N'Tên ngân hàng tài khoản SePay'),
+('SEPAY_BANK_ACC', '070148520060', N'Số tài khoản nhận chuyển khoản SePay'),
+('SEPAY_ACCOUNT_HOLDER', N'NGUYEN THANH DUY', N'Tên chủ tài khoản nhận tiền');
 GO
 
 -- ============================================================================
@@ -226,6 +353,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT 
+        s.id AS id,
         s.id AS schedule_id,
         s.doctor_id,
         s.work_date,
@@ -297,3 +425,27 @@ BEGIN
 END;
 GO
 
+-- 5. TRIGGER: Tự động điền mã payment_content (dạng CLN<id>) nếu khi INSERT để rỗng/NULL
+IF OBJECT_ID('dbo.trg_AutoSetPaymentContentOnAppointment', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_AutoSetPaymentContentOnAppointment;
+GO
+
+CREATE TRIGGER dbo.trg_AutoSetPaymentContentOnAppointment
+ON Appointments
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Appointments
+    SET payment_content = 'CLN' + CAST(a.id AS VARCHAR)
+    FROM Appointments a
+    INNER JOIN inserted i ON a.id = i.id
+    WHERE i.payment_content IS NULL OR TRIM(i.payment_content) = '';
+END;
+GO
+
+-- 6. Tự động cập nhật bổ sung mã payment_content cho tất cả bản ghi hiện có
+UPDATE Appointments 
+SET payment_content = 'CLN' + CAST(id AS VARCHAR) 
+WHERE payment_content IS NULL OR payment_content = '';
+GO
