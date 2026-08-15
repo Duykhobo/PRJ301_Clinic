@@ -7,6 +7,9 @@
         <i class="fa-solid fa-circle-exclamation me-2 fs-5"></i>${errorMessage}
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <%-- Xóa trực tiếp biến lỗi trên scope để không bị lặp lại khi F5 --%>
+    <% request.removeAttribute("errorMessage");
+        session.removeAttribute("errorMessage"); %>
 </c:if>
 
 <%-- Alert Banner Thông báo Thành công từ Controller --%>
@@ -15,6 +18,9 @@
         <i class="fa-solid fa-circle-check me-2 fs-5"></i>${successMessage}
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <%-- Xóa trực tiếp biến thành công trên scope để không bị lặp lại khi F5 --%>
+    <% request.removeAttribute("successMessage");
+        session.removeAttribute("successMessage");%>
 </c:if>
 
 <%-- Alert Banner Thông báo Đăng ký thành công từ URL Param --%>
@@ -52,7 +58,8 @@
         const toastText = document.getElementById('toastText');
         const toastIcon = document.getElementById('toastIcon');
 
-        if (!toastEl || !toastText || !toastIcon) return;
+        if (!toastEl || !toastText || !toastIcon)
+            return;
 
         toastText.innerText = message;
         if (isSuccess) {
@@ -63,7 +70,21 @@
             toastIcon.className = 'fa-solid fa-triangle-exclamation fs-5 text-danger';
         }
 
-        const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
+        const bsToast = new bootstrap.Toast(toastEl, {delay: 4000});
         bsToast.show();
     }
+
+    // Tự động làm sạch các URL Param như ?registered=success hoặc ?logout=success khi F5
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('registered') || urlParams.has('logout')) {
+            urlParams.delete('registered');
+            urlParams.delete('logout');
+            let newUrl = window.location.pathname;
+            if (urlParams.toString() !== '') {
+                newUrl += '?' + urlParams.toString();
+            }
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    });
 </script>
