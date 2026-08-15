@@ -22,7 +22,7 @@ public class RevenueReport implements Serializable {
     }
 
     public RevenueReport(int totalAppointments, int completedAppointments, int cancelledAppointments,
-                         BigDecimal totalRevenuePaid, BigDecimal sepayRevenue, BigDecimal cashRevenue) {
+            BigDecimal totalRevenuePaid, BigDecimal sepayRevenue, BigDecimal cashRevenue) {
         this.totalAppointments = totalAppointments;
         this.completedAppointments = completedAppointments;
         this.cancelledAppointments = cancelledAppointments;

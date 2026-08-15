@@ -8,6 +8,7 @@ public class RouterConstant {
     // JSP View Files
     public static final String LOGIN_JSP = "/WEB-INF/views/auth/login.jsp";
     public static final String REGISTER_JSP = "/WEB-INF/views/auth/register.jsp";
+    public static final String FORGOT_PASSWORD_JSP = "/WEB-INF/views/auth/forgot-password.jsp";
     public static final String HOME_JSP = "/WEB-INF/views/public/home.jsp";
     public static final String BOOKING_JSP = "/WEB-INF/views/patient/booking.jsp";
     public static final String PAYMENT_JSP = "/WEB-INF/views/patient/payment.jsp";
@@ -22,6 +23,7 @@ public class RouterConstant {
     public static final String ROUTE_MAIN_CONTROLLER = "MainController";
     public static final String ROUTE_LOGIN = "/login";
     public static final String ROUTE_REGISTER = "/register";
+    public static final String ROUTE_FORGOT_PASSWORD = "/forgot-password";
     public static final String ROUTE_LOGOUT = "/logout";
     public static final String ROUTE_HOME = "/home";
     public static final String ROUTE_BOOKING = "/booking";

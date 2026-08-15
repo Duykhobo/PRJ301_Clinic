@@ -197,11 +197,34 @@ public class AdminServlet extends HttpServlet {
                 break;
             }
             case "update-settings": {
-                String[] keys = {"clinic_name", "hotline", "address", "bank_name", "bank_account", "bank_owner"};
-                for (String key : keys) {
-                    String val = request.getParameter(key);
-                    if (val != null) {
-                        clinicSettingDAO.updateSetting(key, val.trim());
+                java.util.Map<String, String> keyMapping = new java.util.HashMap<>();
+                // Form field -> DB setting key mapping
+                keyMapping.put("CLINIC_NAME", "CLINIC_NAME");
+                keyMapping.put("clinic_name", "CLINIC_NAME");
+                keyMapping.put("CLINIC_HOTLINE", "CLINIC_HOTLINE");
+                keyMapping.put("hotline", "CLINIC_HOTLINE");
+                keyMapping.put("CLINIC_EMAIL", "CLINIC_EMAIL");
+                keyMapping.put("CLINIC_ADDRESS", "CLINIC_ADDRESS");
+                keyMapping.put("address", "CLINIC_ADDRESS");
+                keyMapping.put("OPENING_HOURS", "OPENING_HOURS");
+                keyMapping.put("CLINIC_TIME_SLOTS", "CLINIC_TIME_SLOTS");
+                keyMapping.put("time_slots", "CLINIC_TIME_SLOTS");
+                keyMapping.put("SEPAY_BANK_NAME", "SEPAY_BANK_NAME");
+                keyMapping.put("bank_name", "SEPAY_BANK_NAME");
+                keyMapping.put("SEPAY_BANK_ACC", "SEPAY_BANK_ACC");
+                keyMapping.put("bank_account", "SEPAY_BANK_ACC");
+                keyMapping.put("SEPAY_ACCOUNT_HOLDER", "SEPAY_ACCOUNT_HOLDER");
+                keyMapping.put("bank_owner", "SEPAY_ACCOUNT_HOLDER");
+
+                for (java.util.Map.Entry<String, String> entry : keyMapping.entrySet()) {
+                    String paramName = entry.getKey();
+                    String dbKey = entry.getValue();
+                    String val = request.getParameter(paramName);
+                    if (val != null && !val.trim().isEmpty()) {
+                        clinicSettingDAO.updateSetting(dbKey, val.trim());
+                        if ("CLINIC_TIME_SLOTS".equals(dbKey)) {
+                            clinicSettingDAO.updateSetting("time_slots", val.trim());
+                        }
                     }
                 }
                 success = true;

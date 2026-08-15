@@ -34,13 +34,19 @@
                   </div>
                 </div>
 
-                <%-- Main Menu --%>
-                  <div class="sb-section-label">Workspace</div>
+                  <%-- Main Menu --%>
+                  <div class="sb-section-label">Workspace Bác Sĩ</div>
                   <ul class="sb-menu">
                     <li>
-                      <a href="${pageContext.request.contextPath}/doctor/dashboard" class="active">
+                      <a href="${pageContext.request.contextPath}/doctor/dashboard?tab=appointments" class="${empty param.tab || param.tab == 'appointments' ? 'active' : ''}">
                         <span class="sb-icon"><i class="fa-solid fa-clipboard-list"></i></span>
                         Danh Sách Ca Khám
+                      </a>
+                    </li>
+                    <li>
+                      <a href="${pageContext.request.contextPath}/doctor/dashboard?tab=schedules" class="${param.tab == 'schedules' ? 'active' : ''}">
+                        <span class="sb-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        Quản Lý Lịch Làm Việc
                       </a>
                     </li>
                   </ul>
@@ -84,9 +90,17 @@
                       </button>
                       <div>
                         <div class="topbar-page-title">
-                          <i class="fa-solid fa-clipboard-list me-2" style="color:#60a5fa;"></i>Ca Khám Hôm Nay
+                          <c:choose>
+                            <c:when test="${param.tab == 'schedules'}">
+                              <i class="fa-solid fa-clock-rotate-left me-2" style="color:#60a5fa;"></i>Quản Lý Lịch Làm Việc Y Tế
+                            </c:when>
+                            <c:otherwise>
+                              <i class="fa-solid fa-clipboard-list me-2" style="color:#60a5fa;"></i>Danh Sách Ca Khám Bệnh
+                            </c:otherwise>
+                          </c:choose>
                         </div>
-                        <div class="topbar-breadcrumb">PRJ301 Clinic &rsaquo; Doctor Workspace &rsaquo; Danh Sách Ca
+                        <div class="topbar-breadcrumb">
+                          PRJ301 Clinic &rsaquo; Doctor Workspace &rsaquo; ${param.tab == 'schedules' ? 'Quản Lý Lịch Làm Việc' : 'Danh Sách Ca Khám'}
                         </div>
                       </div>
                   </div>

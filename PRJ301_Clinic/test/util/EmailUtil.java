@@ -20,7 +20,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 /**
  * EmailUtil - Trợ lý Gửi Email HTML Thực Tế Ngầm (Async SSLSocket SMTP).
- * Tự động gửi Email thực tế về Hòm Thư Gmail Bệnh nhân dùng chuẩn SSL JDK 8 thuần.
+ * Tự động gửi Email thực tế về Hòm Thư Gmail Bệnh nhân dùng chuẩn SSL JDK 8
+ * thuần (Zero JAR dependencies).
  */
 public class EmailUtil {
 
@@ -95,7 +96,8 @@ public class EmailUtil {
     }
 
     /**
-     * Gửi Email HTML Xác Nhận Thanh Toán VietQR SePay Thành Công Thực Tế (Async SSLSocket).
+     * Gửi Email HTML Xác Nhận Thanh Toán VietQR SePay Thành Công Thực Tế (Async
+     * SSLSocket).
      */
     public static void sendPaymentSuccessAsync(String recipientEmail, String patientName, String transactionCode,
             BigDecimal amount) {
@@ -196,7 +198,9 @@ public class EmailUtil {
     }
 
     /**
-     * Thuật toán Gửi Real Email qua Gmail SSLSocket Port 465 (100% Thuần JDK 8 - Không cần JAR ngoài).
+     * Thuật toán Gửi Real Email qua Gmail SSLSocket Port 465 (100% Thuần JDK 8 -
+     * Không cần JAR ngoài).
+     * @return true nếu gửi thành công, false nếu kết nối máy chủ Mail bị thất bại
      */
     public static boolean sendRealSmtpEmail(String recipientEmail, String subject, String htmlContent) {
         String senderEmail = getSenderEmail();

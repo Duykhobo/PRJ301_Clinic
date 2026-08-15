@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%-- sidebar-receptionist.jsp - Dùng cho sảnh tiếp đón Lễ tân / Thu ngân --%>
 
 <%-- ═══════════════════════════════════════════ OVERLAY (mobile backdrop) ═══════════════════════════════════════════ --%>
 <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
@@ -9,45 +10,33 @@
 
   <%-- Brand --%>
   <div class="sb-brand">
-    <div class="sb-brand-icon" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"><i class="fa-solid fa-user-shield"></i></div>
+    <div class="sb-brand-icon" style="background: linear-gradient(135deg, #10b981, #0ea5e9);"><i class="fa-solid fa-headset"></i></div>
     <div>
-      <div class="sb-brand-text">PRJ301 <span style="color:#ef4444;">Clinic</span></div>
-      <div class="sb-brand-sub">Admin Control Center</div>
+      <div class="sb-brand-text">PRJ301 <span style="color:#10b981;">Clinic</span></div>
+      <div class="sb-brand-sub">Reception Workspace</div>
     </div>
   </div>
 
   <%-- User Profile --%>
-  <div class="sb-profile" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.08)); border-color: rgba(239, 68, 68, 0.25);">
-    <div class="sb-avatar" style="background: linear-gradient(135deg, #ef4444, #f59e0b); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);">
+  <div class="sb-profile" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(14, 165, 233, 0.08)); border-color: rgba(16, 185, 129, 0.25);">
+    <div class="sb-avatar" style="background: linear-gradient(135deg, #10b981, #0ea5e9); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
       ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
     </div>
     <div style="min-width:0;">
       <div class="sb-user-name"><c:out value="${sessionScope.LOGIN_USER.fullname}"/></div>
-      <div class="sb-user-role" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.35); color: #fca5a5;">
-        <i class="fa-solid fa-shield-halved"></i> Quản Trị Viên
+      <div class="sb-user-role" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.35); color: #6ee7b7;">
+        <i class="fa-solid fa-user-gear"></i> Lễ Tân / Thu Ngân
       </div>
     </div>
   </div>
 
   <%-- Main Menu --%>
-  <div class="sb-section-label">Quản Trị Hệ Thống</div>
+  <div class="sb-section-label">Quản Lý Sảnh Tiếp Đón</div>
   <ul class="sb-menu">
     <li>
-      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=users" class="${empty param.tab || param.tab == 'users' ? 'active' : ''}">
-        <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
-        Quản Lý Người Dùng
-      </a>
-    </li>
-    <li>
-      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=services" class="${param.tab == 'services' ? 'active' : ''}">
-        <span class="sb-icon"><i class="fa-solid fa-hand-holding-medical"></i></span>
-        Quản Lý Dịch Vụ
-      </a>
-    </li>
-    <li>
-      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=settings" class="${param.tab == 'settings' ? 'active' : ''}">
-        <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span>
-        Cấu Hình Hệ Thống
+      <a href="${pageContext.request.contextPath}/receptionist/dashboard" class="active">
+        <span class="sb-icon"><i class="fa-solid fa-hospital-user"></i></span>
+        Sảnh Tiếp Đón Bệnh Nhân
       </a>
     </li>
   </ul>
@@ -91,9 +80,9 @@
       </button>
       <div>
         <div class="topbar-page-title">
-          <i class="fa-solid fa-sliders me-2" style="color:#ef4444;"></i>Admin Dashboard
+          <i class="fa-solid fa-hospital-user me-2" style="color:#10b981;"></i>Sảnh Tiếp Đón Lễ Tân
         </div>
-        <div class="topbar-breadcrumb">PRJ301 Clinic &rsaquo; Control Center &rsaquo; Quản Trị Hệ Thống</div>
+        <div class="topbar-breadcrumb">PRJ301 Clinic &rsaquo; Reception Workspace &rsaquo; Sảnh Tiếp Đón</div>
       </div>
     </div>
     <div class="ws-topbar-right">

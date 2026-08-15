@@ -12,7 +12,12 @@ import java.util.logging.Logger;
 
 /**
  * Lớp trừu tượng BaseDAO giúp triệt tiêu 90% lặp code trong JDBC (DRY Principle).
- * Tự động quản lý Connection Pool HikariCP, try-with-resources và tham số Varargs (Object... params).
+ * Tự động quản lý Connection qua {@link config.DBContext}, try-with-resources và tham số Varargs.
+ *
+ * <p><b>📖 Sau khi tích hợp ThreadLocal (MVC-V2):</b><br>
+ * {@code DBContext.getConnection()} không còn tạo connection mới mỗi lần gọi nữa — nó trả về
+ * connection đang được ThreadLocal giữ cho request hiện tại. Nhờ đó, tất cả các method trong
+ * BaseDAO tự động tham gia vào cùng 1 Transaction mà TransactionFilter đã mở.</p>
  *
  * @param <T> Kiểu dữ liệu Model POJO
  */
@@ -59,6 +64,50 @@ public abstract class BaseDAO<T> {
             LOGGER.log(Level.SEVERE, "Lỗi khi thực thi queryList: " + sql, e);
         }
         return list;
+    }
+
+    /**
+     * Truy vấn {@code SELECT COUNT(*)} trả về một số nguyên.
+     *
+     * <p><b>📖 Tại sao cần method này?</b><br>
+     * Hiện tại {@code AppointmentDAO} và {@code UserDAO} có 5–6 hàm {@code countXxx()} đều
+     * viết thủ công JDBC (~8 dòng mỗi hàm). Method này thay thế tất cả bằng 1 dòng gọi.</p>
+     *
+     * <p><b>📖 Logic cần implement — tương tự {@link #queryOne} nhưng trả về int:</b></p>
+     * <ol>
+     *   <li>Mở connection bằng {@code DBContext.getConnection()}.</li>
+     *   <li>Tạo {@code PreparedStatement}, gán params bằng {@code setParameters()}.</li>
+     *   <li>Thực thi và đọc {@code ResultSet}: nếu {@code rs.next()} → trả về {@code rs.getInt(1)}.</li>
+     *   <li>Bắt {@code SQLException} → log lỗi.</li>
+     *   <li>Mặc định trả về {@code 0}.</li>
+     * </ol>
+     *
+     * <p><b>Ví dụ sau khi implement:</b></p>
+     * <pre>
+     * // AppointmentDAO — thay thế 8 dòng JDBC thủ công:
+     * public int countPatientAppointments(int patientId) {
+     *     return queryCount("SELECT COUNT(*) FROM Appointments WHERE patient_id = ?", patientId);
+     * }
+     * </pre>
+     *
+     * @param sql    Câu SQL {@code SELECT COUNT(*)}
+     * @param params Tham số cho PreparedStatement
+     * @return Kết quả đếm, mặc định là {@code 0} nếu có lỗi
+     */
+    protected int queryCount(String sql, Object... params) {
+        // TODO [BƯỚC 2]: Implement queryCount()
+        // Gợi ý cấu trúc:
+        // try (Connection conn = DBContext.getConnection();
+        //      PreparedStatement ps = conn.prepareStatement(sql)) {
+        //     setParameters(ps, params);
+        //     try (ResultSet rs = ps.executeQuery()) {
+        //         if (rs.next()) return rs.getInt(1);
+        //     }
+        // } catch (SQLException e) {
+        //     LOGGER.log(Level.SEVERE, "Lỗi queryCount: " + sql, e);
+        // }
+        // return 0;
+        throw new UnsupportedOperationException("TODO: Implement queryCount()");
     }
 
     /**
@@ -122,9 +171,24 @@ public abstract class BaseDAO<T> {
         return -1;
     }
 
+    // =========================================================================
+    // ⚠️ DEPRECATED ZONE — Sau khi implement TransactionFilter
+    // =========================================================================
+    // Các method bên dưới (TransactionCallback + executeTransaction) sẽ trở nên
+    // không cần thiết sau khi TransactionFilter đảm nhiệm toàn bộ việc quản lý
+    // transaction. Giữ lại ở đây để tham khảo trong quá trình học.
+    //
+    // ❓ Câu hỏi tự suy ngẫm:
+    //    Sau khi có TransactionFilter + ThreadLocal, tại sao executeTransaction()
+    //    trở nên thừa? Điều gì thay thế nó?
+    // =========================================================================
+
     /**
      * Functional Interface phục vụ thực thi Transaction chung 1 Connection.
+     *
+     * @deprecated Sử dụng TransactionFilter + ThreadLocal thay thế. Giữ lại để tham khảo.
      */
+    @Deprecated
     @FunctionalInterface
     protected interface TransactionCallback<E> {
         E doInTransaction(Connection conn) throws Exception;

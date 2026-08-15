@@ -108,19 +108,30 @@ public class SepayWebhookServlet extends HttpServlet {
             String code = parseJsonField(payload, "code");
             if (code == null) code = request.getParameter("code");
 
-            // Kiểm tra nếu là Test Webhook Ping từ SePay Dashboard (Nút "Gửi test")
-            if ("SEPAYTEST".equalsIgnoreCase(code) || (content != null && content.toUpperCase().contains("SEPAY TEST"))) {
+            String idStr = parseJsonField(payload, "id");
+            boolean isTestPayload = "SEPAYTEST".equalsIgnoreCase(code)
+                    || "0".equals(idStr)
+                    || (content != null && content.toUpperCase().contains("SEPAY TEST"))
+                    || (content != null && content.toUpperCase().contains("TEST WEBHOOK"));
+
+            // Kiểm tra nếu là Test Webhook Ping từ SePay Dashboard (Nút "Gửi thử")
+            if (isTestPayload) {
                 LOGGER.info("Nhan Test Webhook Ping tu SePay Dashboard. Phan hoi HTTP 200 OK!");
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("{\"success\": true, \"message\": \"SePay Test Webhook Ping Received Successfully!\"}");
                 return;
             }
 
-            // 5. Giải mã Mã Lịch hẹn từ Nội dung chuyển khoản (CLINIC<ID> hoặc CLN<ID>)
-            int appointmentId = extractAppointmentId(content, request.getParameter("appointmentId"));
+            // 5. Giải mã Mã Lịch hẹn - BẮT BUỘC ƯU TIÊN SỐ 1 TỪ TRƯỜNG "code" (vd: "CLN3" do SePay tự bóc)
+            int appointmentId = extractAppointmentId(code, request.getParameter("appointmentId"));
             if (appointmentId <= 0) {
-                // Thử trích xuất từ trường "code" (vd: CLN63528)
-                appointmentId = extractAppointmentId(code, null);
+                // Fallback 1: Thử trích xuất từ trường "content" (vd: CLN3 chuyen tien)
+                appointmentId = extractAppointmentId(content, null);
+            }
+            if (appointmentId <= 0) {
+                // Fallback 2: Thử trích xuất từ trường "description" (vd: NGUYEN VAN A CLN3 chuyen tien)
+                String description = parseJsonField(payload, "description");
+                appointmentId = extractAppointmentId(description, null);
             }
 
             if (appointmentId > 0) {
@@ -131,8 +142,8 @@ public class SepayWebhookServlet extends HttpServlet {
                         dao.UserDAO userDAO = new dao.UserDAO();
                         model.User patient = userDAO.findById(app.getPatientId());
                         if (patient != null) {
-                            util.EmailUtil.sendPaymentSuccessAsync(patient.getEmail(), patient.getFullname(),
-                                    transactionCode != null ? transactionCode : "SEPAY_" + appointmentId, app.getTotalPrice());
+                            String txCode = (transactionCode != null && !transactionCode.trim().isEmpty()) ? transactionCode : ("SEPAY_" + appointmentId);
+                            util.EmailUtil.sendPaymentSuccessAsync(patient.getEmail(), patient.getFullname(), txCode, app.getTotalPrice());
                         }
                     }
                     LOGGER.info("Xac thuc thanh toan VietQR SePay thanh cong cho cuoc hen #" + appointmentId);

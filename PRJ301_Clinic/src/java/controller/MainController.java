@@ -46,6 +46,10 @@ public class MainController extends HttpServlet {
                 case "register":
                     url = RouterConstant.ROUTE_REGISTER;
                     break;
+                case "forgot-password-page":
+                case "forgot-password":
+                    url = RouterConstant.ROUTE_FORGOT_PASSWORD;
+                    break;
                 case "logout":
                     url = RouterConstant.ROUTE_LOGOUT;
                     break;

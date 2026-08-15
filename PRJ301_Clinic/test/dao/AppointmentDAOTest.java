@@ -1,9 +1,13 @@
 package dao;
 
-import exception.SlotAlreadyBookedException;
-import model.Appointment;
-import model.DoctorSchedule;
-import constant.SystemConstant;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -13,12 +17,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import constant.SystemConstant;
+import model.Appointment;
+import model.DoctorSchedule;
 
 /**
  * Bộ kiểm thử tự động JUnit 5 cho AppointmentDAO (Giao dịch Đặt lịch & Chống
@@ -44,7 +45,7 @@ public class AppointmentDAOTest {
     @Test
     @Order(1)
     @DisplayName("Test 1: Đặt lịch hẹn mới thành công (Atomic Transaction)")
-    public void testCreateBookingSuccess() throws SlotAlreadyBookedException {
+    public void testCreateBookingSuccess() {
         System.out.println("\n--- [TEST 1] Testing createBookingAtomic() ---");
 
         // 1. Lấy slot khả dụng của Bác sĩ 1 (thử ngày Hôm nay hoặc 2026-08-15)
@@ -64,7 +65,7 @@ public class AppointmentDAOTest {
 
         Appointment app = new Appointment();
         app.setPatientId(1); // User patient1
-        app.setDoctorId(1);  // Doctor 1
+        app.setDoctorId(1); // Doctor 1
         app.setServiceId(1); // Service 1
         app.setScheduleId(targetSlot.getId());
         app.setAppointmentDate(testDate);

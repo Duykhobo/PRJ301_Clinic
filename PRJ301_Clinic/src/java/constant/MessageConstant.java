@@ -15,8 +15,11 @@ public class MessageConstant {
     public static final String ERR_USERNAME_EXISTS = "Tên đăng nhập này đã được đăng ký bởi người khác!";
     public static final String ERR_EMAIL_EXISTS = "Địa chỉ Email này đã được đăng ký bởi người khác!";
     public static final String ERR_LOGIN_FAILED = "Tên đăng nhập hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa!";
+    public static final String ERR_EMAIL_NOT_FOUND = "Không tìm thấy địa chỉ Email này trong hệ thống! Vui lòng kiểm tra lại.";
+    public static final String ERR_SEND_EMAIL_FAILED = "Gửi email thất bại! Không thể kết nối tới máy chủ Mail SMTP. Vui lòng thử lại sau hoặc liên hệ Hotline 0901 234 567.";
 
     // Success Messages
     public static final String MSG_REGISTER_SUCCESS = "Đăng ký tài khoản thành công! Vui lòng đăng nhập.";
     public static final String MSG_LOGOUT_SUCCESS = "Bạn đã đăng xuất tài khoản an toàn.";
+    public static final String MSG_SEND_EMAIL_SUCCESS = "Email khôi phục mật khẩu đã được gửi thành công! Vui lòng kiểm tra Hộp thư đến (Inbox) hoặc Thư rác (Spam).";
 }

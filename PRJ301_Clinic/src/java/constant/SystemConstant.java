@@ -22,6 +22,8 @@ public class SystemConstant {
     // Payment Status
     public static final String PAYMENT_UNPAID = "UNPAID";
     public static final String PAYMENT_PAID = "PAID";
+    public static final String PAYMENT_REFUND_PENDING = "REFUND_PENDING";
+    public static final String PAYMENT_REFUNDED = "REFUNDED";
 
     // Payment Methods
     public static final String METHOD_CASH = "CASH";

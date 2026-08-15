@@ -15,32 +15,32 @@
     <div class="glass-card animate-fade-in mx-auto overflow-hidden p-0" style="max-width: 960px; width: 100%;">
         <div class="row g-0">
             
-            <%-- Cột Trái: Banner Splash Thương Hiệu Sang Trọng --%>
+            <%-- Cột Trái: Banner Splash Thương Hiệu Y Tế --%>
             <div class="col-lg-6 d-none d-lg-block position-relative">
                 <img src="${pageContext.request.contextPath}/assets/images/auth_splash.jpg" 
                      alt="PRJ301 Clinic Lounge" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0">
                 <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-between p-5 text-white" 
-                     style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.75) 100%);">
+                     style="background: linear-gradient(135deg, rgba(11, 19, 43, 0.88) 0%, rgba(15, 23, 42, 0.82) 100%);">
                     
                     <div>
                         <div class="d-flex align-items-center gap-2 fw-bold fs-4 mb-3">
-                            <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
-                                <i class="fa-solid fa-notes-medical fs-6"></i>
+                            <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
+                                <i class="fa-solid fa-heart-pulse fs-6"></i>
                             </div>
-                            <span>PRJ301 <span class="text-info">Clinic & Spa</span></span>
+                            <span>PRJ301 <span class="text-cyan">Clinic & Spa</span></span>
                         </div>
                         <h3 class="fw-bold display-6 mb-3">Chào Mừng Bạn Quay Trở Lại!</h3>
-                        <p class="text-muted small">Đăng nhập để xem lịch sử khám, quản lý lịch hẹn và thanh toán VietQR SePay tiện lợi 24/7.</p>
+                        <p class="text-muted small">Đăng nhập tài khoản bệnh nhân để xem nhật ký khám y tế, quản lý lịch hẹn và thanh toán VietQR SePay tự động 24/7.</p>
                     </div>
 
                     <div class="d-flex flex-column gap-2 small">
-                        <div class="d-flex align-items-center gap-2 text-info">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <span>Bảo mật tài khoản chuẩn mã hóa BCrypt 100%</span>
+                        <div class="d-flex align-items-center gap-2 text-cyan">
+                            <i class="fa-solid fa-shield-halved text-emerald"></i>
+                            <span>Bảo mật dữ liệu y tế chuẩn mã hóa BCrypt 100%</span>
                         </div>
-                        <div class="d-flex align-items-center gap-2 text-info">
-                            <i class="fa-solid fa-clock"></i>
-                            <span>Đặt ca khám rảnh 60 phút chống trùng slot</span>
+                        <div class="d-flex align-items-center gap-2 text-cyan">
+                            <i class="fa-solid fa-clock text-emerald"></i>
+                            <span>Đặt ca khám rảnh 60 phút chống trùng slot tự động</span>
                         </div>
                     </div>
                 </div>
@@ -48,10 +48,10 @@
 
             <%-- Cột Phải: Form Đăng Nhập Glassmorphism --%>
             <div class="col-lg-6 p-4 p-md-5 d-flex flex-column justify-content-center">
-                <h3 class="fw-bold mb-2">Đăng Nhập Tài Khoản</h3>
-                <p class="text-muted small mb-4">Vui lòng nhập Username và Mật khẩu để tiếp tục</p>
+                <h3 class="fw-bold mb-2 text-white">Đăng Nhập Tài Khoản</h3>
+                <p class="text-muted small mb-4">Vui lòng nhập Tên đăng nhập và Mật khẩu để tiếp tục</p>
 
-                <%-- Nhúng Component Thông Báo Lỗi Tái Sử Dụng --%>
+                <%-- Component Thông Báo Lỗi --%>
                 <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
                 <form action="${pageContext.request.contextPath}/MainController" method="POST">
@@ -62,21 +62,26 @@
                     </c:if>
 
                     <div class="mb-3">
-                        <label class="form-label text-muted">Tên Đăng Nhập (*)</label>
+                        <label class="form-label text-muted fw-semibold">Tên Đăng Nhập (*)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
-                                <i class="fa-solid fa-user"></i>
+                                <i class="fa-solid fa-user text-cyan"></i>
                             </span>
                             <input type="text" name="username" class="form-control form-control-glass border-start-0 ps-0" value="${username}" required autofocus placeholder="Nhập tên đăng nhập">
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label text-muted">Mật Khẩu (*)</label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label text-muted fw-semibold mb-0">Mật Khẩu (*)</label>
+                            <a href="${pageContext.request.contextPath}/MainController?action=forgot-password-page" class="text-cyan text-decoration-none small">
+                                <i class="fa-solid fa-key me-1"></i>Quên mật khẩu?
+                            </a>
+                        </div>
                         <div class="input-password-wrapper">
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
-                                    <i class="fa-solid fa-lock"></i>
+                                    <i class="fa-solid fa-lock text-cyan"></i>
                                 </span>
                                 <input type="password" id="loginPassword" name="password" class="form-control form-control-glass border-start-0 ps-0 pe-5" required placeholder="Nhập mật khẩu">
                             </div>
@@ -86,14 +91,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary-gradient w-100 py-2 fs-6 mb-3">
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-3 fs-6 mb-3 rounded-pill">
                         <i class="fa-solid fa-right-to-bracket me-2"></i>Bấm Đăng Nhập
                     </button>
                 </form>
 
                 <div class="text-center mt-3">
                     <span class="text-muted small">Chưa có tài khoản?</span>
-                    <a href="${pageContext.request.contextPath}/MainController?action=register-page" class="text-info text-decoration-none fw-semibold ms-1">Đăng ký tài khoản mới</a>
+                    <a href="${pageContext.request.contextPath}/MainController?action=register-page" class="text-cyan text-decoration-none fw-semibold ms-1">Đăng ký tài khoản mới</a>
                 </div>
             </div>
 
@@ -110,7 +115,7 @@
         const icon = btn.querySelector('i');
         if (input.type === 'password') {
             input.type = 'text';
-            icon.className = 'fa-solid fa-eye-slash';
+            icon.className = 'fa-solid fa-eye-slash text-cyan';
         } else {
             input.type = 'password';
             icon.className = 'fa-solid fa-eye';

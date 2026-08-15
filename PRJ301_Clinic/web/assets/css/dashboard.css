@@ -4,9 +4,9 @@
 
 /* ── HERO BANNERS ── */
 .doctor-hero {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.10) 50%, rgba(15, 23, 42, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18) 0%, rgba(16, 185, 129, 0.12) 50%, rgba(11, 19, 43, 0.05) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 22px;
   padding: 2rem;
   position: relative;
   overflow: hidden;
@@ -18,9 +18,9 @@
   position: absolute;
   top: -60px;
   right: -60px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 70%);
   border-radius: 50%;
 }
 
@@ -29,16 +29,16 @@
   position: absolute;
   bottom: -40px;
   left: -40px;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
   border-radius: 50%;
 }
 
 .reception-hero {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.10) 50%, rgba(15, 23, 42, 0.05) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(20, 184, 166, 0.12) 50%, rgba(11, 19, 43, 0.05) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 22px;
   padding: 2rem;
   position: relative;
   overflow: hidden;
@@ -50,9 +50,9 @@
   position: absolute;
   top: -60px;
   right: -60px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
   border-radius: 50%;
 }
 
@@ -61,28 +61,28 @@
   position: absolute;
   bottom: -40px;
   left: -40px;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.10) 0%, transparent 70%);
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
   border-radius: 50%;
 }
 
 .hero-avatar {
   width: 68px;
   height: 68px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #0ea5e9, #10b981);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.8rem;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.4);
   flex-shrink: 0;
 }
 
 .reception-hero .hero-avatar {
-  background: linear-gradient(135deg, #10b981, #06b6d4);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
 }
 
 /* ── LIVE PULSE DOT ── */
@@ -757,4 +757,31 @@ div[style*="overflow-x:auto"]::-webkit-scrollbar-thumb:hover {
   .empty-state i {
     font-size: 2.2rem;
   }
+}
+
+/* ── WALK-IN MODAL: PLACEHOLDER RÕ HƠN ── */
+/* Áp dụng cho các input/textarea/select có nền tối trong modal */
+#walkInModal .form-control::placeholder,
+#walkInModal .form-select::placeholder {
+  color: rgba(148, 163, 184, 0.85); /* slate-400 sáng hơn rõ rệt */
+  font-style: italic;
+}
+
+/* select option chọn mặc định "--" cũng sáng */
+#walkInModal .form-select option[value=""] {
+  color: rgba(148, 163, 184, 0.85);
+  font-style: italic;
+}
+
+/* Tất cả input nền tối có background:#111d35 — placeholder sáng hơn */
+.modal-content input.form-control::placeholder,
+.modal-content textarea.form-control::placeholder {
+  color: rgba(148, 163, 184, 0.9);
+  font-style: italic;
+}
+
+/* Focus: placeholder nhạt đi một chút để nhường chỗ cho text nhập */
+.modal-content input.form-control:focus::placeholder,
+.modal-content textarea.form-control:focus::placeholder {
+  color: rgba(148, 163, 184, 0.4);
 }

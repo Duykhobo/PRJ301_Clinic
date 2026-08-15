@@ -1,71 +1,105 @@
 /* ============================================================================
-   PRJ301 CLINIC & SPA - GLOBAL DESIGN SYSTEM & COMPONENT STYLES
+   PRJ301 CLINIC & SPA - HEALTHCARE & MEDICAL DESIGN SYSTEM & COMPONENT STYLES
    ============================================================================ */
 
-/* 1. CSS VARIABLES & TOKENS */
+/* 1. CSS VARIABLES & HEALTHCARE DESIGN TOKENS */
 :root {
-    --bg-dark-start: #0f172a;
-    --bg-dark-end: #1e293b;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --card-border: rgba(255, 255, 255, 0.1);
-    --primary-blue: #3b82f6;
-    --primary-blue-hover: #2563eb;
-    --accent-purple: #8b5cf6;
+    --bg-dark-start: #0b132b;
+    --bg-dark-end: #1c2541;
+    --card-bg: rgba(15, 23, 42, 0.75);
+    --card-border: rgba(56, 189, 248, 0.2);
+    --card-border-hover: rgba(56, 189, 248, 0.45);
+    
+    /* Medical & Wellness Brand Colors */
+    --primary-cyan: #0ea5e9;
+    --primary-cyan-hover: #0284c7;
+    --medical-teal: #14b8a6;
+    --medical-emerald: #10b981;
+    --medical-emerald-hover: #059669;
+    --accent-blue: #3b82f6;
     --accent-orange: #f97316;
+    
     --text-main: #f8fafc;
-    --text-muted: #cbd5e1; /* High-contrast light slate color for dark mode */
-    --glass-blur: blur(16px);
+    --text-muted: #cbd5e1;
+    --text-subtle: #94a3b8;
+    
+    --glass-blur: blur(20px);
     --border-radius-lg: 24px;
-    --border-radius-md: 12px;
+    --border-radius-md: 14px;
+    --border-radius-sm: 10px;
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* 2. BASE STYLES */
+/* 2. BASE STYLES & RADIAL AMBIENT BACKGROUND */
 body {
-    background: linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%);
+    background: 
+        radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 88% 82%, rgba(16, 185, 129, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg-dark-start) 0%, #172554 50%, var(--bg-dark-end) 100%);
+    background-attachment: fixed;
     color: var(--text-main);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6, .display-4, .display-5, .display-6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
 }
 
 .text-muted {
     color: var(--text-muted) !important;
 }
 
-/* 3. REUSABLE GLASSMORPHISM CARD COMPONENT */
+.text-cyan {
+    color: #38bdf8 !important;
+}
+
+.text-emerald {
+    color: #34d399 !important;
+}
+
+/* 3. REUSABLE MEDICAL GLASSMORPHISM CARD */
 .glass-card {
     background: var(--card-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--card-border);
     border-radius: var(--border-radius-lg);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 20px rgba(14, 165, 233, 0.05);
     padding: 2.5rem;
     transition: var(--transition-smooth);
 }
 
 .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+    border-color: var(--card-border-hover);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55), 0 0 30px rgba(14, 165, 233, 0.12);
 }
 
-/* 4. REUSABLE BUTTON COMPONENTS */
+/* 4. MEDICAL BUTTON COMPONENTS */
 .btn-primary-gradient {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-purple) 100%);
-    color: var(--text-main);
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    color: #ffffff;
     border: none;
     border-radius: var(--border-radius-md);
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
+    padding: 0.75rem 1.6rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.01em;
     transition: var(--transition-smooth);
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
 }
 
 .btn-primary-gradient:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
-    color: var(--text-main);
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
+    color: #ffffff;
 }
 
 .btn-outline-glass {
@@ -73,21 +107,23 @@ body {
     color: var(--text-main);
     border: 1px solid var(--card-border);
     border-radius: var(--border-radius-md);
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1.6rem;
+    font-family: var(--font-heading);
     font-weight: 600;
     transition: var(--transition-smooth);
 }
 
 .btn-outline-glass:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: var(--text-main);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(14, 165, 233, 0.15);
+    color: #ffffff;
+    border-color: rgba(56, 189, 248, 0.4);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.2);
 }
 
 /* 5. FORM CONTROL & FLOATING INPUT STYLES */
 .form-control-glass {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(15, 23, 42, 0.65);
     border: 1px solid var(--card-border);
     color: var(--text-main);
     border-radius: var(--border-radius-md);
@@ -96,17 +132,63 @@ body {
 }
 
 .form-control-glass:focus {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: var(--primary-blue);
+    background: rgba(15, 23, 42, 0.9);
+    border-color: var(--primary-cyan);
     color: var(--text-main);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25);
 }
 
 .form-control-glass::placeholder {
-    color: #94a3b8;
+    color: var(--text-subtle);
 }
 
-/* 6. PASSWORD TOGGLE EYE BUTTON - PERFECT VERTICAL CENTERING */
+/* 5.1 HIGH-END GLASSMORPHIC DROPDOWN SELECT STYLES */
+select.form-select,
+select.form-control-glass {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2338bdf8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 16px 12px !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    color: #f8fafc !important;
+    border-radius: 14px !important;
+    padding: 0.75rem 2.5rem 0.75rem 1rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    backdrop-filter: blur(14px) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+select.form-select:hover,
+select.form-control-glass:hover {
+    border-color: rgba(56, 189, 248, 0.6) !important;
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2) !important;
+}
+
+select.form-select:focus,
+select.form-control-glass:focus {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    outline: none !important;
+}
+
+select.form-select option,
+select.form-control-glass option {
+    background-color: #0b132b !important;
+    color: #f8fafc !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+}
+
+select.form-select option:disabled,
+select.form-control-glass option[value=""] {
+    color: #64748b !important;
+    font-style: italic !important;
+}
+
+/* 6. PASSWORD TOGGLE EYE BUTTON */
 .input-password-wrapper {
     position: relative;
     width: 100%;
@@ -131,31 +213,31 @@ body {
 }
 
 .btn-password-toggle:hover {
-    color: var(--text-main);
+    color: var(--primary-cyan);
 }
 
-/* 7. HIGH-CONTRAST SLOT BUTTON STYLES FOR DARK MODE */
+/* 7. HIGH-CONTRAST SLOT BUTTON STYLES FOR HEALTHCARE MATRIX */
 .slot-btn-available {
-    background: rgba(34, 197, 94, 0.15) !important;
-    color: #4ade80 !important;
-    border: 1px solid rgba(74, 222, 128, 0.4) !important;
-    font-weight: 500;
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    font-weight: 600;
     transition: var(--transition-smooth);
 }
 
 .slot-btn-available:hover {
-    background: rgba(34, 197, 94, 0.25) !important;
-    color: #86efac !important;
-    border-color: #4ade80 !important;
+    background: rgba(16, 185, 129, 0.28) !important;
+    color: #6ee7b7 !important;
+    border-color: #34d399 !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
 }
 
 .slot-btn-selected {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%) !important;
     color: #ffffff !important;
-    border: 1px solid #60a5fa !important;
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6) !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.55) !important;
     font-weight: 700 !important;
 }
 
@@ -163,21 +245,30 @@ body {
     background: rgba(239, 68, 68, 0.15) !important;
     color: #f87171 !important;
     border: 1px solid rgba(248, 113, 113, 0.3) !important;
-    opacity: 0.6 !important;
+    opacity: 0.65 !important;
     cursor: not-allowed !important;
 }
 
 /* 8. GLOBAL NAVBAR & FOOTER STYLES */
 .navbar-glass {
-    background: rgba(15, 23, 42, 0.8) !important;
+    background: rgba(11, 19, 43, 0.88) !important;
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--card-border);
     transition: var(--transition-smooth);
 }
 
+.navbar-glass .nav-link,
+.navbar-glass .navbar-brand,
+.navbar-glass .btn,
+.navbar-glass .dropdown-toggle,
+.navbar-glass .hotline-box {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
 .text-white-hover:hover {
-    color: #ffffff !important;
+    color: #38bdf8 !important;
 }
 
 .transition-all {
@@ -185,13 +276,14 @@ body {
 }
 
 .glass-dropdown {
-    background: rgba(30, 41, 59, 0.95) !important;
+    background: rgba(15, 23, 42, 0.95) !important;
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--card-border) !important;
 }
 
 .dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(14, 165, 233, 0.15) !important;
+    color: #38bdf8 !important;
 }
 
 /* 9. CARD HOVER MICRO-ANIMATIONS */
@@ -201,31 +293,31 @@ body {
 
 .hover-lift:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.35);
-    border-color: rgba(96, 165, 250, 0.4) !important;
+    box-shadow: 0 20px 40px -15px rgba(14, 165, 233, 0.35);
+    border-color: rgba(56, 189, 248, 0.5) !important;
 }
 
 /* 10. CUSTOM ANIMATIONS */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* 11. FLATPICKR GLASSMORPHISM DATEPICKER STYLES */
 .flatpickr-calendar {
-    background: rgba(15, 23, 42, 0.95) !important;
+    background: rgba(11, 19, 43, 0.96) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
-    border-radius: 16px !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75) !important;
+    border-radius: 18px !important;
     color: #f8fafc !important;
-    font-family: 'Inter', sans-serif !important;
-    padding: 8px !important;
+    font-family: var(--font-body) !important;
+    padding: 10px !important;
 }
 
 .flatpickr-months {
@@ -239,7 +331,7 @@ body {
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-    background: rgba(30, 41, 59, 0.9) !important;
+    background: rgba(15, 23, 42, 0.9) !important;
     border-radius: 8px !important;
 }
 
@@ -250,20 +342,20 @@ body {
 }
 
 .flatpickr-day.today {
-    border-color: #3b82f6 !important;
-    color: #60a5fa !important;
+    border-color: #0ea5e9 !important;
+    color: #38bdf8 !important;
 }
 
 .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%) !important;
     border-color: transparent !important;
     color: #ffffff !important;
     font-weight: 700 !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45) !important;
 }
 
 .flatpickr-day:hover {
-    background: rgba(59, 130, 246, 0.3) !important;
+    background: rgba(14, 165, 233, 0.25) !important;
     border-color: transparent !important;
 }
 
@@ -271,4 +363,5 @@ body {
     color: rgba(255, 255, 255, 0.2) !important;
     background: transparent !important;
 }
+
 

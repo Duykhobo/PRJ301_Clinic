@@ -98,6 +98,20 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
+     * Tìm đối tượng Người dùng theo Email.
+     *
+     * @param email Email người dùng
+     * @return Đối tượng User hoặc null nếu không tìm thấy
+     */
+    public User findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT * FROM Users WHERE email = ?";
+        return queryOne(sql, this::mapResultSetToUser, email.trim());
+    }
+
+    /**
      * Tìm thông tin Người dùng theo ID.
      *
      * @param id Mã User ID
@@ -159,6 +173,15 @@ public class UserDAO extends BaseDAO<User> {
     /**
      * Đếm tổng số lượng Người dùng trong hệ thống.
      */
+    // =========================================================================
+    // TODO [BƯỚC 7a — queryCount]: Refactor countAll()
+    // =========================================================================
+    // Hiện tại hàm này viết thủ công JDBC. Sau khi có queryCount() trong BaseDAO:
+    //
+    //   public int countAll() {
+    //       return queryCount("SELECT COUNT(*) FROM Users");
+    //   }
+    // =========================================================================
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM Users";
         try (java.sql.Connection conn = config.DBContext.getConnection();
@@ -184,5 +207,79 @@ public class UserDAO extends BaseDAO<User> {
         String hashedPassword = BCryptUtil.hashPassword(newRawPassword);
         String sql = "UPDATE Users SET password = ? WHERE id = ?";
         return executeUpdate(sql, hashedPassword, userId);
+    }
+
+    /**
+     * Tìm người dùng theo Số điện thoại.
+     * Dùng cho Booking tại quầy (Walk-in): kiểm tra bệnh nhân đã có tài khoản chưa.
+     *
+     * @param phone Số điện thoại cần tìm
+     * @return Đối tượng User hoặc null nếu chưa có tài khoản
+     */
+    public User findByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return null;
+        String sql = "SELECT * FROM Users WHERE phone = ?";
+        return queryOne(sql, this::mapResultSetToUser, phone.trim());
+    }
+
+    /**
+     * Tạo mới tài khoản Bệnh nhân walk-in và trả về ID tự sinh.
+     * Bảo đảm unique username bằng cách dùng số điện thoại làm username.
+     *
+     * @param user Đối tượng User cần tạo mới
+     * @return ID người dùng mới tạo, hoặc -1 nếu thất bại
+     */
+    // =========================================================================
+    // TODO [BƯỚC 7b — refactor]: insertAndGetId() dùng executeInsertAndGetGeneratedKey()
+    // =========================================================================
+    // Vấn đề: Hàm này tự mở Connection thủ công + tạo Logger riêng (duplicate!)
+    // trong khi BaseDAO đã có executeInsertAndGetGeneratedKey() làm việc đó.
+    //
+    // ❓ Câu hỏi: Sau khi có ThreadLocal, tại sao không cần truyền conn thủ công nữa?
+    //
+    // ✔ Hướng refactor:
+    // public int insertAndGetId(User user) {
+    //     String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
+    //                + " VALUES(?, ?, ?, ?, ?, ?, 1)";
+    //     String username = ...;  // logic hiện tại giữ nguyên
+    //     String pass = ...;
+    //     try {
+    //         // executeInsertAndGetGeneratedKey() không nhận conn nữa
+    //         // vì BaseDAO sẽ tự lấy từ DBContext.getConnection() (ThreadLocal)
+    //         return executeInsertAndGetGeneratedKey(sql, username, pass, ...);
+    //     } catch (Exception e) {
+    //         LOGGER.log(Level.SEVERE, "insertAndGetId error", e);
+    //         return -1;
+    //     }
+    // }
+    //
+    // ⚠️ Sau khi ThreadLocal sẵn sàng, cần thêm overload executeInsertAndGetGeneratedKey()
+    //     không có tham số Connection vào BaseDAO.
+    // =========================================================================
+    public int insertAndGetId(User user) {
+        String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
+                + " VALUES(?, ?, ?, ?, ?, ?, 1)";
+        // Dùng số điện thoại làm username (mẫu: walkin_0901234567)
+        String username = (user.getUsername() != null && !user.getUsername().isEmpty())
+                ? user.getUsername() : "walkin_" + user.getPhone();
+        String pass = (user.getPassword() != null) ? user.getPassword() : "WALKIN_" + System.currentTimeMillis();
+        try (java.sql.Connection conn = config.DBContext.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql,
+                     java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, username);
+            ps.setString(2, pass);
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getFullname());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getRole() != null ? user.getRole() : "PATIENT");
+            ps.executeUpdate();
+            try (ResultSet gen = ps.getGeneratedKeys()) {
+                if (gen.next()) return gen.getInt(1);
+            }
+        } catch (SQLException e) {
+            java.util.logging.Logger.getLogger(UserDAO.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "insertAndGetId error", e);
+        }
+        return -1;
     }
 }
