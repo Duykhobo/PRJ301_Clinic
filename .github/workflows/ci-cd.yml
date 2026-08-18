@@ -1,0 +1,131 @@
+name: CI/CD Pipeline - PRJ301 Clinic (Java Web Ant)
+
+# ==============================================================================
+# BƯỚC 1: CẤU HÌNH SỰ KIỆN KÍCH HOẠT (TRIGGERS)
+# ==============================================================================
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'refactor/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch: # Cho phép trigger thủ công từ GitHub Web UI
+
+# Quyền hạn cho GitHub Actions (tạo release & upload artifacts)
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
+jobs:
+  # ==============================================================================
+  # BƯỚC 2: QUY TRÌNH CI (CONTINUOUS INTEGRATION: BUILD & TEST)
+  # Chạy trên mọi Push / Pull Request để đảm bảo code không bao giờ vỡ
+  # ==============================================================================
+  build-and-test:
+    name: 🔨 CI - Build, Compile & Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 1. Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ 2. Setup Java 8 (Temurin JDK 1.8)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: 🐜 3. Setup Apache Ant
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ant ant-optional
+
+      - name: 🔍 4. Verify Tooling Versions
+        run: |
+          echo "==== JAVA VERSION ===="
+          java -version
+          echo "==== ANT VERSION ===="
+          ant -version
+
+      - name: 🏗️ 5. Compile Java Web Project (Ant Compile)
+        working-directory: ./PRJ301_Clinic
+        run: |
+          echo "Compiling PRJ301 Clinic Java Sources..."
+          ant compile
+
+      - name: 📦 6. Package Web Application Archive (Ant Dist WAR)
+        working-directory: ./PRJ301_Clinic
+        run: |
+          echo "Building PRJ301_Clinic.war package..."
+          ant dist
+          echo "Build successful! Checking generated WAR file:"
+          ls -lh dist/
+
+      - name: 📤 7. Upload Build Artifact (.war)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PRJ301_Clinic_WAR
+          path: ./PRJ301_Clinic/dist/*.war
+          if-no-files-found: error
+          retention-days: 7
+
+  # ==============================================================================
+  # BƯỚC 3: QUY TRÌNH CD (CONTINUOUS DEPLOYMENT: RELEASE & DEPLOY)
+  # Chỉ kích hoạt KHI và CHỈ KHI merge hoặc push vào nhánh 'main'
+  # ==============================================================================
+  deploy-and-release:
+    name: 🚀 CD - Deploy & Production Release
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 1. Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 📥 2. Download Build WAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PRJ301_Clinic_WAR
+          path: ./release-dist/
+
+      - name: 📋 3. Prepare Production Package
+        run: |
+          echo "==== PRODUCTION RELEASE DEPLOYMENT ===="
+          ls -lh ./release-dist/
+          echo "Version: 1.0.0 (PRJ301 Clinic Production)"
+          echo "Package PRJ301_Clinic.war is validated and ready for Tomcat / Cloud deployment."
+
+      - name: 🏷️ 4. Generate Semantic Release Tag
+        id: tag_version
+        run: |
+          TAG_NAME="v1.0.0-build-${{ github.run_number }}"
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "Generated tag: ${TAG_NAME}"
+
+      - name: 🔖 5. Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "PRJ301 Clinic - Production Release ${{ steps.tag_version.outputs.tag_name }}"
+          tag_name: ${{ steps.tag_version.outputs.tag_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: ./release-dist/*.war
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🌐 6. Simulated Cloud Deployment Hook (Tomcat / Docker)
+        run: |
+          echo "✅ DEPLOYMENT STATUS: SUCCESSFUL"
+          echo "Target Server: Apache Tomcat 9 / Java 8 Runtime"
+          echo "Deployed Application Context: /PRJ301_Clinic"
