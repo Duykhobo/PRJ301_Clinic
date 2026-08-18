@@ -89,11 +89,17 @@
 
                         <%-- Các Nút Chức Năng --%>
                         <div class="d-flex flex-column gap-2 mt-4">
+                            <%-- Nút Mô phỏng Webhook dành cho Demo / Đồ án --%>
                             <button type="button" class="btn btn-success-gradient py-2.5 rounded-pill shadow-sm fw-bold" onclick="simulateSepayWebhook(${appointment.id})">
                                 <i class="fa-solid fa-bolt me-2"></i>Mô Phỏng Webhook SePay (Test Chuyển Khoản)
                             </button>
 
-                            <div class="row g-2">
+                            <%-- Nút Chuyển sang Tiền mặt khi đến khám (Fallback Option) --%>
+                            <a href="${pageContext.request.contextPath}/booking?action=pay-cash&id=${appointment.id}" class="btn btn-outline-glass w-100 py-2.5 rounded-pill shadow-sm text-center fw-medium" onclick="return confirm('Bạn có chắc chắn muốn chuyển sang hình thức Thanh toán tiền mặt khi đến khám?');">
+                                <i class="fa-solid fa-money-bill-wave text-warning me-2"></i>Chọn Thanh Toán Tiền Mặt Khi Đến Khám
+                            </a>
+
+                            <div class="row g-2 mt-1">
                                 <div class="col-6">
                                     <a href="${pageContext.request.contextPath}/MainController?action=history" class="btn btn-primary-gradient w-100 py-2 rounded-pill fs-7 text-center">
                                         <i class="fa-solid fa-clock-rotate-left me-1"></i>Nhật Ký Khám

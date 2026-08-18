@@ -52,4 +52,11 @@ public class BookingService {
     public boolean updatePaymentSuccess(int appointmentId, String transactionCode) {
         return appointmentDAO.updatePaymentSuccess(appointmentId, transactionCode);
     }
+
+    /**
+     * Chuyển đổi phương thức thanh toán sang Tiền mặt khi đến khám (Cash Fallback).
+     */
+    public boolean switchToCashPayment(int appointmentId) {
+        return appointmentDAO.updatePayment(appointmentId, "UNPAID", "CASH");
+    }
 }

@@ -68,6 +68,10 @@ public class BookingServlet extends HttpServlet {
             handleCheckPaymentStatus(request, response);
             return;
         }
+        if ("pay-cash".equals(action)) {
+            handlePayCash(request, response);
+            return;
+        }
 
         List<Service> services = clinicService.getActiveServices();
         List<DoctorProfile> doctors = clinicService.getAllDoctors();
@@ -243,5 +247,18 @@ public class BookingServlet extends HttpServlet {
         } catch (Exception ignored) {
         }
         response.getWriter().write("{\"id\":0,\"paymentStatus\":\"UNPAID\",\"status\":\"PENDING\"}");
+    }
+
+    private void handlePayCash(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            int appointmentId = Integer.parseInt(request.getParameter("id"));
+            boolean updated = bookingService.switchToCashPayment(appointmentId);
+            if (updated) {
+                request.getSession().setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR,
+                        "Đã chuyển phương thức sang Thanh toán Tiền mặt khi đến khám thành công!");
+            }
+        } catch (Exception ignored) {
+        }
+        response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
     }
 }
