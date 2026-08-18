@@ -1,13 +1,13 @@
 package service;
 
-import java.sql.Date;
 import java.util.List;
+
 import dao.AppointmentDAO;
-import exception.SlotAlreadyBookedException;
 import model.Appointment;
 
 /**
- * BookingService - Tầng Service Quản lý Đặt lịch hẹn & Thanh toán (Business Logic).
+ * BookingService - Tầng Service Quản lý Đặt lịch hẹn & Thanh toán (Business
+ * Logic).
  */
 public class BookingService {
 
@@ -24,7 +24,11 @@ public class BookingService {
     /**
      * Đặt Lịch Hẹn Nguyên Tử (Chống trùng slot giờ khám).
      */
-    public boolean createBookingAtomic(Appointment app) throws SlotAlreadyBookedException {
+    public boolean createBookingAtomic(Appointment app) {
+        if (app == null)
+            throw new IllegalArgumentException("Thông tin lịch hẹn không được để rỗng");
+        if (app.getPatientId() <= 0 || app.getDoctorId() <= 0 || app.getScheduleId() <= 0)
+            throw new IllegalArgumentException("Thông tin Bệnh nhân, Bác sĩ, Dịch vụ hoặc Ca khám không hợp lệ!");
         return appointmentDAO.createBookingAtomic(app);
     }
 

@@ -41,6 +41,11 @@ public class CSRFTokenFilter implements Filter {
                 session.setAttribute(CSRF_TOKEN_SESSION, csrfToken);
             }
             httpRequest.setAttribute(CSRF_TOKEN_REQ_ATTR, csrfToken);
+
+            // Làm mới mã CSRF Token trong Session sau mỗi lần Submit POST để chống F5 Re-submit form cũ
+            if ("POST".equalsIgnoreCase(httpRequest.getMethod())) {
+                session.setAttribute(CSRF_TOKEN_SESSION, UUID.randomUUID().toString());
+            }
         }
 
         chain.doFilter(request, response);

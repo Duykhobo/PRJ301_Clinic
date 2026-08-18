@@ -53,4 +53,18 @@ public class UserService {
     public boolean existsByEmail(String email) {
         return userDAO.existsByEmail(email);
     }
+
+    /**
+     * Tìm thông tin Người dùng theo địa chỉ Email.
+     */
+    public User findByEmail(String email) {
+        return userDAO.findByEmail(email);
+    }
+
+    /**
+     * Đặt lại mật khẩu mới cho người dùng qua Email.
+     */
+    public boolean resetPasswordByEmail(int userId, String newRawPassword) {
+        return userDAO.updatePassword(userId, newRawPassword);
+    }
 }

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SportZone & Clinic — Design Review Kit</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --sz-ink:#10261c; --sz-green:#1b5e3b; --sz-green-dark:#0f3d2e;
+  --sz-gold:#e0b322; --sz-gold-hover:#f0c53a;
+  --sz-cream:#f4f1e8; --sz-line:#d7d2c4;
+  --sz-tennis:#2f7d4a; --sz-pickle:#c45c16;
+  --sz-success-bg:#e3f4ea; --sz-success-fg:#1e6b3c;
+  --sz-warn-bg:#fff3cd;   --sz-warn-fg:#8a6d12;
+  --sz-info-bg:#dcecff;   --sz-info-fg:#1b4f8a;
+  --sz-danger-bg:#f8d7da; --sz-danger-fg:#842029;
+  --sz-muted-bg:#f1f1f1;  --sz-muted-fg:#5c5c5c;
+  --sz-muted-ink:#5c6b60;
+}
+body{background:var(--sz-cream);color:var(--sz-ink);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;padding-top:56px}
+.demo-section{scroll-margin-top:70px;padding:2.2rem 0}
+.rv-head{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;border-bottom:2px dashed var(--sz-line);padding-bottom:.75rem;margin-bottom:1.5rem}
+.rv-code{background:var(--sz-gold);color:var(--sz-ink);font-weight:800;border-radius:8px;padding:.1rem .65rem;font-size:.95rem}
+.rv-head h2{font-size:1.35rem;font-weight:750;margin:0}
+.rv-note{color:var(--sz-muted-ink);font-size:.9rem;margin:0}
+
+/* ============ REVIEW NAV ============ */
+.rv-nav{position:fixed;top:0;left:0;right:0;z-index:2000;background:var(--sz-ink);display:flex;align-items:center;gap:.25rem;padding:.5rem 1rem;overflow-x:auto;white-space:nowrap}
+.rv-nav .rv-brand{color:var(--sz-gold);font-weight:800;margin-right:.75rem;font-size:.9rem}
+.rv-nav a{color:#cfe3d6;font-size:.8rem;text-decoration:none;padding:.3rem .6rem;border-radius:999px}
+.rv-nav a:hover{background:rgba(255,255,255,.12);color:#fff}
+.rv-nav a.rv-admin{color:#fbd97a}
+
+/* ============ BUTTONS ============ */
+.btn-sz{background:var(--sz-gold);color:var(--sz-ink);border:0;border-radius:999px;padding:.65rem 1.7rem;font-weight:700;transition:all .18s ease}
+.btn-sz:hover{background:var(--sz-gold-hover);color:var(--sz-ink);transform:translateY(-2px);box-shadow:0 10px 20px rgba(224,179,34,.3)}
+.btn-sz:disabled{background:#e5e0d0;color:#9a9484;transform:none;box-shadow:none}
+.btn-sz-sm{padding:.4rem 1.1rem;font-size:.9rem}
+.btn-sz-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.65);border-radius:999px;padding:.6rem 1.5rem;font-weight:600;transition:all .18s}
+.btn-sz-ghost:hover{background:rgba(255,255,255,.14);color:#fff;transform:translateY(-2px)}
+.btn-sz-outline{background:transparent;color:var(--sz-green);border:1px solid var(--sz-green);border-radius:999px;padding:.6rem 1.5rem;font-weight:600;transition:all .18s}
+.btn-sz-outline:hover{background:var(--sz-green);color:#fff;transform:translateY(-2px)}
+.btn-sz-danger{background:transparent;color:var(--sz-danger-fg);border:1px solid #d9a2a8;border-radius:999px;padding:.6rem 1.5rem;font-weight:600}
+.btn-sz-danger:hover{background:var(--sz-danger-bg);color:var(--sz-danger-fg)}
+.btn-icon{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;border:1px solid var(--sz-line);background:#fff;color:var(--sz-muted-ink);font-size:.9rem;transition:all .15s}
+.btn-icon:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(16,38,28,.12)}
+.btn-icon.tint-warn{background:#fff8e1;border-color:#f0e0a8;color:var(--sz-warn-fg)}
+.btn-icon.tint-danger{background:#fdecee;border-color:#eec3c8;color:var(--sz-danger-fg)}
+.btn-icon.tint-success{background:var(--sz-success-bg);border-color:#bfe3cd;color:var(--sz-success-fg)}
+
+/* ============ CARDS ============ */
+.sz-card{background:#fff;border-radius:1.25rem;border:1px solid rgba(16,38,28,.06);box-shadow:0 10px 24px rgba(16,38,28,.05);padding:1.6rem}
+.sz-card-lg{border-radius:1.5rem}
+.sz-card-soft{background:#f6f3ea;border-radius:1.25rem;border:1px solid rgba(16,38,28,.05);padding:1.4rem}
+.hover-lift{transition:all .2s ease}
+.hover-lift:hover{transform:translateY(-5px);box-shadow:0 16px 32px rgba(16,38,28,.12)}
+.card-title-sz{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+.card-title-sz i{color:var(--sz-green)}
+
+/* ============ BADGES ============ */
+.sz-badge{display:inline-flex;align-items:center;gap:.35rem;border-radius:999px;padding:.32em .85em;font-size:.78rem;font-weight:650;line-height:1}
+.sz-badge-available{background:var(--sz-success-bg);color:var(--sz-success-fg)}
+.sz-badge-paid,.sz-badge-completed,.sz-badge-active{background:var(--sz-success-bg);color:var(--sz-success-fg)}
+.sz-badge-booked,.sz-badge-pending,.sz-badge-unpaid{background:var(--sz-warn-bg);color:var(--sz-warn-fg)}
+.sz-badge-confirmed{background:var(--sz-info-bg);color:var(--sz-info-fg)}
+.sz-badge-cancelled{background:var(--sz-danger-bg);color:var(--sz-danger-fg)}
+.sz-badge-closed,.sz-badge-noshow,.sz-badge-maintenance{background:var(--sz-muted-bg);color:var(--sz-muted-fg)}
+.sz-badge-tennis{background:rgba(47,125,74,.13);color:var(--sz-tennis)}
+.sz-badge-pickle{background:rgba(196,92,22,.13);color:var(--sz-pickle)}
+.sz-badge-none{background:#fff;border:1px dashed var(--sz-line);color:var(--sz-muted-fg)}
+.sz-badge-gold{background:var(--sz-gold);color:var(--sz-ink)}
+.sz-badge-dark{background:var(--sz-ink);color:#fff}
+.status-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+/* ============ FORMS ============ */
+.sz-input{border:1px solid transparent;background:#f6f3ea;border-radius:1rem;padding:.7rem 1rem;color:var(--sz-ink);width:100%;transition:all .15s}
+.sz-input:focus{outline:none;background:#fff;border-color:var(--sz-green);box-shadow:0 0 0 4px rgba(27,94,59,.12)}
+.sz-input::placeholder{color:#a49e8d}
+.sz-input.is-invalid{border-color:#c9545f;background:#fdf3f4}
+.form-label-sz{font-size:.85rem;font-weight:650;color:var(--sz-ink);margin-bottom:.35rem}
+.form-hint{font-size:.78rem;color:var(--sz-muted-ink);margin-top:.3rem}
+.section-label{font-size:.72rem;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:var(--sz-muted-ink);margin:1.4rem 0 .8rem}
+.input-eye{position:relative}
+.input-eye .eye-btn{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--sz-muted-ink)}
+
+/* ============ FILTER PILLS ============ */
+.pill-tray{display:inline-flex;gap:.25rem;background:#fff;border:1px solid var(--sz-line);border-radius:999px;padding:4px;flex-wrap:wrap}
+.filter-pill{border:0;background:transparent;border-radius:999px;padding:.45rem 1.15rem;font-weight:600;font-size:.88rem;color:var(--sz-muted-ink);transition:all .15s}
+.filter-pill:hover{background:rgba(27,94,59,.08);color:var(--sz-green)}
+.filter-pill.active{background:var(--sz-green);color:#fff}
+.filter-pill .sz-count{background:rgba(16,38,28,.08);border-radius:999px;padding:.1em .55em;font-size:.75rem;margin-left:.3rem}
+.filter-pill.active .sz-count{background:rgba(255,255,255,.25)}
+
+/* ============ TABLES ============ */
+.sz-table{width:100%;border-collapse:collapse;background:#fff}
+.sz-table thead th{font-size:.73rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:650;background:#f6f3ea;padding:.8rem 1rem;border-bottom:1px solid var(--sz-line)}
+.sz-table tbody td{padding:1rem;border-bottom:1px solid #f1efe7;vertical-align:middle;font-size:.93rem}
+.sz-table tbody tr{transition:background .12s}
+.sz-table tbody tr:hover{background:#fbfaf5}
+.sz-table .money{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.sz-table .mono{font-family:Consolas,monospace;font-size:.85rem}
+.table-wrap{border-radius:1.25rem;overflow:hidden;border:1px solid rgba(16,38,28,.06);box-shadow:0 10px 24px rgba(16,38,28,.05)}
+
+/* ============ STAT CARDS ============ */
+.stat-card{background:#fff;border-radius:1.25rem;border:1px solid rgba(16,38,28,.06);box-shadow:0 8px 20px rgba(16,38,28,.05);padding:1.35rem;transition:all .2s}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-card .stat-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;margin-bottom:.8rem}
+.stat-card .stat-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sz-muted-ink)}
+.stat-card .stat-value{font-size:1.6rem;font-weight:800;line-height:1.2}
+.stat-card.border-accent{border-top:4px solid var(--sz-gold)}
+.stat-card.border-green{border-top:4px solid var(--sz-green)}
+.kpi-icon{width:55px;height:55px;border-radius:18px;color:#fff;font-size:1.45rem;display:grid;place-items:center;flex-shrink:0}
+.g-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+.g-success{background:linear-gradient(135deg,#10b981,#059669)}
+.g-danger{background:linear-gradient(135deg,#f43f5e,#e11d48)}
+.g-warning{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.g-info{background:linear-gradient(135deg,#0ea5e9,#0284c7)}
+.g-purple{background:linear-gradient(135deg,#a855f7,#7e22ce)}
+
+/* ============ EMPTY STATE & ALERTS ============ */
+.sz-empty{text-align:center;padding:3rem 1.5rem}
+.sz-empty .icon-circle{width:80px;height:80px;border-radius:50%;background:#f1efe7;display:grid;place-items:center;margin:0 auto 1rem;font-size:2rem;color:#8a8577}
+.sz-empty h5{font-weight:750}
+.sz-empty p{color:var(--sz-muted-ink);font-size:.92rem}
+.alert-soft{display:flex;align-items:flex-start;gap:.6rem;border-radius:1rem;padding:.85rem 1.1rem;font-size:.9rem}
+.alert-soft b{font-weight:750}
+.alert-soft.s-success{background:rgba(30,107,60,.1);color:var(--sz-success-fg)}
+.alert-soft.s-danger{background:rgba(132,32,41,.09);color:var(--sz-danger-fg)}
+.alert-soft.s-warn{background:rgba(138,109,18,.12);color:var(--sz-warn-fg)}
+.alert-soft.s-info{background:rgba(27,79,138,.1);color:var(--sz-info-fg)}
+
+/* ============ AVATARS & PAGINATION ============ */
+.avatar{border-radius:50%;background:var(--sz-green-dark);color:#fff;display:inline-grid;place-items:center;font-weight:750;flex-shrink:0}
+.avatar-80{width:80px;height:80px;font-size:2rem}
+.avatar-42{width:42px;height:42px;font-size:1rem}
+.avatar-40{width:40px;height:40px;font-size:.95rem}
+.pager{display:flex;align-items:center;gap:.4rem}
+.pg-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--sz-line);background:#fff;display:grid;place-items:center;color:var(--sz-ink);text-decoration:none;font-weight:600;font-size:.9rem;transition:all .15s}
+.pg-btn:hover{background:#f1efe7}
+.pg-btn.active{background:var(--sz-green);border-color:var(--sz-green);color:#fff}
+
+/* ============ NAVBAR / HERO / FOOTER ============ */
+.sz-nav{background:#fff;border-bottom:1px solid rgba(16,38,28,.08);box-shadow:0 2px 12px rgba(16,38,28,.05);padding:.85rem 0}
+.sz-mark{width:36px;height:36px;border-radius:11px;background:var(--sz-gold);color:var(--sz-ink);display:grid;place-items:center;font-weight:800;font-size:1.05rem;flex-shrink:0}
+.sz-nav .nav-link{color:var(--sz-ink);font-weight:600;font-size:.93rem}
+.sz-nav .nav-link:hover{color:var(--sz-green)}
+.sz-hero{background:radial-gradient(900px 420px at 85% -20%,rgba(224,179,34,.18),transparent 60%),var(--sz-green-dark);color:#fff;border-radius:1.5rem;position:relative;overflow:hidden}
+.sz-hero .court-lines{position:absolute;inset:auto -60px -120px auto;width:520px;height:340px;border:2px solid rgba(255,255,255,.09);border-radius:8px;transform:rotate(-8deg);pointer-events:none}
+.sz-hero .court-lines::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.09)}
+.sz-hero .court-lines::after{content:"";position:absolute;inset:40px 70px;border:2px solid rgba(255,255,255,.07)}
+.hero-pill{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:.4rem 1rem;font-size:.85rem}
+.hero-pill .pill-tag{background:#fff;color:var(--sz-ink);border-radius:999px;padding:.15rem .7rem;font-weight:750;font-size:.78rem;animation:float 4s ease-in-out infinite}
+.tracking-tight{letter-spacing:-.03em}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) both}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+.online-pill{position:absolute;top:1.1rem;right:1.1rem;background:#fff;color:var(--sz-ink);border-radius:999px;padding:.3rem .85rem;font-size:.78rem;font-weight:650;display:flex;align-items:center;gap:.45rem;box-shadow:0 8px 18px rgba(0,0,0,.12);animation:float 4s ease-in-out infinite}
+.sz-footer{background:var(--sz-ink);color:#cfd8d2;border-radius:1.25rem;padding:2.5rem 2rem 1.25rem}
+.sz-footer h6{color:#fff;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.sz-footer a{color:#cfd8d2;text-decoration:none;font-size:.9rem}
+.sz-footer a:hover{color:var(--sz-gold)}
+
+/* ============ TIME SLOT GRID ============ */
+.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:.5rem}
+.slot{border:1px solid var(--sz-line);border-radius:.65rem;padding:.55rem .3rem;text-align:center;font-weight:750;background:#fff;cursor:pointer;font-size:.92rem;transition:all .13s;user-select:none}
+.slot small{display:block;font-weight:500;font-size:.66rem;color:var(--sz-muted-ink);margin-top:.15rem}
+.slot.is-available{border-color:#9cc8ab}
+.slot.is-available:hover{background:var(--sz-success-bg);border-color:var(--sz-tennis)}
+.slot.is-booked{background:var(--sz-warn-bg);border-color:#efe0ac;color:var(--sz-warn-fg);cursor:not-allowed}
+.slot.is-booked small{color:inherit;opacity:.75}
+.slot.is-closed{background:var(--sz-muted-bg);color:var(--sz-muted-fg);cursor:not-allowed}
+.slot.is-past{opacity:.45;cursor:not-allowed}
+.slot.is-selected{background:var(--sz-green);border-color:var(--sz-green);color:#fff}
+.slot.is-selected small{color:rgba(255,255,255,.8)}
+.legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.8rem;color:var(--sz-muted-ink)}
+.legend .sw{width:14px;height:14px;border-radius:4px;display:inline-block;margin-right:.35rem;vertical-align:-2px}
+.date-pill-row{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.35rem}
+.date-pill{border:1px solid var(--sz-line);background:#fff;border-radius:.9rem;padding:.5rem .95rem;text-align:center;cursor:pointer;min-width:74px;transition:all .13s;flex-shrink:0}
+.date-pill small{display:block;font-size:.68rem;font-weight:650;letter-spacing:.06em;color:var(--sz-muted-ink);text-transform:uppercase}
+.date-pill b{font-size:1.05rem}
+.date-pill.active{background:var(--sz-ink);border-color:var(--sz-ink);color:#fff}
+.date-pill.active small{color:rgba(255,255,255,.7)}
+
+/* ============ ITEM CARD ============ */
+.court-img{height:170px;border-radius:1rem 1rem 0 0;display:grid;place-items:center;font-size:2.6rem;color:rgba(255,255,255,.85);position:relative}
+.court-img.tennis{background:linear-gradient(140deg,#2f7d4a,#14432a)}
+.court-img.pickle{background:linear-gradient(140deg,#c45c16,#7c3a0d)}
+.court-img .type-chip{position:absolute;top:.8rem;left:.8rem}
+.court-img .status-chip{position:absolute;top:.8rem;right:.8rem}
+
+/* ============ ADMIN SHELL ============ */
+.adm-shell{display:flex;background:#f9fafb;border-radius:1.25rem;overflow:hidden;border:1px solid #e5e7eb;min-height:640px}
+.adm-side{width:250px;background:#fff;border-right:1px solid #e5e7eb;padding:1.2rem .85rem;flex-shrink:0;display:flex;flex-direction:column}
+.adm-brand{display:flex;align-items:center;gap:.55rem;padding:.3rem .6rem 1rem;font-weight:800;font-size:1.05rem}
+.adm-label{font-size:.63rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:#9ca3af;margin:1rem .7rem .3rem}
+.adm-link{display:flex;align-items:center;gap:.6rem;padding:.52rem .7rem;border-radius:.6rem;color:#374151;font-weight:550;text-decoration:none;font-size:.9rem;margin-bottom:.1rem}
+.adm-link i{font-size:1rem;color:#6b7280}
+.adm-link:hover{background:#f3f4f6;color:var(--sz-ink)}
+.adm-link.active{background:var(--sz-green-dark);color:#fff;box-shadow:0 6px 14px rgba(15,61,46,.25)}
+.adm-link.active i{color:var(--sz-gold)}
+.adm-profile{margin-top:auto;border-top:1px solid #e5e7eb;padding:.9rem .6rem 0;display:flex;align-items:center;gap:.6rem}
+.adm-profile .name{font-size:.85rem;font-weight:700;line-height:1.15}
+.adm-profile .email{font-size:.72rem;color:#9ca3af;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-main{flex:1;padding:1.7rem 1.9rem;min-width:0}
+.adm-pagehead{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem}
+.adm-pagehead h2{font-size:1.45rem;font-weight:800;margin:0}
+.adm-pagehead p{color:#6b7280;margin:.2rem 0 0;font-size:.92rem}
+.glass-card{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid #eef0f3;border-radius:1.25rem;box-shadow:0 8px 20px rgba(15,23,42,.05);padding:1.4rem}
+.hover-scale{transition:all .2s}
+.hover-scale:hover{transform:translateY(-4px);box-shadow:0 12px 20px -8px rgba(0,0,0,.12)}
+.adm-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:650;border-bottom:1px solid #eef0f3;padding:.75rem .9rem;background:transparent}
+.adm-table tbody td{padding:1rem .9rem;border-bottom:1px solid #f4f5f7;vertical-align:middle;font-size:.92rem}
+.adm-table tbody tr:hover{background:#f8fafc}
+.role-badge{border-radius:8px;padding:.3em .7em;font-size:.72rem;font-weight:700;letter-spacing:.03em}
+.role-admin{background:#f3e8ff;color:#7e22ce}
+.role-customer{background:#f1f3f5;color:#495057}
+.st-active{background:#dcfce7;color:#14532d}
+.st-frozen{background:#fee2e2;color:#7f1d1d}
+
+/* ============ TIMESLOT TILES ============ */
+.ts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.9rem}
+.ts-tile{aspect-ratio:1;border-radius:16px;padding:.95rem;display:flex;flex-direction:column;justify-content:space-between;border:1.5px solid;transition:transform .15s,box-shadow .15s;cursor:pointer}
+.ts-tile:hover{transform:translateY(-4px);box-shadow:0 12px 22px -10px rgba(0,0,0,.18)}
+.ts-open{background:linear-gradient(160deg,#ecfdf5,#d1fae5);border-color:#6ee7b7;color:#065f46}
+.ts-full{background:linear-gradient(160deg,#fef2f2,#fecaca);border-color:#f87171;color:#991b1b}
+.ts-maint{background:linear-gradient(160deg,#fffbeb,#fde68a);border-color:#fbbf24;color:#92400e}
+.ts-tile .ts-time{font-weight:800;font-size:1rem}
+.ts-tile .ts-state{font-weight:750;font-size:.78rem;letter-spacing:.05em}
+.ts-tile .ts-hint{font-size:.72rem;opacity:.85}
+
+/* ============ INVOICE PAPER ============ */
+.invoice-paper{background:#fff;border-radius:1.25rem;border:1px solid rgba(16,38,28,.07);box-shadow:0 10px 24px rgba(16,38,28,.06);padding:2.4rem}
+.invoice-head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-bottom:1.4rem;border-bottom:2px solid var(--sz-ink)}
+.kv{display:flex;justify-content:space-between;gap:1rem;padding:.45rem 0;font-size:.93rem}
+.kv .k{color:var(--sz-muted-ink)}
+.kv .v{font-weight:650;text-align:right}
+.kv-total{border-top:2px solid var(--sz-ink);margin-top:.5rem;padding-top:.7rem;font-size:1.15rem;font-weight:800}
+
+/* ============ BOOKING SUMMARY ============ */
+.summary-sticky{position:sticky;top:76px}
+.summary-line{display:flex;justify-content:space-between;gap:1rem;padding:.65rem 0;border-bottom:1px dashed #e8e4d8;font-size:.92rem}
+.summary-line .k{color:var(--sz-muted-ink);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.service-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border:1px solid var(--sz-line);border-radius:1rem;padding:.8rem 1rem;background:#fff}
+.service-row.checked{border-color:var(--sz-green);background:rgba(27,94,59,.05)}
+.qty-box{display:inline-flex;align-items:center;gap:.5rem}
+.qty-box button{width:28px;height:28px;border-radius:50%;border:1px solid var(--sz-line);background:#fff;font-weight:700;line-height:1}
+.step-num{width:30px;height:30px;border-radius:50%;background:var(--sz-ink);color:var(--sz-gold);display:inline-grid;place-items:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<nav class="rv-nav">
+  <span class="rv-brand">DESIGN REVIEW KIT</span>
+  <a href="#p0">P0 Components</a>
+  <a href="#c1">C1 Home+Login</a>
+  <a href="#c2">C2 Đăng ký</a>
+  <a href="#c3">C3 Danh sách dịch vụ/sân</a>
+  <a href="#c4">C4 Chi tiết</a>
+  <a href="#c5">C5 Đặt lịch/sân</a>
+  <a href="#c6">C6 Danh sách đặt chỗ</a>
+  <a href="#c7">C7 Chi tiết đặt chỗ</a>
+  <a href="#c8">C8 Hóa đơn</a>
+  <a href="#c9">C9 Chi tiết HĐ</a>
+  <a href="#c10">C10 Hồ sơ</a>
+  <a href="#a1" class="rv-admin">A1 Admin Dashboard</a>
+  <a href="#a2" class="rv-admin">A2 Lịch hôm nay</a>
+  <a href="#a3" class="rv-admin">A3 Người dùng</a>
+  <a href="#a4" class="rv-admin">A4 Khung giờ</a>
+</nav>
+
+<div class="container" style="max-width:1200px">
+
+  <div class="py-4">
+    <h1 class="fw-bold tracking-tight" style="font-size:2rem">Design Review Kit &amp; UI Pattern Library</h1>
+    <p class="mb-1" style="color:var(--sz-muted-ink)">Bộ chuẩn giao diện cao cấp: <b>Layout hiện đại, Pill buttons, Dynamic Filter Trays, Time Slot Grids, Paper Invoices &amp; Admin Shell</b>.</p>
+  </div>
+
+  <!-- P0 · COMPONENT LIBRARY -->
+  <section class="demo-section" id="p0">
+    <div class="rv-head"><span class="rv-code">P0</span><h2>Component Library</h2><p class="rv-note">Toàn bộ component dùng chung được tiêu chuẩn hóa.</p></div>
+
+    <!-- Buttons -->
+    <div class="sz-card mb-4">
+      <div class="card-title-sz"><i class="bi bi-hand-index-thumb"></i> Nút (Pill buttons với hover nhấc nhẹ)</div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button class="btn-sz">Đặt lịch ngay</button>
+        <button class="btn-sz btn-sz-sm">Lưu thay đổi</button>
+        <button class="btn-sz" disabled>Đang xử lý…</button>
+        <button class="btn-sz-outline">Xem chi tiết</button>
+        <button class="btn-sz-danger">Hủy lịch hẹn</button>
+        <span class="px-3 py-2 rounded-4" style="background:var(--sz-green-dark)"><button class="btn-sz-ghost btn-sz-sm">Đăng nhập</button></span>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+        <span class="me-1 small" style="color:var(--sz-muted-ink)">Nút icon bảng dữ liệu:</span>
+        <button class="btn-icon" title="Xem"><i class="bi bi-eye"></i></button>
+        <button class="btn-icon tint-warn" title="Sửa"><i class="bi bi-pencil"></i></button>
+        <button class="btn-icon tint-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+        <button class="btn-icon tint-success" title="Kích hoạt"><i class="bi bi-play-fill"></i></button>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="sz-card mb-4">
+      <div class="card-title-sz"><i class="bi bi-tags"></i> Badge trạng thái</div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="sz-badge sz-badge-tennis">Chuyên khoa</span>
+        <span class="sz-badge sz-badge-pickle">Dịch vụ Spa</span>
+        <span class="sz-badge sz-badge-available">Trống</span>
+        <span class="sz-badge sz-badge-booked">Đã đặt</span>
+        <span class="sz-badge sz-badge-closed">Đóng</span>
+        <span class="sz-badge sz-badge-maintenance">Bảo trì</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="sz-badge sz-badge-pending">Chờ xác nhận</span>
+        <span class="sz-badge sz-badge-confirmed">Đã xác nhận</span>
+        <span class="sz-badge sz-badge-completed">Hoàn thành</span>
+        <span class="sz-badge sz-badge-cancelled">Đã hủy</span>
+        <span class="sz-badge sz-badge-noshow">Không đến</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="sz-badge sz-badge-unpaid">Chưa thanh toán</span>
+        <span class="sz-badge sz-badge-paid">Đã thanh toán</span>
+        <span class="sz-badge sz-badge-none">Chưa có hóa đơn</span>
+        <span class="sz-badge sz-badge-active">Hoạt động</span>
+        <span class="sz-badge sz-badge-cancelled">Khóa</span>
+        <span class="sz-badge sz-badge-gold">VIP</span>
+        <span class="sz-badge sz-badge-dark">#BK-1024</span>
+      </div>
+    </div>
+
+    <!-- Forms & Filters -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <div class="sz-card h-100">
+          <div class="card-title-sz"><i class="bi bi-input-cursor-text"></i> Form (input nền mềm, focus ring bo tròn)</div>
+          <label class="form-label-sz">Email</label>
+          <input class="sz-input mb-3" type="email" placeholder="ban@email.com"/>
+          <label class="form-label-sz">Mật khẩu</label>
+          <div class="input-eye mb-1">
+            <input class="sz-input" type="password" placeholder="••••••••" value="matkhau1"/>
+            <button class="eye-btn" type="button"><i class="bi bi-eye"></i></button>
+          </div>
+          <div class="form-hint mb-3">8–20 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+          <label class="form-label-sz">Số điện thoại</label>
+          <input class="sz-input is-invalid mb-1" value="090123"/>
+          <div class="small" style="color:var(--sz-danger-fg)">Số điện thoại phải đủ 10 chữ số.</div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="ck-demo" checked style="accent-color:var(--sz-green)"/>
+            <label class="form-check-label small" for="ck-demo">Tôi đồng ý với <b>quy định đặt lịch</b> của hệ thống.</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="sz-card mb-4">
+          <div class="card-title-sz"><i class="bi bi-funnel"></i> Filter pills</div>
+          <div class="pill-tray">
+            <button class="filter-pill active">Tất cả <span class="sz-count">12</span></button>
+            <button class="filter-pill">Sắp tới <span class="sz-count">2</span></button>
+            <button class="filter-pill">Lịch sử</button>
+            <button class="filter-pill">Đã hủy</button>
+          </div>
+        </div>
+        <div class="alert-soft s-success mb-2"><i class="bi bi-check-circle-fill"></i><span><b>Thành công.</b> Đặt lịch thành công, hệ thống đã gửi mã xác nhận.</span></div>
+        <div class="alert-soft s-danger mb-2"><i class="bi bi-x-circle-fill"></i><span><b>Thông báo.</b> Email hoặc mật khẩu không chính xác.</span></div>
+        <div class="alert-soft s-warn mb-2"><i class="bi bi-exclamation-triangle-fill"></i><span><b>Lưu ý.</b> Tài khoản đang bị khóa tạm thời.</span></div>
+        <div class="alert-soft s-info"><i class="bi bi-info-circle-fill"></i><span><b>Hướng dẫn.</b> Quét mã SePay QR để xác nhận thanh toán tự động trong 5 giây.</span></div>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="sz-card h-100">
+          <div class="card-title-sz"><i class="bi bi-grid"></i> Stat card người dùng</div>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="stat-card border-accent">
+                <div class="stat-icon" style="background:rgba(224,179,34,.18);color:#9a7a10"><i class="bi bi-calendar2-check"></i></div>
+                <div class="stat-label">Lịch hẹn sắp tới</div>
+                <div class="stat-value">2</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="stat-card border-green">
+                <div class="stat-icon" style="background:var(--sz-success-bg);color:var(--sz-success-fg)"><i class="bi bi-receipt"></i></div>
+                <div class="stat-label">Hóa đơn đã thanh toán</div>
+                <div class="stat-value">7</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="sz-card h-100">
+          <div class="card-title-sz"><i class="bi bi-speedometer2"></i> KPI card Quản trị (Gradient SaaS)</div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="kpi-icon g-primary"><i class="bi bi-people-fill"></i></div>
+            <div><div class="stat-label">Tổng người dùng</div><div class="stat-value">128</div></div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="kpi-icon g-info"><i class="bi bi-cash-stack"></i></div>
+            <div><div class="stat-label">Doanh thu hôm nay</div><div class="stat-value">2.450.000 đ</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slot grid -->
+    <div class="sz-card">
+      <div class="card-title-sz"><i class="bi bi-grid-3x3-gap"></i> Grid khung giờ (Khách/Bệnh nhân) + Chú giải</div>
+      <div class="slot-grid mb-3" style="max-width:640px">
+        <div class="slot is-available">08:00<small>200.000 đ</small></div>
+        <div class="slot is-selected">09:00<small>200.000 đ</small></div>
+        <div class="slot is-booked">10:00<small>Đã đặt</small></div>
+        <div class="slot is-past">07:00<small>Đã qua</small></div>
+        <div class="slot is-closed">12:00<small>Đóng</small></div>
+      </div>
+      <div class="legend">
+        <span><span class="sw" style="background:#fff;border:1px solid #9cc8ab"></span>Trống</span>
+        <span><span class="sw" style="background:var(--sz-green)"></span>Đang chọn</span>
+        <span><span class="sw" style="background:var(--sz-warn-bg);border:1px solid #efe0ac"></span>Đã đặt</span>
+        <span><span class="sw" style="background:var(--sz-muted-bg)"></span>Đóng / Đã qua</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.pill-tray').forEach(function(tray){
+  tray.addEventListener('click',function(e){
+    var b=e.target.closest('.filter-pill'); if(!b)return;
+    tray.querySelectorAll('.filter-pill').forEach(function(p){p.classList.remove('active')});
+    b.classList.add('active');
+  });
+});
+document.querySelectorAll('.date-pill-row').forEach(function(row){
+  row.addEventListener('click',function(e){
+    var p=e.target.closest('.date-pill'); if(!p)return;
+    row.querySelectorAll('.date-pill').forEach(function(d){d.classList.remove('active')});
+    p.classList.add('active');
+  });
+});
+document.querySelectorAll('.slot-grid').forEach(function(grid){
+  grid.addEventListener('click',function(e){
+    var s=e.target.closest('.slot'); if(!s)return;
+    if(s.classList.contains('is-booked')||s.classList.contains('is-closed')||s.classList.contains('is-past'))return;
+    grid.querySelectorAll('.slot').forEach(function(x){x.classList.remove('is-selected')});
+    s.classList.add('is-selected');
+  });
+});
+</script>
+</body>
+</html>

@@ -3,6 +3,8 @@ package dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import constant.RoleConstant;
 import model.User;
@@ -12,6 +14,8 @@ import util.BCryptUtil;
  * Lớp UserDAO quản lý các thao tác CSDL cho bảng Users.
  */
 public class UserDAO extends BaseDAO<User> {
+
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
     // =========================================================================
     // 🧱 1. HELPER MAPPER (CHUẨN DRY)
@@ -42,7 +46,8 @@ public class UserDAO extends BaseDAO<User> {
      *
      * @param username    Tên đăng nhập
      * @param rawPassword Mật khẩu người dùng nhập vào
-     * @return Đối tượng User nếu thành công và tài khoản Active, ngược lại trả về null
+     * @return Đối tượng User nếu thành công và tài khoản Active, ngược lại trả về
+     *         null
      */
     public User login(String username, String rawPassword) {
         String sql = "SELECT * FROM Users WHERE username = ?";
@@ -98,6 +103,20 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
+     * Tìm đối tượng Người dùng theo Email.
+     *
+     * @param email Email người dùng
+     * @return Đối tượng User hoặc null nếu không tìm thấy
+     */
+    public User findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT * FROM Users WHERE email = ?";
+        return queryOne(sql, this::mapResultSetToUser, email.trim());
+    }
+
+    /**
      * Tìm thông tin Người dùng theo ID.
      *
      * @param id Mã User ID
@@ -135,7 +154,8 @@ public class UserDAO extends BaseDAO<User> {
      */
     public boolean toggleStatus(int userId) {
         User user = findById(userId);
-        if (user == null) return false;
+        if (user == null)
+            return false;
         String sql = "UPDATE Users SET status = ? WHERE id = ?";
         return executeUpdate(sql, !user.isStatus(), userId);
     }
@@ -156,17 +176,9 @@ public class UserDAO extends BaseDAO<User> {
         return queryList(sql, this::mapResultSetToUser, offset, limit);
     }
 
-    /**
-     * Đếm tổng số lượng Người dùng trong hệ thống.
-     */
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM Users";
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException ignored) {}
-        return 0;
+        return queryCount(sql);
     }
 
     /**
@@ -184,5 +196,44 @@ public class UserDAO extends BaseDAO<User> {
         String hashedPassword = BCryptUtil.hashPassword(newRawPassword);
         String sql = "UPDATE Users SET password = ? WHERE id = ?";
         return executeUpdate(sql, hashedPassword, userId);
+    }
+
+    /**
+     * Tìm người dùng theo Số điện thoại.
+     * Dùng cho Booking tại quầy (Walk-in): kiểm tra bệnh nhân đã có tài khoản chưa.
+     *
+     * @param phone Số điện thoại cần tìm
+     * @return Đối tượng User hoặc null nếu chưa có tài khoản
+     */
+    public User findByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty())
+            return null;
+        String sql = "SELECT * FROM Users WHERE phone = ?";
+        return queryOne(sql, this::mapResultSetToUser, phone.trim());
+    }
+
+    /**
+     * Tạo mới tài khoản Bệnh nhân walk-in và trả về ID tự sinh.
+     * Bảo đảm unique username bằng cách dùng số điện thoại làm username.
+     *
+     * @param user Đối tượng User cần tạo mới
+     * @return ID người dùng mới tạo, hoặc -1 nếu thất bại
+     */
+    public int insertAndGetId(User user) {
+        String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
+                + " VALUES(?, ?, ?, ?, ?, ?, 1)";
+
+        String username = (user.getUsername() != null && !user.getUsername().isEmpty())
+                ? user.getUsername()
+                : "walkin_" + user.getPhone();
+        String pass = (user.getPassword() != null) ? user.getPassword() : "WALKIN_" + System.currentTimeMillis();
+
+        try {
+            return executeInsertAndGetGeneratedKey(sql, username, pass, user.getEmail(), user.getFullname(),
+                    user.getPhone(), user.getRole() != null ? user.getRole() : "PATIENT");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);
+            return -1;
+        }
     }
 }

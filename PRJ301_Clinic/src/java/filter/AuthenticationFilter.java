@@ -16,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import constant.RoleConstant;
 import constant.RouterConstant;
 import constant.SystemConstant;
+import dao.UserDAO;
 import model.User;
 
 /**
@@ -24,6 +25,8 @@ import model.User;
  */
 @WebFilter(filterName = "AuthenticationFilter", urlPatterns = { "/*" })
 public class AuthenticationFilter implements Filter {
+
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -48,9 +51,12 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        // 2. NẾU LÀ VÙNG NỘI BỘ -> KIỂM TRA ĐĂNG NHẬP (SESSION)
+        // 2. NẾU LÀ VÙNG NỘI BỘ -> KIỂM TRA ĐĂNG NHẬP (SESSION & CSDL)
         User user = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
-        if (user == null) {
+        if (user == null || userDAO.findById(user.getId()) == null) {
+            if (session != null) {
+                session.invalidate();
+            }
             httpResponse.sendRedirect(contextPath + RouterConstant.ROUTE_LOGIN + "?redirect=" + relativePath);
             return;
         }

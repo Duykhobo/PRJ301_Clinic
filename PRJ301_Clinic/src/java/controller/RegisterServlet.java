@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,7 +19,8 @@ import service.UserService;
 import util.ValidationUtil;
 
 /**
- * RegisterServlet - Điều hướng & Xử lý Đăng ký Tài khoản Bệnh nhân (/register).
+ * RegisterServlet - Xử lý Đăng ký Tài khoản Bệnh nhân (/register).
+ * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
 public class RegisterServlet extends HttpServlet {
@@ -39,87 +42,63 @@ public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String confirmPassword = request.getParameter("confirmPassword");
-        String fullname = request.getParameter("fullname");
-        String phone = request.getParameter("phone");
-        String email = request.getParameter("email");
+        String username = request.getParameter("username") != null ? request.getParameter("username").trim() : "";
+        String password = request.getParameter("password") != null ? request.getParameter("password") : "";
+        String confirmPassword = request.getParameter("confirmPassword") != null ? request.getParameter("confirmPassword") : "";
+        String fullname = request.getParameter("fullname") != null ? request.getParameter("fullname").trim() : "";
+        String phone = request.getParameter("phone") != null ? request.getParameter("phone").trim() : "";
+        String email = request.getParameter("email") != null ? request.getParameter("email").trim() : "";
 
-        // Ghi nhớ dữ liệu form cũ để điền lại khi có lỗi
+        // Giữ lại form inputs
         request.setAttribute("username", username);
         request.setAttribute("fullname", fullname);
         request.setAttribute("phone", phone);
         request.setAttribute("email", email);
 
-        // 1. Validation kiểm tra định dạng dữ liệu (Fail-fast)
-        if (!ValidationUtil.isValidUsername(username)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_USERNAME);
+        Map<String, String> errors = new HashMap<>();
+
+        // 1. Tách lỗi chi tiết cho từng field
+        ValidationUtil.validateField(errors, "username", ValidationUtil.isValidUsername(username), MessageConstant.ERR_INVALID_USERNAME);
+        ValidationUtil.validateField(errors, "fullname", ValidationUtil.isValidFullname(fullname), MessageConstant.ERR_INVALID_FULLNAME);
+        ValidationUtil.validateField(errors, "phone", ValidationUtil.isValidPhone(phone), MessageConstant.ERR_INVALID_PHONE);
+        ValidationUtil.validateField(errors, "password", ValidationUtil.isValidPassword(password), MessageConstant.ERR_INVALID_PASSWORD);
+        ValidationUtil.validateField(errors, "confirmPassword", password.equals(confirmPassword) && !confirmPassword.isEmpty(), MessageConstant.ERR_PASSWORD_MISMATCH);
+
+        if (!email.isEmpty()) {
+            ValidationUtil.validateField(errors, "email", ValidationUtil.isValidEmail(email), MessageConstant.ERR_INVALID_EMAIL);
+        }
+
+        // 2. Check trùng lặp DB khi field hợp lệ
+        if (!errors.containsKey("username") && userService.existsByUsername(username)) {
+            errors.put("username", MessageConstant.ERR_USERNAME_EXISTS);
+        }
+        if (!email.isEmpty() && !errors.containsKey("email") && userService.existsByEmail(email)) {
+            errors.put("email", MessageConstant.ERR_EMAIL_EXISTS);
+        }
+
+        // 3. Nếu có lỗi -> Truyền errors map về JSP
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng kiểm tra và hoàn thiện các trường dữ liệu bên dưới!");
             request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
             return;
         }
 
-        if (!ValidationUtil.isValidPassword(password)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_PASSWORD);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        if (password == null || !password.equals(confirmPassword)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_PASSWORD_MISMATCH);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        if (!ValidationUtil.isValidFullname(fullname)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_FULLNAME);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        if (!ValidationUtil.isValidPhone(phone)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_PHONE);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        if (!ValidationUtil.isValidEmail(email)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_EMAIL);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        // 2. Kiểm tra trùng lặp qua Tầng Service
-        if (userService.existsByUsername(username.trim())) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_USERNAME_EXISTS);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        if (email != null && !email.trim().isEmpty() && userService.existsByEmail(email.trim())) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_EMAIL_EXISTS);
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
-            return;
-        }
-
-        // 3. Khởi tạo đối tượng User mới (Role PATIENT)
+        // 4. Khởi tạo & Lưu User mới
         User newUser = new User();
-        newUser.setUsername(username.trim());
+        newUser.setUsername(username);
         newUser.setPassword(password);
-        newUser.setFullname(fullname.trim());
-        newUser.setPhone(phone.trim());
-        newUser.setEmail(email != null && !email.trim().isEmpty() ? email.trim() : null);
+        newUser.setFullname(fullname);
+        newUser.setPhone(phone);
+        newUser.setEmail(!email.isEmpty() ? email : null);
         newUser.setRole(RoleConstant.PATIENT);
         newUser.setStatus(true);
 
-        // 4. Đăng ký qua Tầng Service
         boolean created = userService.registerPatient(newUser);
-
         if (created) {
             response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?registered=success");
         } else {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
-                    "Đã xảy ra lỗi trong quá trình tạo tài khoản. Vui lòng thử lại!");
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Đã xảy ra lỗi trong quá trình tạo tài khoản. Vui lòng thử lại!");
             request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
         }
     }

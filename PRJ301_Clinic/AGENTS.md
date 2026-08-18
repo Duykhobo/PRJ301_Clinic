@@ -1,0 +1,7 @@
+# 🛡️ PROJECT CORE RULES & ARCHITECTURAL GUIDELINES (PRJ301)
+
+> **CRITICAL INSTRUCTION FOR ALL AI ASSISTANTS & AGENTS**:
+> 1. **Single Source of Truth (SSOT)**: You MUST continuously track, adhere to, and keep [Topic_Proposal_PRJ301.md](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/Topic_Proposal_PRJ301.md) updated at all times throughout the project lifecycle.
+> 2. **UI/UX Reference Standards**: You MUST reference the Design Review Kit documented in [DESIGN_REVIEW_KIT.html](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/DESIGN_REVIEW_KIT.html) for all front-end UI/UX implementations.
+
+See full guidelines in root [AGENTS.md](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/AGENTS.md).

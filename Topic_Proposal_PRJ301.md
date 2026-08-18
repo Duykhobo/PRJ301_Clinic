@@ -1,6 +1,6 @@
 # BẢN ĐỀ XUẤT ĐỀ TÀI & THIẾT KẾ HỆ THỐNG (TOPIC PROPOSAL & SRS)
 
-**Môn học**: PRJ301 – Java Web Application Development **Hình thức**: Bài tập cá nhân (Individual Assignment) **Tên đề tài**: **Hệ thống Đặt lịch Phòng khám & Spa trực tuyến tích hợp Thanh toán QR SePay (PRJ301_ClinicDB)** **Loại dự án**: NetBeans Java Web (Ant Build Project) **Hệ quản trị CSDL**: Microsoft SQL Server **Kiến trúc hệ thống**: Java Web EE MVC-V2 (Pure JDBC, Servlet, JSP, EL, JSTL, Bootstrap 5) **Tác giả**: Nguyễn Thanh Duy - SE2031514
+**Môn học**: PRJ301 – Java Web Application Development **Hình thức**: Bài tập cá nhân (Individual Assignment) **Tên đề tài**: **Hệ thống Đặt lịch Phòng khám & Spa trực tuyến tích hợp Thanh toán QR SePay (PRJ301_ClinicDB)** **Loại dự án**: NetBeans Java Web (Ant Build Project) **Hệ quản trị CSDL**: Microsoft SQL Server **Kiến trúc hệ thống**: Java Web EE MVC-V2 (Thin Controller, Fat Service, ThreadLocal Transaction, Pure JDBC, Servlet, JSP) **Tác giả**: Nguyễn Thanh Duy - SE2031514
 
 ---
 
@@ -29,12 +29,13 @@ graph LR
     A[Phân tích Yêu cầu & SRS] --> B[Sprint 1: CSDL & Frame Layout<br/>Slot 12 -> Checkpoint 1]
     B --> C[Sprint 2: Core MVC-V2 & SePay & Testing<br/>Checkpoint 1 -> Final LMS]
     C --> D[Bàn giao & Bảo vệ Vấn đáp]
+
 ```
 
 - **Rationale (Lý do chọn Agile/Incremental)**:
-  - **Tương thích 100% với các mốc Đánh giá (Milestone Alignment)**: Chia nhỏ khối lượng công việc theo 2 Sprint song song với mốc Checkpoint 1 (17/08) và Checkpoint 2/Final (22/08) của giảng viên.
-  - **Kiểm thử Liên tục (Early & Frequent Testing)**: Mỗi module hoàn thành (CSDL $\rightarrow$ DAO $\rightarrow$ Servlet $\rightarrow$ JSP) đều được chạy Unit Test với JUnit 5 và Postman ngay lập tức, triệt tiêu nguy cơ dồn lỗi vào cuối kỳ như mô hình Thác nước (Waterfall).
-  - **Quản lý Rủi ro Đồ án (Risk Management)**: Thiết lập sẵn các kịch bản dự phòng (Fallback Strategy: Nút Giả lập Webhook & Nút Tiền mặt) ngay từ Sprint 2 để đảm bảo buổi bảo vệ thành công tuyệt đối.
+- **Tương thích 100% với các mốc Đánh giá (Milestone Alignment)**: Chia nhỏ khối lượng công việc theo 2 Sprint song song với mốc Checkpoint 1 (17/08) và Checkpoint 2/Final (22/08) của giảng viên.
+- **Kiểm thử Liên tục (Early & Frequent Testing)**: Mỗi module hoàn thành (CSDL $\rightarrow$ DAO $\rightarrow$ Servlet $\rightarrow$ JSP) đều được chạy Unit Test với JUnit 5 và Postman ngay lập tức, triệt tiêu nguy cơ dồn lỗi vào cuối kỳ như mô hình Thác nước (Waterfall).
+- **Quản lý Rủi ro Đồ án (Risk Management)**: Thiết lập sẵn các kịch bản dự phòng (Fallback Strategy: Nút Giả lập Webhook & Nút Tiền mặt) ngay từ Sprint 2 để đảm bảo buổi bảo vệ thành công tuyệt đối.
 
 ---
 
@@ -42,29 +43,29 @@ graph LR
 
 ### 1. Danh mục Công nghệ & Thư viện (Đã chốt 100%)
 
-| Hạng mục | Công nghệ / Thư viện đã chọn | Chi tiết & Tác dụng |
-| :-- | :-- | :-- |
-| **Loại Dự án & IDE** | **NetBeans IDE (Java Web Ant Project)** | Dự án Java Web dạng Ant tiêu chuẩn trong NetBeans |
-| **Hệ quản trị CSDL** | **Microsoft SQL Server** | Dùng Driver`mssql-jdbc-12.x.x.jar` kết nối JDBC thuần |
-| **Connection Pool** | **HikariCP** (`HikariCP-5.x.x.jar`) | Tối ưu hiệu năng quản lý kết nối CSDL hàng đầu cho Java |
-| **Mã hóa Mật khẩu** | **jBCrypt** (`jbcrypt-0.4.jar`) | Mã hóa mật khẩu chiều rộng an toàn với Salt ngẫu nhiên |
-| **JSON Parser** | **Jackson Databind** (`jackson-databind`) | Parse & serialize dữ liệu JSON cho các API AJAX/Fetch API & Webhook SePay |
-| **Thanh toán Online** | **SePay VietQR API Generator** | Sinh VietQR nhúng sẵn Số tiền & Nội dung`CLINIC<id>` tự động |
-| **UI Framework** | **Bootstrap 5.3 (Local Assets + CDN)** | Tải local vào project đảm bảo hoạt động offline khi demo bảo vệ |
-| **Icon & Style** | **FontAwesome 6 + Custom CSS** | Bộ icon hiện đại và stylesheet phong cách cao cấp |
-| **Back-end Core** | **Java EE (Servlet, JSP, EL, JSTL)** | `jstl-1.2.jar`, không dùng Spring/Hibernate theo hard rule |
+| Hạng mục                    | Công nghệ / Thư viện đã chọn               | Chi tiết & Tác dụng                                                                         |
+| ----------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Loại Dự án & IDE** | **NetBeans IDE (Java Web Ant Project)**     | Dự án Java Web dạng Ant tiêu chuẩn trong NetBeans                                         |
+| **Hệ quản trị CSDL** | **Microsoft SQL Server**                    | Dùng Driver`mssql-jdbc-12.x.x.jar` kết nối JDBC thuần                                    |
+| **Connection Pool**     | **HikariCP** (`HikariCP-5.x.x.jar`)       | Tối ưu hiệu năng quản lý kết nối CSDL, kết hợp`ThreadLocal` quản lý Transaction. |
+| **Mã hóa Mật khẩu** | **jBCrypt** (`jbcrypt-0.4.jar`)           | Mã hóa mật khẩu chiều rộng an toàn với Salt ngẫu nhiên                               |
+| **JSON Parser**         | **Jackson Databind** (`jackson-databind`) | Parse & serialize dữ liệu JSON cho các API AJAX/Fetch API & Webhook SePay                   |
+| **Thanh toán Online**  | **SePay VietQR API Generator**              | Sinh VietQR nhúng sẵn Số tiền & Nội dung`CLINIC<id>` tự động                         |
+| **UI Framework**        | **Bootstrap 5.3 (Local Assets + CDN)**      | Tải local vào project đảm bảo hoạt động offline khi demo bảo vệ                      |
+| **Icon & Style**        | **FontAwesome 6 + Custom CSS**              | Bộ icon hiện đại và stylesheet phong cách cao cấp                                       |
+| **Back-end Core**       | **Java EE (Servlet, JSP, EL, JSTL)**        | `jstl-1.2.jar`, không dùng Spring/Hibernate theo hard rule                                 |
 
 ### 2. Bảng đối chiếu Yêu cầu Đề bài (Compliance Checklist)
 
-| Hạng mục | Yêu cầu Đề bài (PRJ301) | Giải pháp Thực hiện trong Dự án |
-| :-- | :-- | :-- |
-| **Số lượng Models** | Tối thiểu 4 – 6 models | **Đầy đủ 7 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100% |
-| **Kiến trúc** | MVC-V2 3-Tier chuẩn Doanh Nghiệp | Tách biệt 3 Tầng độc lập: **Controller (Servlet)** $\rightarrow$ **Service (Business Logic)** $\rightarrow$ **DAO (Pure JDBC SQL Server)** |
-| **ORM / Database** | JDBC thuần (Không dùng JPA/Hibernate) | Dùng`PreparedStatement`, `try-with-resources`, **Microsoft SQL Server** |
-| **Connection Pool** | HikariCP hoặc DBCP | Kết nối CSDL tối ưu bằng**HikariCP Connection Pool** |
-| **Mã hóa mật khẩu** | BCrypt hoặc SHA-256 | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`) |
-| **Bảo mật & Filter** | Authentication, Authorization, Encoding | 3 Filters:`EncodingFilter` (UTF-8), `AuthenticationFilter`, `AuthorizationFilter` |
-| **Front-end UI** | HTML5, CSS3, Bootstrap 5, JS ES6+ | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động |
+| Hạng mục                    | Yêu cầu Đề bài (PRJ301)             | Giải pháp Thực hiện trong Dự án                                                                                                                               |
+| ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Số lượng Models**  | Tối thiểu 4 – 6 models                | **Đầy đủ 7 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100%                                                                             |
+| **Kiến trúc**         | MVC-V2 3-Tier chuẩn Doanh Nghiệp       | Tách biệt 3 Tầng độc lập:**Thin Controller (Servlet)** $\rightarrow$ **Fat Service (Business Logic)** $\rightarrow$ **DAO (Pure JDBC)** |
+| **ORM / Database**      | JDBC thuần (Không dùng JPA/Hibernate) | Dùng`PreparedStatement`, `try-with-resources`, **Microsoft SQL Server**                                                                                  |
+| **Transaction & Pool**  | HikariCP hoặc DBCP                      | Quản lý Connection tối ưu bằng**HikariCP** kết hợp **ThreadLocal** & **TransactionFilter** tự động Commit/Rollback.                     |
+| **Mã hóa mật khẩu** | BCrypt hoặc SHA-256                     | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`)                                                                                              |
+| **Bảo mật & Filter**  | Authentication, Authorization, Encoding  | 4 Filters:`EncodingFilter` (UTF-8), `TransactionFilter` (Quản lý Data), `AuthenticationFilter`, `AuthorizationFilter`                                     |
+| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động                                                                                                |
 
 ### 3. Ma trận Phân loại Tính năng theo Độ ưu tiên (Priority Level Matrix)
 
@@ -78,7 +79,7 @@ graph TD
 
     P1 --> P1_1["Kiến trúc MVC-V2 & NetBeans Ant"]
     P1 --> P1_2["JDBC thuần HikariCP & SQL Server"]
-    P1 --> P1_3["Mã hóa BCrypt & 3 Filters Bảo mật"]
+    P1 --> P1_3["Mã hóa BCrypt & 4 Filters (có TransactionFilter)"]
     P1 --> P1_4["Phân quyền 4 Roles: Admin, Doctor, Patient, Receptionist"]
     P1 --> P1_5["CRUD 100% trên 7 Bảng CSDL"]
     P1 --> P1_6["Chống Race Condition: WITH UPDLOCK & UNIQUE schedule_id"]
@@ -88,17 +89,37 @@ graph TD
     P2 --> P2_3["Bảng ClinicSettings Cấu hình Động Hệ thống"]
     P2 --> P2_4["Bảo mật Dữ liệu Y tế Medical Privacy Scoping DAO"]
 
-    P3 --> P3_1["Trigger tự động khóa/mở slot DoctorSchedules"]
-    P3 --> P3_2["Stored Procedures Thống kê Doanh thu & Slot Khả dụng"]
-    P3 --> P3_3["Function tính sao trung bình Bác sĩ"]
-    P3 --> P3_4["Bộ kiểm thử JUnit 5, Postman, JMeter, JaCoCo, Cypress"]
+    P3 --> P3_1["Cơ chế ThreadLocal Connection & Atomic Service Layer"]
+    P3 --> P3_2["Trigger tự động khóa/mở slot DoctorSchedules"]
+    P3 --> P3_3["Stored Procedures Thống kê Doanh thu & Slot Khả dụng"]
+    P3 --> P3_4["Bộ kiểm thử JUnit 5, Postman, JMeter, JaCoCo"]
+
 ```
 
-| Mức độ Ưu tiên | Nhóm Tính năng & Kỹ thuật | Trạng thái & Phạm vi Thực hiện | Mục tiêu Đạt được |
-| :-- | :-- | :-- | :-- |
-| 🔴 **MỨC 1: BẮT BUỘC**<br>_(Mandatory / Core Rules)_ | - Phân tầng **MVC-V2** trên NetBeans Java Web (Ant).<br>- JDBC thuần `PreparedStatement` & **HikariCP** SQL Server.<br>- **BCrypt** password hashing & **3 Filters** (`Encoding`, `Auth`, `Role`).<br>- Phân quyền **4 vai trò** (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).<br>- **CRUD 100% trên 7 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).<br>- Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%**<br>_(Tiêu chí qua môn & Pass Hard Rules)_ | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 |
-| 🟡 **MỨC 2: QUAN TRỌNG**<br>_(High Priority / Real-world)_ | - Thanh toán tự động **SePay VietQR Động**.<br>- Tự động sinh mã `payment_content = "CLINIC" + id`.<br>- Đối soát **Webhook SePay** tự động & Manual Verify cho Admin.<br>- Bảng `ClinicSettings` **Cấu hình Động** (giờ mở cửa, duration slot,...).<br>- Phân quyền **Bảo mật Y tế** (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP**<br>_(Tiêu chí thực tế & tự động hóa)_ | Tạo trải nghiệm ứng dụng thực tế chuyên nghiệp |
-| 🟢 **MỨC 3: MỞ RỘNG**<br>_(Optional / Advanced 10/10)_ | - **4 thành phần SQL Server nâng cao**:<br> _ Trigger `trg_UpdateSlotStatusOnAppointment`<br> _ Stored Proc `sp_GetClinicRevenueReport`<br> _ Stored Proc `sp_GetAvailableSlotsByDoctorAndDate`<br> _ Function `fn_GetDoctorAverageRating`<br>- **Bộ kiểm thử nâng cao**: JUnit 5, Postman, Apache JMeter Concurrency Test, JaCoCo Coverage Report, Cypress E2E UI Test & Lighthouse. | **ĐIỂM CỘNG NÂNG CAO**<br>_(Tiêu chí chinh phục Điểm 10/10)_ | Thuyết phục tuyệt đối Giảng viên môn PRJ301 khi bảo vệ vấn đáp |
+| Mức độ Ưu tiên                                         | Nhóm Tính năng & Kỹ thuật                               | Trạng thái & Phạm vi Thực hiện | Mục tiêu Đạt được |
+| ----------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------- | ------------------------ |
+| 🔴**MỨC 1: BẮT BUỘC** _(Mandatory / Core Rules)_ | - Phân tầng**MVC-V2** trên NetBeans Java Web (Ant). |                                     |                          |
+
+- JDBC thuần `PreparedStatement` & **HikariCP** SQL Server.
+- **BCrypt** password hashing & **4 Filters** (`Encoding`, `Transaction`, `Auth`, `Role`).
+- Phân quyền **4 vai trò** (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).
+- **CRUD 100% trên 7 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).
+- Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** _(Tiêu chí qua môn & Pass Hard Rules)_ | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 | | 🟡 **MỨC 2: QUAN TRỌNG** _(High Priority / Real-world)_ | - Thanh toán tự động **SePay VietQR Động**.
+- Tự động sinh mã `payment_content = "CLINIC" + id`.
+- Đối soát **Webhook SePay** tự động & Manual Verify cho Admin.
+- Bảng `ClinicSettings` **Cấu hình Động** (giờ mở cửa, duration slot,...).
+- Phân quyền **Bảo mật Y tế** (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP** _(Tiêu chí thực tế & tự động hóa)_ | Tạo trải nghiệm ứng dụng thực tế chuyên nghiệp | | 🟢 **MỨC 3: MỞ RỘNG** _(Optional / Advanced 10/10)_ | - **Quản lý Transaction Tự động**: Cơ chế `ThreadLocal` kết hợp `TransactionFilter` giúp rollback an toàn triệt để Connection Leak.
+- **4 thành phần SQL Server nâng cao**:
+
+ \* Trigger `trg_UpdateSlotStatusOnAppointment`
+
+ \* Stored Proc `sp_GetClinicRevenueReport`
+
+ \* Stored Proc `sp_GetAvailableSlotsByDoctorAndDate`
+
+ \* Function `fn_GetDoctorAverageRating`
+
+- **Bộ kiểm thử nâng cao**: JUnit 5, Postman, Apache JMeter Concurrency Test, JaCoCo Coverage Report. | **ĐIỂM CỘNG NÂNG CAO** _(Tiêu chí chinh phục Điểm 10/10)_ | Thuyết phục tuyệt đối Giảng viên môn PRJ301 khi bảo vệ vấn đáp |
 
 ---
 
@@ -107,20 +128,21 @@ graph TD
 Để đảm bảo mã nguồn dễ đọc, dễ mở rộng và dễ bảo trì, dự án áp dụng nghiêm ngặt các nguyên tắc thiết kế phần mềm chuẩn công nghiệp:
 
 - **S - Single Responsibility Principle (Đơn trách nhiệm)**:
-  - Tầng **DAO** chỉ đảm nhận nhiệm vụ tương tác SQL Server (`PreparedStatement`). Không chứa logic HTTP Session hay giao diện.
-  - Tầng **Service** chứa 100% Logic Nghiệp Vụ (Business Rules, Validation, Atomic Booking, VietQR Code Generation), coordinations giữa các DAO.
-  - Tầng **Servlet (Controller)** chỉ làm Lễ tân tiếp nhận Request, validate sơ bộ HTTP, gọi tầng Service và điều hướng JSP View.
-  - Tầng **Model POJO** chỉ chứa thuộc tính, Getter/Setter.
+- Tầng **DAO** chỉ đảm nhận nhiệm vụ tương tác SQL Server (`PreparedStatement`). Loại bỏ hoàn toàn khối `try-catch` rollback thủ công nhờ có `BaseDAO` và `TransactionFilter`.
+- Tầng **Fat Service** chứa 100% Logic Nghiệp Vụ (Business Rules, Validation, Atomic Booking, VietQR Code Generation), điều phối giữa các DAO độc lập mà không cần lo lắng về luồng Connection.
+- Tầng **Thin Controller (Servlet)** chỉ làm Lễ tân tiếp nhận Request, validate sơ bộ HTTP, gọi tầng Service và điều hướng JSP View. Kế thừa `BaseRoleServlet` để dọn dẹp logic kiểm tra Session rải rác.
+- Tầng **Model POJO** chỉ chứa thuộc tính, Getter/Setter.
 - **O - Open/Closed Principle (Mở rộng/Đóng đổi)**:
-  - Tầng Service và Servlet được thiết kế để mở rộng tính năng mới mà không phải sửa đổi cấu trúc cốt lõi hiện có.
+- Tầng Service và Servlet được thiết kế để mở rộng tính năng mới mà không phải sửa đổi cấu trúc cốt lõi hiện có.
 - **D - Dependency Inversion & Abstraction (Đảo ngược Phụ thuộc)**:
-  - Mô tả tư tưởng Abstraction & Loose Coupling trong tài liệu thiết kế giúp hệ thống linh hoạt khi kiểm thử.
+- Mô tả tư tưởng Abstraction & Loose Coupling trong tài liệu thiết kế giúp hệ thống linh hoạt khi kiểm thử.
 - **DRY - Don't Repeat Yourself (Không lặp lại code)**:
-  - Tái sử dụng 100% các hàm Helper Mapper (VD: `mapResultSetToUser(ResultSet rs)`) trong các lớp DAO cho tất cả các câu lệnh query `SELECT`, loại bỏ hoàn toàn việc viết lặp lại mã gán thuộc tính.
+- Áp dụng triệt để `BaseDAO` với `queryOne`, `queryList`, `queryCount`, `executeUpdate` kết hợp Generic `RowMapper`.
+- Trích xuất Helper Classes: `JsonUtil` (xây dựng JSON format chuẩn), `PaginationUtil` (xử lý thuật toán phân trang OFFSET/FETCH).
 - **Quy tắc Điều hướng & Bảo mật Thư mục WEB-INF**:
-  - Tất cả file JSP cất giữ an toàn trong `/WEB-INF/views/` (Bảo mật cấm trình duyệt truy cập trực tiếp từ ngoài).
-  - Hàm `sendRedirect()`: Bắt trình duyệt gửi Request mới $\rightarrow$ Bắt buộc dùng **Public Servlet Route** (ví dụ: `RouterConstant.ROUTE_LOGIN` = `"/login"`).
-  - Hàm `forward()`: Chuyển tiếp nội bộ trong Server $\rightarrow$ Dùng **Internal JSP File** (ví dụ: `RouterConstant.LOGIN_JSP` = `"/WEB-INF/views/auth/login.jsp"`).
+- Tất cả file JSP cất giữ an toàn trong `/WEB-INF/views/` (Bảo mật cấm trình duyệt truy cập trực tiếp từ ngoài).
+- Hàm `sendRedirect()`: Bắt trình duyệt gửi Request mới $\rightarrow$ Bắt buộc dùng **Public Servlet Route** (ví dụ: `RouterConstant.ROUTE_LOGIN` = `"/login"`).
+- Hàm `forward()`: Chuyển tiếp nội bộ trong Server $\rightarrow$ Dùng **Internal JSP File** (ví dụ: `RouterConstant.LOGIN_JSP` = `"/WEB-INF/views/auth/login.jsp"`).
 
 ---
 
@@ -219,8 +241,8 @@ erDiagram
 - `review_comment` (NVARCHAR(MAX)) - Nhận xét dịch vụ (Hiển thị công khai)
 - `created_at` (DATETIME, Default: GETDATE())
 - _Bảo mật Dữ liệu Y tế (Medical Privacy Scoping)_: Tầng DAO phân tách 2 hàm query riêng biệt:
-  - `getMedicalRecordDetail()`: Trả về đầy đủ cho Bác sĩ & Bệnh nhân sở hữu ca khám.
-  - `getPublicReviews()`: Chỉ `SELECT rating, review_comment, fullname, created_at` để hiển thị trên trang chủ/dịch vụ, tuyệt đối không lấy `diagnosis` và `prescription_or_result`.
+- `getMedicalRecordDetail()`: Trả về đầy đủ cho Bác sĩ & Bệnh nhân sở hữu ca khám.
+- `getPublicReviews()`: Chỉ `SELECT rating, review_comment, fullname, created_at` để hiển thị trên trang chủ/dịch vụ, tuyệt đối không lấy `diagnosis` và `prescription_or_result`.
 
 #### 1.7. `ClinicSettings` (Cấu hình Hệ thống & Thông tin Phòng khám)
 
@@ -236,15 +258,22 @@ erDiagram
 
 Để chứng minh năng lực thiết kế CSDL SQL Server chuyên nghiệp và tối ưu hóa hệ thống ở mức cao nhất, CSDL dự án tích hợp 4 thành phần nâng cao:
 
-1. **Database Trigger `trg_UpdateSlotStatusOnAppointment`**:
-   - _Tác dụng_: Khi có bản ghi `Appointments` mới được thêm (status `PENDING`/`CONFIRMED`), Trigger tự động khóa slot `is_available = 0` trong bảng `DoctorSchedules`. Ngược lại, nếu lịch hẹn bị hủy (`CANCELLED`), Trigger tự động giải phóng slot `is_available = 1`.
-   - _Giá trị kỹ thuật_: Đảm bảo toàn vẹn dữ liệu tự động ở mức Database Engine, không bị bỏ sót ngay cả khi thao tác ngoài ứng dụng Java.
-2. **User-Defined Function `fn_GetDoctorAverageRating`**:
-   - _Tác dụng_: Nhận `doctor_id`, tự động tính toán điểm số đánh giá trung bình (1.0 đến 5.0 sao) từ tất cả các `MedicalRecords` của bác sĩ đó.
-3. **Stored Procedure `sp_GetAvailableSlotsByDoctorAndDate`**:
-   - _Tác dụng_: Nhận `doctor_id` và `work_date`, trả về danh sách các slot 60 phút còn trống chưa bị ai đặt. Giúp câu lệnh query trong Java DAO cực kỳ gọn gàng.
-4. **Stored Procedure `sp_GetClinicRevenueReport`**:
-   - _Tác dụng_: Thống kê số lịch hẹn hoàn thành, lịch hủy, tổng doanh thu thanh toán SePay và Tiền mặt theo khoảng ngày cho Admin Dashboard.
+1. **Database Trigger `trg_UpdateSlotStatusOnAppointment**`:
+
+- _Tác dụng_: Khi có bản ghi `Appointments` mới được thêm (status `PENDING`/`CONFIRMED`), Trigger tự động khóa slot `is_available = 0` trong bảng `DoctorSchedules`. Ngược lại, nếu lịch hẹn bị hủy (`CANCELLED`), Trigger tự động giải phóng slot `is_available = 1`.
+- _Giá trị kỹ thuật_: Đảm bảo toàn vẹn dữ liệu tự động ở mức Database Engine, không bị bỏ sót ngay cả khi thao tác ngoài ứng dụng Java.
+
+2. **User-Defined Function `fn_GetDoctorAverageRating**`:
+
+- _Tác dụng_: Nhận `doctor_id`, tự động tính toán điểm số đánh giá trung bình (1.0 đến 5.0 sao) từ tất cả các `MedicalRecords` của bác sĩ đó.
+
+3. **Stored Procedure `sp_GetAvailableSlotsByDoctorAndDate**`:
+
+- _Tác dụng_: Nhận `doctor_id` và `work_date`, trả về danh sách các slot 60 phút còn trống chưa bị ai đặt. Giúp câu lệnh query trong Java DAO cực kỳ gọn gàng.
+
+4. **Stored Procedure `sp_GetClinicRevenueReport**`:
+
+- _Tác dụng_: Thống kê số lịch hẹn hoàn thành, lịch hủy, tổng doanh thu thanh toán SePay và Tiền mặt theo khoảng ngày cho Admin Dashboard.
 
 ---
 
@@ -254,22 +283,22 @@ erDiagram
 
 Cơ chế tự động hóa 100% phía Java Back-end:
 
-1. **Tự động sinh mã `payment_content`**: Ngay khi bệnh nhân bấm "Đặt Lịch Hẹn", `AppointmentService` tự động sinh chuỗi `payment_content = "CLINIC" + appointmentId` (VD: `CLINIC15`) và lưu vào CSDL. Người dùng KHÔNG CẦN tự gõ hay tự tạo mã thủ công.
-2. **Tự động tạo mã VietQR Động**: Hệ thống gọi SePay QR API tự động nhúng Số tiền (`total_price`) và Nội dung vừa sinh: `https://qr.sepay.vn/img?bank=<BANK>&acc=<ACC>&amount=<AMOUNT>&des=CLINIC<ID>`
+1. **Tự động sinh mã `payment_content**`: Ngay khi bệnh nhân bấm "Đặt Lịch Hẹn", `BookingService`tự động sinh chuỗi`payment_content = "CLINIC" + appointmentId`(VD:`CLINIC15`) và lưu vào CSDL. Người dùng KHÔNG CẦN tự gõ hay tự tạo mã thủ công.
+2. **Tự động tạo mã VietQR Động**: Hệ thống gọi SePay QR API tự động nhúng Số tiền (`total_price`) và Nội dung vừa sinh: `[https://qr.sepay.vn/img?bank=](https://qr.sepay.vn/img?bank=)<BANK>&acc=<ACC>&amount=<AMOUNT>&des=CLINIC<ID>`
 3. **Tự động điền trên App Ngân hàng**: Khách hàng chỉ việc quét mã QR từ App ngân hàng (MBBank, Vietcombank, TPBank...), ứng dụng ngân hàng sẽ **tự động điền chính xác 100% Số tiền và Nội dung chuyển khoản (`CLINIC15`)**, triệt tiêu hoàn toàn rủi ro người dùng nhập sai.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Patient as Bệnh nhân / Khách hàng
-    participant System as System (Servlet & JSP)
+    participant System as System (Servlet, Service, Filter)
     participant SePay as Cổng SePay API / VietQR
     actor Doctor as Bác sĩ / Admin
 
     Patient->>System: 1. Xem danh sách Dịch vụ & Bác sĩ
     Patient->>System: 2. Chọn Khung giờ trống 60 phút (DoctorSchedules)
     Patient->>System: 3. Điền ghi chú & Bấm "Đặt Lịch Hẹn"
-    System->>System: 4. Tạo Appointment (status=PENDING, payment_status=UNPAID)
+    System->>System: 4. TransactionFilter mở Connection -> Tạo Appointment -> Commit
     System->>Patient: 5. Hiển thị Mã VietQR SePay ĐỘNG (Đã điền sẵn Amount & CLINIC<id>)
     Patient->>SePay: 6. Quét mã QR (App ngân hàng tự động điền đúng Số tiền & Nội dung)
     SePay->>System: 7. Gửi Webhook / API Check giao dịch thành công
@@ -277,6 +306,7 @@ sequenceDiagram
     System->>Patient: 9. Thông báo Đặt lịch & Thanh toán thành công
     Doctor->>System: 10. Khám cho bệnh nhân & Cập nhật MedicalRecord (status=COMPLETED)
     Patient->>System: 11. Đánh giá 5 sao & Xem Đơn thuốc / Kết quả
+
 ```
 
 ---
@@ -286,56 +316,75 @@ sequenceDiagram
 #### 2.1. Nhóm Đặt lịch & Khung giờ (Booking & Schedules)
 
 1. **Đặt lịch đồng thời (Race Condition / Concurrency Control)**:
-   - _Tình huống_: Hai bệnh nhân cùng mở giao diện và bấm đặt cùng 1 slot 08:00 - 09:00 của Bác sĩ A tại cùng một milisecond.
-   - _Giải pháp Atomic JDBC Transaction & Isolation Level_:
-     ```java
-     connection.setAutoCommit(false);
-     connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-     PreparedStatement checkStmt = connection.prepareStatement(
-         "SELECT is_available FROM DoctorSchedules WITH (UPDLOCK) WHERE id = ?"
-     );
-     // 1. Nếu is_available == 0 -> Rollback và ném ngoại lệ SlotAlreadyBookedException
-     // 2. Nếu is_available == 1 -> INSERT Appointment -> Trigger tự động khóa slot (is_available = 0) -> Commit()
-     ```
+
+- _Tình huống_: Hai bệnh nhân cùng mở giao diện và bấm đặt cùng 1 slot 08:00 - 09:00 của Bác sĩ A tại cùng một milisecond.
+- _Giải pháp Atomic Business Logic & Transaction Filter_:
+
+```java
+// Nằm gọn gàng trong BookingService.java, TransactionFilter tự động quản lý commit/rollback
+Time slotTime = scheduleDAO.getSlotTimeWithLock(appt.getScheduleId()); // Sử dụng WITH (UPDLOCK)
+if (slotTime == null) {
+    throw new SlotAlreadyBookedException("Rất tiếc, khung giờ này vừa có người đặt.");
+}
+// INSERT Appointment -> Trigger SQL Server tự động khóa slot -> Return ID
+
+```
+
 2. **Đặt lịch trong quá khứ**:
-   - _Tình huống_: Bác sĩ quên đóng slot của ngày hôm qua, hoặc người dùng cố tình sửa tham số `work_date` trên request.
-   - _Giải pháp Server-side_: Validate trong Servlet: `work_date >= LocalDate.now()`, nếu `work_date == LocalDate.now()` thì bắt buộc `start_time > LocalTime.now()`.
+
+- _Tình huống_: Bác sĩ quên đóng slot của ngày hôm qua, hoặc người dùng cố tình sửa tham số `work_date` trên request.
+- _Giải pháp Server-side_: Validate trong Servlet: `work_date >= LocalDate.now()`, nếu `work_date == LocalDate.now()` thì bắt buộc `start_time > LocalTime.now()`.
+
 3. **Bác sĩ xin nghỉ đột xuất / Khóa ca đã có khách đặt**:
-   - _Tình huống_: Bác sĩ bận đột xuất muốn xóa ca làm việc (`DoctorSchedules`), nhưng ca đó đã có bệnh nhân đặt lịch hẹn ở trạng thái `CONFIRMED` hoặc `PENDING`.
-   - _Giải pháp DAO Constraint_: DAO kiểm tra nếu tồn tại `Appointment` liên quan có `status IN ('PENDING', 'CONFIRMED')`, hệ thống sẽ chặn không cho xóa slot và yêu cầu Admin/Bác sĩ phải chuyển lịch hẹn sang trạng thái `CANCELLED` trước khi đóng slot.
+
+- _Tình huống_: Bác sĩ bận đột xuất muốn xóa ca làm việc (`DoctorSchedules`), nhưng ca đó đã có bệnh nhân đặt lịch hẹn ở trạng thái `CONFIRMED` hoặc `PENDING`.
+- _Giải pháp DAO Constraint_: DAO kiểm tra nếu tồn tại `Appointment` liên quan có `status IN ('PENDING', 'CONFIRMED')`, hệ thống sẽ chặn không cho xóa slot và yêu cầu Admin/Bác sĩ phải chuyển lịch hẹn sang trạng thái `CANCELLED` trước khi đóng slot.
 
 #### 2.2. Nhóm Thanh toán SePay & Đối soát Giao dịch
 
 4. **Tránh chuyển khoản sai số tiền hoặc sai cú pháp (Nhờ VietQR Động)**:
-   - _Tình huống_: Khách hàng sửa lại số tiền hoặc sửa lại nội dung chuyển khoản trên app ngân hàng sau khi quét mã QR.
-   - _Giải pháp Webhook đối soát_: Mã VietQR đã khóa sẵn số tiền & cú pháp `CLINIC<id>`. Trong trường hợp hiếm hoi khách hàng cố tình sửa số tiền trên app ngân hàng, Webhook Servlet kiểm tra `transferAmount < totalPrice` -> Giữ nguyên `payment_status = 'UNPAID'`, ghi log `PARTIAL_PAYMENT_WARNING` và báo Admin.
+
+- _Tình huống_: Khách hàng sửa lại số tiền hoặc sửa lại nội dung chuyển khoản trên app ngân hàng sau khi quét mã QR.
+- _Giải pháp Webhook đối soát_: Mã VietQR đã khóa sẵn số tiền & cú pháp `CLINIC<id>`. Trong trường hợp hiếm hoi khách hàng cố tình sửa số tiền trên app ngân hàng, Webhook Servlet kiểm tra `transferAmount < totalPrice` -> Giữ nguyên `payment_status = 'UNPAID'`, ghi log `PARTIAL_PAYMENT_WARNING` và báo Admin.
+
 5. **Khách chuyển khoản trực tiếp bằng STK không qua quét QR**:
-   - _Tình huống_: Khách không quét QR mà gõ STK ngân hàng và ghi nhầm nội dung "Kham benh" thay vì `CLINIC15`.
-   - _Giải pháp Admin Manual Verify_: Webhook không regex được `appointment_id` -> Tự động lưu vào log giao dịch vô danh -> Cung cấp nút bấm **"Xác nhận Thủ công (Manual Verify)"** trên Admin Dashboard cho phép Admin chọn lịch hẹn và duyệt tay.
+
+- _Tình huống_: Khách không quét QR mà gõ STK ngân hàng và ghi nhầm nội dung "Kham benh" thay vì `CLINIC15`.
+- _Giải pháp Admin Manual Verify_: Webhook không regex được `appointment_id` -> Tự động lưu vào log giao dịch vô danh -> Cung cấp nút bấm **"Xác nhận Thủ công (Manual Verify)"** trên Admin Dashboard cho phép Admin chọn lịch hẹn và duyệt tay.
+
 6. **Gián đoạn kết nối / Mất mạng khi Demo bảo vệ**:
-   - _Tình huống_: Mạng phòng lab thi bị chập chờn, Webhook SePay không gửi về được hoặc VietQR không tải được.
-   - _Giải pháp Fallback Mocking_: Xây dựng sẵn nút bấm **"Giả lập Thanh toán Thành công / Tiền mặt"** trên giao diện Admin/Doctor để kịch bản demo bảo vệ vấn đáp 100% mượt mà không bao giờ bị gián đoạn.
+
+- _Tình huống_: Mạng phòng lab thi bị chập chờn, Webhook SePay không gửi về được hoặc VietQR không tải được.
+- _Giải pháp Fallback Mocking_: Xây dựng sẵn nút bấm **"Giả lập Thanh toán Thành công / Tiền mặt"** trên giao diện Admin/Doctor để kịch bản demo bảo vệ vấn đáp 100% mượt mà không bao giờ bị gián đoạn.
 
 #### 2.3. Nhóm Hồ sơ Bệnh án & Đánh giá (MedicalRecords)
 
 7. **Tạo bệnh án khi chưa khám xong**:
-   - _Tình huống_: Bác sĩ cố tình truy cập link tạo bệnh án cho lịch hẹn ở trạng thái `PENDING` hoặc `CANCELLED`.
-   - _Giải pháp Control Flow_: Servlet kiểm tra `appointment.getStatus()`. Chỉ cho phép tạo `MedicalRecord` khi trạng thái là `CONFIRMED`, và thực hiện chuyển trạng thái thành `COMPLETED` song song trong một Transaction.
+
+- _Tình huống_: Bác sĩ cố tình truy cập link tạo bệnh án cho lịch hẹn ở trạng thái `PENDING` hoặc `CANCELLED`.
+- _Giải pháp Control Flow_: Servlet kiểm tra `appointment.getStatus()`. Chỉ cho phép tạo `MedicalRecord` khi trạng thái là `CONFIRMED`, và thực hiện chuyển trạng thái thành `COMPLETED` song song trong một Transaction.
+
 8. **Bệnh nhân spam đánh giá / Đánh giá ca khám bị hủy**:
-   - _Tình huống_: Khách hàng spam gửi đánh giá nhiều lần hoặc đánh giá ca khám không diễn ra.
-   - _Giải pháp Database & View Constraint_: Bảng `MedicalRecords` ràng buộc `appointment_id UNIQUE`. Giao diện JSP chỉ hiển thị Form gửi đánh giá cho bệnh nhân khi `appointment.getStatus() == 'COMPLETED'` và chưa có `rating`.
+
+- _Tình huống_: Khách hàng spam gửi đánh giá nhiều lần hoặc đánh giá ca khám không diễn ra.
+- _Giải pháp Database & View Constraint_: Bảng `MedicalRecords` ràng buộc `appointment_id UNIQUE`. Giao diện JSP chỉ hiển thị Form gửi đánh giá cho bệnh nhân khi `appointment.getStatus() == 'COMPLETED'` và chưa có `rating`.
 
 #### 2.4. Nhóm Bảo mật & Phiên làm việc (Session & Security)
 
 9. **Tài khoản bị Khóa (status = 0) nhưng vẫn giữ Session**:
-   - _Tình huống_: Admin khóa tài khoản của Bác sĩ/Bệnh nhân, nhưng người đó đang đăng nhập và tiếp tục thao tác trên hệ thống.
-   - _Giải pháp Filter Verification_: Trong `AuthenticationFilter`, kiểm tra `currentUser.getStatus() == 1`. Nếu `status == 0`, lập tức gọi `session.invalidate()` và redirect về trang Login kèm thông báo "Tài khoản của bạn đã bị khóa".
+
+- _Tình huống_: Admin khóa tài khoản của Bác sĩ/Bệnh nhân, nhưng người đó đang đăng nhập và tiếp tục thao tác trên hệ thống.
+- _Giải pháp Filter Verification_: Trong `AuthenticationFilter`, kiểm tra `currentUser.getStatus() == 1`. Nếu `status == 0`, lập tức gọi `session.invalidate()` và redirect về trang Login kèm thông báo "Tài khoản của bạn đã bị khóa".
+
 10. **Chống lỗi xem trộm bệnh án người khác (IDOR - Insecure Direct Object References)**:
-    - _Tình huống_: Bệnh nhân A đăng nhập, sau đó sửa URL thành `/patient/record-detail?id=99` để xem kết quả khám của Bệnh nhân B.
-    - _Giải pháp Data Ownership Check_: Trong `PatientServlet`, sau khi query `MedicalRecord`, bắt buộc kiểm tra `record.getPatientId() == currentUser.getId()`. Nếu không khớp, chuyển hướng sang trang `403.jsp` (Access Denied).
+
+- _Tình huống_: Bệnh nhân A đăng nhập, sau đó sửa URL thành `/patient/record-detail?id=99` để xem kết quả khám của Bệnh nhân B.
+- _Giải pháp Data Ownership Check_: Trong `PatientServlet`, sau khi query `MedicalRecord`, bắt buộc kiểm tra `record.getPatientId() == currentUser.getId()`. Nếu không khớp, chuyển hướng sang trang `403.jsp` (Access Denied).
+
 11. **Tấn công lặp lại Form khi F5 (Double Submit)**:
-    - _Tình huống_: Bệnh nhân bấm F5 sau khi submit form đặt lịch làm dữ liệu bị gửi lại 2 lần.
-    - _Giải pháp PRG Pattern_: Áp dụng triệt để mô hình **Post - Redirect - Get**. Mọi Servlet xử lý POST sau khi thực hiện logic sẽ `sendRedirect()` sang trang GET tương ứng.
+
+- _Tình huống_: Bệnh nhân bấm F5 sau khi submit form đặt lịch làm dữ liệu bị gửi lại 2 lần.
+- _Giải pháp PRG Pattern_: Áp dụng triệt để mô hình **Post - Redirect - Get**. Mọi Servlet xử lý POST sau khi thực hiện logic sẽ `sendRedirect()` sang trang GET tương ứng.
 
 ---
 
@@ -345,15 +394,15 @@ sequenceDiagram
 
 ### 1. Danh mục Biểu thức Chính quy (System Regular Expressions)
 
-| Trường Dữ liệu | Biểu thức Chính quy (Regex) | Tiêu chuẩn Đánh giá & Ràng buộc |
-| :-- | :-- | :-- |
-| **Username** | `^[a-zA-Z0-9_]{4,20}$` | 4 đến 20 ký tự, chỉ gồm chữ cái, chữ số và dấu gạch dưới`_`. Không chứa khoảng trắng hoặc ký tự đặc biệt. |
-| **Password** | `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,32}$` | 6 đến 32 ký tự, phải có ít nhất 1 chữ thường, 1 chữ hoa và 1 chữ số. |
-| **Email** | `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$` | Đúng định dạng Email tiêu chuẩn quốc tế. |
-| **Số điện thoại (VN)** | `^(03\|05\|07\|08\|09)\d{8}$` | Đúng 10 chữ số, bắt đầu bằng các đầu số di động hợp lệ tại Việt Nam (03, 05, 07, 08, 09). |
-| **Họ và tên (Fullname)** | `^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầnẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{2,100}$` | Hỗ trợ tiếng Việt có dấu và khoảng trắng, từ 2 đến 100 ký tự. |
-| **Mã Giao dịch SePay** | `^CLINIC\d+$` | Tiền tố`CLINIC` theo sau là ID lịch hẹn (VD: `CLINIC15`). |
-| **Mã Cài đặt (Config)** | `^[A-Z0-9_]{3,50}$` | Viết hoa gạch dưới (VD:`CLINIC_NAME`, `SEPAY_BANK_ACC`). |
+| Trường Dữ liệu                | Biểu thức Chính quy (Regex)                                                                                                                                                                                                                                                                         | Tiêu chuẩn Đánh giá & Ràng buộc                                                                                               |    |    |            |                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -- | -- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **Username**                | `^[a-zA-Z0-9_]{4,20}$`                                                                                                                                                                                                                                                                               | 4 đến 20 ký tự, chỉ gồm chữ cái, chữ số và dấu gạch dưới`_`. Không chứa khoảng trắng hoặc ký tự đặc biệt. |    |    |            |                                                                                                             |
+| **Password**                | `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,32}$`                                                                                                                                                                                                                                            | 6 đến 32 ký tự, phải có ít nhất 1 chữ thường, 1 chữ hoa và 1 chữ số.                                                  |    |    |            |                                                                                                             |
+| **Email**                   | `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$`                                                                                                                                                                                                                                                  | Đúng định dạng Email tiêu chuẩn quốc tế.                                                                                    |    |    |            |                                                                                                             |
+| **Số điện thoại (VN)**  | `^(03                                                                                                                                                                                                                                                                                                  | 05                                                                                                                                   | 07 | 08 | 09)\d{8}$` | Đúng 10 chữ số, bắt đầu bằng các đầu số di động hợp lệ tại Việt Nam (03, 05, 07, 08, 09). |
+| **Họ và tên (Fullname)** | `^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầnẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{2,100}$` | Hỗ trợ tiếng Việt có dấu và khoảng trắng, từ 2 đến 100 ký tự.                                                          |    |    |            |                                                                                                             |
+| **Mã Giao dịch SePay**    | `^CLINIC\d+$`                                                                                                                                                                                                                                                                                        | Tiền tố`CLINIC` theo sau là ID lịch hẹn (VD: `CLINIC15`).                                                                   |    |    |            |                                                                                                             |
+| **Mã Cài đặt (Config)** | `^[A-Z0-9_]{3,50}$`                                                                                                                                                                                                                                                                                  | Viết hoa gạch dưới (VD:`CLINIC_NAME`, `SEPAY_BANK_ACC`).                                                                     |    |    |            |                                                                                                             |
 
 ---
 
@@ -366,16 +415,17 @@ graph LR
     JS -->|Không hợp lệ| UI1[Hiển thị Bootstrap .is-invalid Error]
     Servlet -->|Check DB Uniqueness & Logic| DB[(SQL Server DB)]
     Servlet -->|Lỗi Uniqueness/Past Date| UI2[Forward kèm thông báo lỗi RequestAttribute]
+
 ```
 
 - **Tầng Client-side (JavaScript ES6 & HTML5)**:
-  - Sử dụng thuộc tính HTML5 (`required`, `pattern`, `min`, `max`, `maxlength`).
-  - Lắng nghe sự kiện `input` và `submit` bằng JavaScript để kiểm tra Regex trực tiếp.
-  - Hiển thị lỗi tức thì bằng Bootstrap 5 Class: gắn `.is-invalid` vào `input` và hiển thị thẻ `<div class="invalid-feedback">` bên dưới.
+- Sử dụng thuộc tính HTML5 (`required`, `pattern`, `min`, `max`, `maxlength`).
+- Lắng nghe sự kiện `input` và `submit` bằng JavaScript để kiểm tra Regex trực tiếp.
+- Hiển thị lỗi tức thì bằng Bootstrap 5 Class: gắn `.is-invalid` vào `input` và hiển thị thẻ `<div class="invalid-feedback">` bên dưới.
 - **Tầng Server-side (Java Servlet & `ValidationUtil.java`)**:
-  - Bắt buộc kiểm tra lại toàn bộ Regex phía Server trước khi gọi tầng DAO (chống hành vi tắt JS hoặc curl request).
-  - Kiểm tra tính duy nhất (Uniqueness Check): Đăng ký trùng Username hoặc Email sẽ bị DAO chặn và thông báo lỗi.
-  - Logical Check: Ngày đặt hẹn `appointment_date >= LocalDate.now()`, khung giờ khám không chồng lấn.
+- Bắt buộc kiểm tra lại toàn bộ Regex phía Server trước khi gọi tầng DAO (chống hành vi tắt JS hoặc curl request).
+- Kiểm tra tính duy nhất (Uniqueness Check): Đăng ký trùng Username hoặc Email sẽ bị DAO chặn và thông báo lỗi.
+- Logical Check: Ngày đặt hẹn `appointment_date >= LocalDate.now()`, khung giờ khám không chồng lấn.
 
 ---
 
@@ -431,7 +481,7 @@ public class SystemConstant {
 ```mermaid
 graph TD
     Client[Khách hàng / Web Request] --> Servlet[Java Servlet Controller]
-    Servlet -->|Call| Service[Service / DAO Layer]
+    Servlet -->|Call| Service[Service Layer]
     Service -->|Throw Custom Exception| Catch[Try-Catch Block trong Servlet]
     Catch -->|Catch SlotAlreadyBookedException| Redirect1[Redirect sang /patient/booking kèm errorMsg]
     Catch -->|Catch UnauthorizedException| Redirect2[Redirect sang /login kèm 403 Access Denied]
@@ -439,32 +489,34 @@ graph TD
     GlobalErr --> Page404[404.jsp - Not Found]
     GlobalErr --> Page403[403.jsp - Forbidden]
     GlobalErr --> Page500[500.jsp - Internal Server Error]
+
 ```
 
 - **Các Lớp Ngoại lệ Tùy chỉnh (Custom Exception Classes in `src/java/exception/`)**:
-  - `AppException.java`: Lớp ngoại lệ gốc kế thừa `Exception`.
-  - `SlotAlreadyBookedException.java`: Ném ra khi phát hiện trùng lịch do Race Condition.
-  - `UnauthorizedException.java`: Ném ra khi người dùng cố truy cập tài nguyên không đủ thẩm quyền $\rightarrow$ Hệ thống tự động chuyển sang trang **`403.jsp` (Access Denied)** kèm 2 nút bấm điều hướng linh hoạt: **🏠 Quay về Trang Chủ** (`/home`) và **🔐 Đăng Nhập Tài Khoản Khác** (`/login`).
-  - `EntityNotFoundException.java`: Ném ra khi không tìm thấy dữ liệu (User, Service, Appointment) $\rightarrow$ Chuyển hướng sang trang **`404.jsp` (Not Found)**.
-- **Cấu hình Global Error Page trong `web.xml`**:
-  ```xml
-  <error-page>
-      <error-code>403</error-code>
-      <location>/WEB-INF/views/common/403.jsp</location>
-  </error-page>
-  <error-page>
-      <error-code>404</error-code>
-      <location>/WEB-INF/views/common/404.jsp</location>
-  </error-page>
-  <error-page>
-      <error-code>500</error-code>
-      <location>/WEB-INF/views/common/500.jsp</location>
-  </error-page>
-  <error-page>
-      <exception-type>java.lang.Throwable</exception-type>
-      <location>/WEB-INF/views/common/500.jsp</location>
-  </error-page>
-  ```
+- `AppException.java`: Lớp ngoại lệ gốc kế thừa `Exception`.
+- `SlotAlreadyBookedException.java`: Ném ra khi phát hiện trùng lịch do Race Condition.
+- `UnauthorizedException.java`: Ném ra khi người dùng cố truy cập tài nguyên không đủ thẩm quyền $\rightarrow$ Hệ thống tự động chuyển sang trang **`403.jsp` (Access Denied)** kèm 2 nút bấm điều hướng linh hoạt: **🏠 Quay về Trang Chủ** (`/home`) và **🔐 Đăng Nhập Tài Khoản Khác** (`/login`).
+- `EntityNotFoundException.java`: Ném ra khi không tìm thấy dữ liệu (User, Service, Appointment) $\rightarrow$ Chuyển hướng sang trang **`404.jsp` (Not Found)**.
+- **Cấu hình Global Error Page trong `web.xml**`:
+
+```xml
+<error-page>
+    <error-code>403</error-code>
+    <location>/WEB-INF/views/common/403.jsp</location>
+</error-page>
+<error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/views/common/404.jsp</location>
+</error-page>
+<error-page>
+    <error-code>500</error-code>
+    <location>/WEB-INF/views/common/500.jsp</location>
+</error-page>
+<error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/WEB-INF/views/common/500.jsp</location>
+</error-page>
+```
 
 ---
 
@@ -473,6 +525,7 @@ graph TD
 Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive First**, chuẩn **Bootstrap 5.3**, tông màu chủ đạo **Thẩm mỹ Y tế & Spa (Healthcare Teal & Blue)**:
 
 #### 🖼️ Wireframe 1: Trang Đặt lịch Hẹn Bệnh nhân (`/patient/booking`)
+
 - **Tương tác AJAX Động (Dynamic Re-rendering)**: Khi bệnh nhân thay đổi Bác sĩ hoặc Ngày khám (`work_date`), JavaScript tự động gọi API `fetch('/api/available-slots?doctor_id=...&date=...')` về Servlet (gọi Stored Procedure `sp_GetAvailableSlotsByDoctorAndDate`) để **re-render lại ma trận Nút bấm Slot 60 phút mượt mà mà KHÔNG CẦN tải lại toàn bộ trang**.
 
 ```text
@@ -503,6 +556,7 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 ```
 
 #### 🖼️ Wireframe 2: Màn hình Thanh toán SePay VietQR Động (`/patient/payment`)
+
 - **Tự động Đối soát Polling (`setInterval 3s`)**: Đơn trang tích hợp mã JS `setInterval()` 3s/lần gọi API `/api/check-payment-status?id=15`. Ngay khi Webhook SePay nạp tiền thành công và chuyển `payment_status = 'PAID'`, màn hình lập tức chuyển hướng sang trang Cảm ơn & Chi tiết lịch hẹn.
 - **Kịch bản Cứu hộ (Fallback Strategy Demo)**: Tích hợp nút **[ 🔴 GIẢ LẬP SEPAY WEBHOOK (DEMO) ]** bắn JSON giả lập trực tiếp và nút **[ 💳 CHỌN TIỀN MẶT KHI ĐẾN ]** cứu hộ khi bảo vệ đồ án.
 
@@ -524,11 +578,12 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 ```
 
 #### 🖼️ Wireframe 3: Dashboard Quản trị Admin & Thống kê (`/admin/dashboard`)
+
 - **Trực quan hóa Trạng thái (Status Badges Visual Feedback)**: Sử dụng hệ thống màu sắc Bootstrap 5 Badge giúp Admin nhận diện nhanh:
-  - 🟡 **Badge Vàng (`bg-warning text-dark`)**: `PENDING` (Chờ thanh toán / duyệt).
-  - 🔵 **Badge Xanh Dương (`bg-info text-dark`)**: `CONFIRMED` (Đã thanh toán SePay / đã xác nhận).
-  - 🟢 **Badge Xanh Lá (`bg-success`)**: `COMPLETED` / `PAID` (Đã khám xong / Đã duyệt tiền).
-  - 🔴 **Badge Đỏ (`bg-danger`)**: `CANCELLED` / `UNPAID` (Đã hủy / Chưa trả tiền).
+- 🟡 **Badge Vàng (`bg-warning text-dark`)**: `PENDING` (Chờ thanh toán / duyệt).
+- 🔵 **Badge Xanh Dương (`bg-info text-dark`)**: `CONFIRMED` (Đã thanh toán SePay / đã xác nhận).
+- 🟢 **Badge Xanh Lá (`bg-success`)**: `COMPLETED` / `PAID` (Đã khám xong / Đã duyệt tiền).
+- 🔴 **Badge Đỏ (`bg-danger`)**: `CANCELLED` / `UNPAID` (Đã hủy / Chưa trả tiền).
 
 ```text
 +-----------------------------------------------------------------------------------+
@@ -570,20 +625,20 @@ graph TD
 ### 1. Công cụ Kiểm thử phía Server (Back-end Testing Tools)
 
 - **BẮT BUỘC**:
-  - **JUnit 5 (`org.junit.jupiter`)**: Viết Unit Test tự động cho tầng DAO và Service (`UserDAOTest`, `AppointmentDAOTest`, `BCryptUtilTest`). Thư mục đặt tại `test/`.
-  - **Postman / Bruno**: Test trực tiếp các Servlet API và giả lập bắn dữ liệu Webhook SePay (`PaymentWebhookServlet`) để đối soát tự động.
+- **JUnit 5 (`org.junit.jupiter`)**: Viết Unit Test tự động cho tầng DAO và Service (`UserDAOTest`, `AppointmentDAOTest`, `BCryptUtilTest`). Thư mục đặt tại `test/`.
+- **Postman / Bruno**: Test trực tiếp các Servlet API và giả lập bắn dữ liệu Webhook SePay (`PaymentWebhookServlet`) để đối soát tự động.
 - **MỞ RỘNG**:
-  - **Apache JMeter**: Stress test giả lập 50 – 100 luồng (Threads) đồng thời bấm đặt trùng 1 khung giờ khám trong 1 giây để kiểm tra khả năng xử lý **Race Condition & Transaction Isolation Level** của JDBC.
-  - **JaCoCo**: Đo tỷ lệ bao phủ mã nguồn của Unit Test (> 80% coverage).
+- **Apache JMeter**: Stress test giả lập 50 – 100 luồng (Threads) đồng thời bấm đặt trùng 1 khung giờ khám trong 1 giây để kiểm tra khả năng xử lý **Race Condition & Transaction Isolation Level** của JDBC.
+- **JaCoCo**: Đo tỷ lệ bao phủ mã nguồn của Unit Test (> 80% coverage).
 
 ### 2. Công cụ Kiểm thử phía Client (Front-end Testing Tools)
 
 - **BẮT BUỘC**:
-  - **Chrome / Edge DevTools (Network & Console Tab)**: Kiểm tra các luồng AJAX `fetch()`, HTTP status code (200, 400, 403, 500) và kiểm soát Console không có lỗi JavaScript.
-  - **HTML5 & Bootstrap 5 Validation**: Client-side validation cho tất cả các Form (required, email, phone pattern, min/max date).
+- **Chrome / Edge DevTools (Network & Console Tab)**: Kiểm tra các luồng AJAX `fetch()`, HTTP status code (200, 400, 403, 500) và kiểm soát Console không có lỗi JavaScript.
+- **HTML5 & Bootstrap 5 Validation**: Client-side validation cho tất cả các Form (required, email, phone pattern, min/max date).
 - **MỞ RỘNG**:
-  - **Cypress / Playwright**: Viết kịch bản tự động hóa E2E UI Test.
-  - **Google Lighthouse**: Audit điểm trang web về Performance, Accessibility & SEO (mục tiêu > 90/100).
+- **Cypress / Playwright**: Viết kịch bản tự động hóa E2E UI Test.
+- **Google Lighthouse**: Audit điểm trang web về Performance, Accessibility & SEO (mục tiêu > 90/100).
 
 ---
 
@@ -594,15 +649,15 @@ Cấu trúc thư mục được thiết kế chuẩn mực 100% cho dự án **N
 ```text
 PRJ301_Assignment/
 ├── src/java/                       # GÓI MÃ NGUỒN JAVA (NETBEANS JAVA ANT WEB PROJECT)
-│   ├── config/                     # DBContext.java (HikariCP Connection Pool SQL Server)
-│   ├── constant/                   # RoleConstant.java, SystemConstant.java
+│   ├── config/                     # DBContext.java (HikariCP Connection Pool SQL Server & ThreadLocal)
+│   ├── constant/                   # RoleConstant.java, SystemConstant.java, RouterConstant.java
 │   ├── model/                      # User.java, Service.java, DoctorProfile.java, DoctorSchedule.java, Appointment.java, MedicalRecord.java, ClinicSetting.java
-│   ├── dao/                        # UserDAO.java, ServiceDAO.java, DoctorProfileDAO.java, DoctorScheduleDAO.java, AppointmentDAO.java, MedicalRecordDAO.java, ClinicSettingDAO.java
-│   ├── service/                    # UserService.java, AppointmentService.java, MedicalRecordService.java, SePayService.java, ClinicSettingService.java
-│   ├── controller/                 # AuthServlet.java, PatientServlet.java, DoctorServlet.java, AdminServlet.java, PaymentWebhookServlet.java
-│   ├── filter/                     # EncodingFilter.java, AuthenticationFilter.java, AuthorizationFilter.java
+│   ├── dao/                        # BaseDAO.java, UserDAO.java, ServiceDAO.java, DoctorProfileDAO.java, DoctorScheduleDAO.java, AppointmentDAO.java, MedicalRecordDAO.java, ClinicSettingDAO.java
+│   ├── service/                    # UserService.java, BookingService.java, MedicalRecordService.java, SePayService.java, ClinicSettingService.java
+│   ├── controller/                 # BaseRoleServlet.java, AuthServlet.java, PatientServlet.java, BookingServlet.java, DoctorServlet.java, ReceptionistServlet.java, AdminServlet.java, PaymentWebhookServlet.java
+│   ├── filter/                     # EncodingFilter.java, TransactionFilter.java, AuthenticationFilter.java, AuthorizationFilter.java
 │   ├── exception/                  # AppException.java, SlotAlreadyBookedException.java, UnauthorizedException.java, EntityNotFoundException.java
-│   └── util/                       # BCryptUtil.java, CSRFUtil.java, DateUtil.java, ValidationUtil.java, SePayQRUtil.java
+│   └── util/                       # BCryptUtil.java, JsonUtil.java, PaginationUtil.java, CSRFUtil.java, DateUtil.java, ValidationUtil.java, SePayQRUtil.java
 ├── test/                           # BỘ TEST JUNIT 5 (NETBEANS ANT TEST PACKAGE)
 │   ├── dao/                        # UserDAOTest.java, AppointmentDAOTest.java
 │   └── util/                       # BCryptUtilTest.java
@@ -618,7 +673,7 @@ PRJ301_Assignment/
 │   │   │   ├── admin/              # dashboard.jsp
 │   │   │   ├── error/              # 403.jsp, 404.jsp, 500.jsp
 │   │   │   └── components/         # head.jsp, navbar.jsp, sidebar-doctor.jsp, footer.jsp, alerts.jsp
-│   │   └── web.xml                 # Servlet Mappings, Filters, Error Pages, Welcome files
+│   │   └── web.xml                 # Servlet Mappings, Filters (Transaction, Auth), Error Pages, Welcome files
 ├── nbproject/                      # File cấu hình dự án NetBeans IDE
 ├── build.xml                       # Ant Build Script
 └── database.sql                    # Script CSDL SQL Server (Schema 7 Bảng + 8 Indexes + Mock Data)
@@ -628,12 +683,12 @@ PRJ301_Assignment/
 
 ## VIII. KẾ HOẠCH THỜI GIAN THỰC HIỆN (MILESTONES & CHECKPOINTS)
 
-| Thời gian | Hoạt động & Sản phẩm Bàn giao | Hình thức Đánh giá |
-| :-- | :-- | :-- |
-| **Slot 12 (13/08)** | Nộp Đề xuất Chủ đề (Topic Proposal & SRS Document) | Form Online / Duyệt Đề tài |
-| **Checkpoint 1 (17/08)** | Khởi tạo CSDL SQL Server (7 Bảng), Sơ đồ ERD, Thư viện NetBeans & UI Bootstrap 5 | Demo + Nộp tài liệu sơ bộ |
-| **Checkpoint 2 (22/08)** | Hoàn thiện Back-end DAO JDBC thuần, Servlet MVC-V2, 3 Filters, SePay & CRUD 7 Models | Demo trực tiếp với Giảng viên |
-| **Hạn cuối (22/08)** | Nộp toàn bộ Source code GitHub + Script SQL + File README + JUnit Tests + Video Demo | LMS Submission & Bảo vệ Vấn đáp |
+| Thời gian                     | Hoạt động & Sản phẩm Bàn giao                                                      | Hình thức Đánh giá              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Slot 12 (13/08)**      | Nộp Đề xuất Chủ đề (Topic Proposal & SRS Document)                                | Form Online / Duyệt Đề tài       |
+| **Checkpoint 1 (17/08)** | Khởi tạo CSDL SQL Server (7 Bảng), Sơ đồ ERD, Thư viện NetBeans & UI Bootstrap 5 | Demo + Nộp tài liệu sơ bộ       |
+| **Checkpoint 2 (22/08)** | Hoàn thiện Back-end DAO JDBC thuần, Servlet MVC-V2, 4 Filters, SePay & CRUD 7 Models  | Demo trực tiếp với Giảng viên   |
+| **Hạn cuối (22/08)**   | Nộp toàn bộ Source code GitHub + Script SQL + File README + JUnit Tests + Video Demo  | LMS Submission & Bảo vệ Vấn đáp |
 
 ---
 

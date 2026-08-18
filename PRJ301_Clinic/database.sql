@@ -1,4 +1,4 @@
-﻿-- ============================================================================
+-- ============================================================================
 -- SCRIPT KHỞI TẠO CƠ SỞ DỮ LIỆU MICROSOFT SQL SERVER
 -- Môn học: PRJ301 - Java Web Application Development
 -- Chủ đề: Hệ thống Đặt lịch Phòng khám & Spa (PRJ301_ClinicDB)
@@ -84,19 +84,19 @@ GO
 -- Status: PENDING, CONFIRMED, COMPLETED, CANCELLED
 -- Payment Status: UNPAID, PAID
 -- Payment Method: CASH, SEPAY_QR
--- Ràng buộc UNIQUE(schedule_id): Ngăn chặn 2 cuộc hẹn trỏ cùng 1 slot giờ
+-- Ràng buộc Foreign Key schedule_id (Không dùng UNIQUE cứng để cho phép đặt lại ca đã hủy)
 -- ============================================================================
 CREATE TABLE Appointments (
     id INT IDENTITY(1,1) PRIMARY KEY,
     patient_id INT NOT NULL FOREIGN KEY REFERENCES Users(id),
     doctor_id INT NOT NULL FOREIGN KEY REFERENCES DoctorProfiles(id),
     service_id INT NOT NULL FOREIGN KEY REFERENCES Services(id),
-    schedule_id INT NOT NULL UNIQUE FOREIGN KEY REFERENCES DoctorSchedules(id),
+    schedule_id INT NOT NULL FOREIGN KEY REFERENCES DoctorSchedules(id),
     appointment_date DATE NOT NULL, -- Historical Snapshot
     start_time TIME NOT NULL,       -- Historical Snapshot
     total_price DECIMAL(18,2) NOT NULL, -- Historical Price Snapshot
     status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED')),
-    payment_status VARCHAR(20) DEFAULT 'UNPAID' CHECK (payment_status IN ('UNPAID', 'PAID')),
+    payment_status VARCHAR(20) DEFAULT 'UNPAID' CHECK (payment_status IN ('UNPAID', 'PAID', 'REFUND_PENDING', 'REFUNDED')),
     payment_method VARCHAR(20) DEFAULT 'CASH' CHECK (payment_method IN ('CASH', 'SEPAY_QR')),
     payment_content VARCHAR(100), -- Nội dung chuyển khoản yêu cầu bởi SePay Webhook (Cú pháp: CLINIC<id>)
     transaction_code VARCHAR(50),  -- Mã giao dịch ngân hàng trả về từ SePay Webhook
@@ -268,7 +268,7 @@ INSERT INTO DoctorProfiles (user_id, specialty, experience_years, room_number, b
 (2, N'Nha Khoa Thẩm Mỹ & Phục Hình', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
 (3, N'Da Liễu & Thẩm Mỹ Skin Care Spa', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
 
--- 4. Chèn DoctorSchedules (Khung giờ làm việc cho Hôm nay, Ngày mai và Ngày 2026-08-15)
+-- 4. Chèn DoctorSchedules (Khung giờ làm việc cho Hôm nay, Ngày mai và Ngày kia)
 INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES
 -- Hôm nay (GETDATE())
 (1, CAST(GETDATE() AS DATE), '08:00', '09:00', 0),
@@ -287,13 +287,13 @@ INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_avai
 (2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
 (2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '15:00', '16:00', 1),
 
--- Ngày thử nghiệm cố định 2026-08-15
-(1, '2026-08-15', '08:00', '09:00', 1),
-(1, '2026-08-15', '09:00', '10:00', 1),
-(1, '2026-08-15', '10:00', '11:00', 1),
-(1, '2026-08-15', '14:00', '15:00', 1),
-(2, '2026-08-15', '14:00', '15:00', 1),
-(2, '2026-08-15', '15:00', '16:00', 1);
+-- Ngày kia (GETDATE() + 2)
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '08:00', '09:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '15:00', '16:00', 1);
 
 -- 5. Chèn Appointments (Lịch hẹn mẫu)
 INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, payment_content, transaction_code, notes) VALUES
@@ -423,4 +423,29 @@ BEGIN
     INNER JOIN inserted i ON ds.id = i.schedule_id
     WHERE i.status = 'CANCELLED';
 END;
+GO
+
+-- 5. TRIGGER: Tự động điền mã payment_content (dạng CLN<id>) nếu khi INSERT để rỗng/NULL
+IF OBJECT_ID('dbo.trg_AutoSetPaymentContentOnAppointment', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_AutoSetPaymentContentOnAppointment;
+GO
+
+CREATE TRIGGER dbo.trg_AutoSetPaymentContentOnAppointment
+ON Appointments
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Appointments
+    SET payment_content = 'CLN' + CAST(a.id AS VARCHAR)
+    FROM Appointments a
+    INNER JOIN inserted i ON a.id = i.id
+    WHERE i.payment_content IS NULL OR TRIM(i.payment_content) = '';
+END;
+GO
+
+-- 6. Tự động cập nhật bổ sung mã payment_content cho tất cả bản ghi hiện có
+UPDATE Appointments 
+SET payment_content = 'CLN' + CAST(id AS VARCHAR) 
+WHERE payment_content IS NULL OR payment_content = '';
 GO

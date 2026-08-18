@@ -47,6 +47,27 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
+
+        /* Modern Glassmorphic Admin Inputs */
+        .admin-glass-input {
+            width: 100% !important;
+            background: rgba(15, 23, 42, 0.75) !important;
+            border: 1px solid rgba(56, 189, 248, 0.3) !important;
+            color: #f8fafc !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .admin-glass-input:focus {
+            background: rgba(15, 23, 42, 0.95) !important;
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25), inset 0 2px 4px rgba(0,0,0,0.3) !important;
+            color: #38bdf8 !important;
+            outline: none !important;
+        }
     </style>
 </head>
 
@@ -62,23 +83,23 @@
         <%-- 2. MAIN CONTENT AREA --%>
         <div class="container-fluid px-2 px-sm-4 py-3 py-sm-4 flex-grow-1">
 
-            <%-- ── HERO BANNER ── --%>
-            <div class="doctor-hero mb-4 animate-fade-in" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(239, 68, 68, 0.3);">
+            <%-- HERO BANNER --%>
+            <div class="doctor-hero mb-4 animate-fade-in" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(56, 189, 248, 0.3);">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="hero-avatar" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
-                            <i class="fa-solid fa-user-shield"></i>
+                        <div class="hero-avatar" style="background: linear-gradient(135deg, #0ea5e9, #10b981);">
+                            <i class="fa-solid fa-user-shield text-white"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="live-dot" style="background:#ef4444; box-shadow:0 0 10px #ef4444;"></span>
-                                <span style="font-size:.75rem; color:#fca5a5; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">ADMIN CONTROL CENTER</span>
+                                <span class="live-dot" style="background:#10b981; box-shadow:0 0 10px #10b981;"></span>
+                                <span style="font-size:.75rem; color:#38bdf8; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">ADMIN CONTROL CENTER</span>
                             </div>
                             <h4 class="fw-bold text-white mb-1" style="font-size:1.3rem;">
                                 Xin chào, Quản Trị Viên <c:out value="${sessionScope.LOGIN_USER.fullname}"/>
                             </h4>
                             <p class="mb-0" style="color:rgba(255,255,255,.6); font-size:.83rem;">
-                                <i class="fa-solid fa-chart-pie me-1" style="color:#f59e0b;"></i>Báo cáo Doanh Thu Stored Proc &rsaquo; Từ ${startDate} đến ${endDate}
+                                <i class="fa-solid fa-chart-pie me-1 text-cyan"></i>Báo cáo Doanh Thu Stored Proc &rsaquo; Từ ${startDate} đến ${endDate}
                             </p>
                         </div>
                     </div>
@@ -89,15 +110,15 @@
                         <input type="hidden" name="pageService" value="${currentPageService}">
                         <input type="hidden" name="tab" value="${activeTab}">
                         <div class="filter-wrap">
-                            <i class="fa-solid fa-calendar-days fi"></i>
+                            <i class="fa-solid fa-calendar-days fi text-cyan"></i>
                             <input type="text" name="startDate" class="filter-input flatpickr-date" value="${startDate}" placeholder="Từ ngày" autocomplete="off">
                         </div>
                         <div class="filter-wrap">
-                            <i class="fa-solid fa-calendar-days fi"></i>
+                            <i class="fa-solid fa-calendar-days fi text-cyan"></i>
                             <input type="text" name="endDate" class="filter-input flatpickr-date" value="${endDate}" placeholder="Đến ngày" autocomplete="off">
                         </div>
-                        <button type="submit" class="btn-filter" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
-                            <i class="fa-solid fa-filter"></i> Lọc Báo Cáo
+                        <button type="submit" class="btn-filter" style="background: linear-gradient(135deg, #0ea5e9, #10b981);">
+                            <i class="fa-solid fa-filter me-1"></i>Lọc Báo Cáo
                         </button>
                     </form>
                 </div>
@@ -357,36 +378,80 @@
                             <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" id="settingsForm">
                                 <input type="hidden" name="action" value="update-settings">
                                 <input type="hidden" name="ajax" value="true">
-                                <div class="row g-3">
+                                <div class="row g-4">
+                                    <h6 class="text-cyan fw-bold mb-0"><i class="fa-solid fa-hospital me-2"></i>Thông Tin Cơ Bản Phòng Khám &amp; Giờ Hoạt Động</h6>
+
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label text-white-50">Tên Phòng Khám &amp; Spa</label>
-                                        <input type="text" name="clinic_name" class="form-input" value="${settingsMap['clinic_name'] != null ? settingsMap['clinic_name'] : 'PRJ301 Clinic & Spa'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Tên Phòng Khám &amp; Spa</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-cyan"><i class="fa-solid fa-clinic-medical"></i></span>
+                                            <input type="text" name="CLINIC_NAME" class="form-control admin-glass-input" value="${not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : (not empty settingsMap['clinic_name'] ? settingsMap['clinic_name'] : 'PRJ301 Clinic & Spa')}" required>
+                                        </div>
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label text-white-50">Hotline Tố Tụng / Hỗ Trợ</label>
-                                        <input type="text" name="hotline" class="form-input" value="${settingsMap['hotline'] != null ? settingsMap['hotline'] : '1900 6789'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Hotline Tư Vấn / Hỗ Trợ</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-cyan"><i class="fa-solid fa-phone"></i></span>
+                                            <input type="text" name="CLINIC_HOTLINE" class="form-control admin-glass-input" value="${not empty settingsMap['CLINIC_HOTLINE'] ? settingsMap['CLINIC_HOTLINE'] : (not empty settingsMap['hotline'] ? settingsMap['hotline'] : '0901234567')}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-white-50 fw-semibold">Email Hỗ Trợ Khách Hàng</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-cyan"><i class="fa-solid fa-envelope"></i></span>
+                                            <input type="email" name="CLINIC_EMAIL" class="form-control admin-glass-input" value="${not empty settingsMap['CLINIC_EMAIL'] ? settingsMap['CLINIC_EMAIL'] : 'contact@prj301clinic.com'}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-white-50 fw-semibold">Giờ Mở Cửa Hoạt Động</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-cyan"><i class="fa-regular fa-clock"></i></span>
+                                            <input type="text" name="OPENING_HOURS" class="form-control admin-glass-input" value="${not empty settingsMap['OPENING_HOURS'] ? settingsMap['OPENING_HOURS'] : '08:00 - 20:00 (Từ Thứ 2 đến Chủ Nhật)'}" required>
+                                        </div>
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label text-white-50">Địa Chỉ Phòng Khám</label>
-                                        <input type="text" name="address" class="form-input" value="${settingsMap['address'] != null ? settingsMap['address'] : 'Khu Công Nghệ Cao Hòa Lạc, Thạch Thất, Hà Nội'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Địa Chỉ Phòng Khám</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-cyan"><i class="fa-solid fa-location-dot"></i></span>
+                                            <input type="text" name="CLINIC_ADDRESS" class="form-control admin-glass-input" value="${not empty settingsMap['CLINIC_ADDRESS'] ? settingsMap['CLINIC_ADDRESS'] : (not empty settingsMap['address'] ? settingsMap['address'] : '123 Đường Nguyễn Văn Cừ, Phường 4, Quận 5, TP.HCM')}" required>
+                                        </div>
                                     </div>
+
+                                    <div class="col-12 mt-3">
+                                        <label class="form-label text-white-50 fw-semibold mb-2">
+                                            <i class="fa-solid fa-clock text-cyan me-1"></i>Danh Sách Ca Khám Tự Động Sinh (CLINIC_TIME_SLOTS)
+                                        </label>
+                                        <div class="p-3 rounded-3 mb-2" style="background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(56, 189, 248, 0.3);">
+                                            <div class="text-white-50 fs-8 mb-2 d-flex justify-content-between align-items-center">
+                                                <span><i class="fa-solid fa-hand-pointer text-cyan me-1"></i>Bấm chọn/bỏ chọn để bật tắt mốc giờ nhanh:</span>
+                                                <button type="button" class="btn btn-xs btn-outline-info rounded-pill px-2 py-0" onclick="selectAllSlots(true)">Chọn Tất Cả</button>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2" id="adminSlotChips">
+                                                <%-- Visual Chips JS rendered --%>
+                                            </div>
+                                        </div>
+                                        <input type="text" name="CLINIC_TIME_SLOTS" id="clinicTimeSlotsInput" class="form-control admin-glass-input text-cyan fw-bold" value="${not empty settingsMap['CLINIC_TIME_SLOTS'] ? settingsMap['CLINIC_TIME_SLOTS'] : '08:00,09:00,10:00,11:00,14:00,15:00,16:00,17:00'}" required oninput="renderSlotChipsFromInput()">
+                                        <div class="form-text text-white-50 fs-8 mt-1">Chuỗi phân cách bằng dấu phẩy. Ca khám 60 phút sẽ tự động chèn vào bảng <code>DoctorSchedules</code> khi chọn ngày.</div>
+                                    </div>
+
                                     <hr class="my-4 border-secondary opacity-25">
-                                    <h6 class="text-warning fw-bold mb-3"><i class="fa-solid fa-university me-2"></i>Cấu Hình Ngân Hàng Thanh Toán VietQR SePay</h6>
+                                    <h6 class="text-warning fw-bold mb-0"><i class="fa-solid fa-university me-2"></i>Cấu Hình Ngân Hàng Thanh Toán VietQR SePay</h6>
+
                                     <div class="col-12 col-md-4">
-                                        <label class="form-label text-white-50">Tên Ngân Hàng (Bank Name)</label>
-                                        <input type="text" name="bank_name" class="form-input" value="${settingsMap['bank_name'] != null ? settingsMap['bank_name'] : 'Sacombank'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Tên Ngân Hàng (Bank Name)</label>
+                                        <input type="text" name="SEPAY_BANK_NAME" class="form-control admin-glass-input" value="${not empty settingsMap['SEPAY_BANK_NAME'] ? settingsMap['SEPAY_BANK_NAME'] : (not empty settingsMap['bank_name'] ? settingsMap['bank_name'] : 'Sacombank')}" required>
                                     </div>
                                     <div class="col-12 col-md-4">
-                                        <label class="form-label text-white-50">Số Tài Khoản (Account Number)</label>
-                                        <input type="text" name="bank_account" class="form-input" value="${settingsMap['bank_account'] != null ? settingsMap['bank_account'] : '070148520060'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Số Tài Khoản (Account Number)</label>
+                                        <input type="text" name="SEPAY_BANK_ACC" class="form-control admin-glass-input" value="${not empty settingsMap['SEPAY_BANK_ACC'] ? settingsMap['SEPAY_BANK_ACC'] : (not empty settingsMap['bank_account'] ? settingsMap['bank_account'] : '070148520060')}" required>
                                     </div>
                                     <div class="col-12 col-md-4">
-                                        <label class="form-label text-white-50">Chủ Tài Khoản (Account Owner)</label>
-                                        <input type="text" name="bank_owner" class="form-input" value="${settingsMap['bank_owner'] != null ? settingsMap['bank_owner'] : 'NGUYEN THANH DUY'}" required>
+                                        <label class="form-label text-white-50 fw-semibold">Chủ Tài Khoản (Account Owner)</label>
+                                        <input type="text" name="SEPAY_ACCOUNT_HOLDER" class="form-control admin-glass-input" value="${not empty settingsMap['SEPAY_ACCOUNT_HOLDER'] ? settingsMap['SEPAY_ACCOUNT_HOLDER'] : (not empty settingsMap['bank_owner'] ? settingsMap['bank_owner'] : 'NGUYEN THANH DUY')}" required>
                                     </div>
-                                    <div class="col-12 mt-4">
-                                        <button type="button" class="btn btn-warning fw-bold px-4 py-2 rounded-pill" onclick="saveSettingsAjax()">
-                                            <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Thay Đổi Cấu Hình (Ajax)
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="button" class="btn btn-warning fw-bold px-4 py-3 rounded-pill shadow" onclick="saveSettingsAjax()">
+                                            <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi Cấu Hình (Ajax)
                                         </button>
                                     </div>
                                 </div>
@@ -471,7 +536,7 @@
             const toast = document.createElement("div");
             toast.className = "toast-glass " + type;
             const iconClass = type === 'success' ? 'fa-solid fa-circle-check text-success' : 'fa-solid fa-triangle-exclamation text-danger';
-            toast.innerHTML = `<i class="${iconClass} fs-5"></i><span style="font-size:.88rem; font-weight:600;">${message}</span>`;
+            toast.innerHTML = '<i class="' + iconClass + ' fs-5"></i><span style="font-size:.88rem; font-weight:600;">' + (message || '') + '</span>';
             container.appendChild(toast);
 
             setTimeout(() => {
@@ -521,10 +586,10 @@
 
                     if (data.newStatus) {
                         statusTd.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill"><i class="fa-solid fa-check-circle me-1"></i>Active</span>';
-                        actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:.78rem;" onclick="toggleUserStatusAjax(${userId})"><i class="fa-solid fa-lock me-1"></i><span>Khóa</span></button>`;
+                        actionTd.innerHTML = '<button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:.78rem;" onclick="toggleUserStatusAjax(' + userId + ')"><i class="fa-solid fa-lock me-1"></i><span>Khóa</span></button>';
                     } else {
                         statusTd.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill"><i class="fa-solid fa-ban me-1"></i>Banned</span>';
-                        actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size:.78rem;" onclick="toggleUserStatusAjax(${userId})"><i class="fa-solid fa-unlock me-1"></i><span>Mở Khóa</span></button>`;
+                        actionTd.innerHTML = '<button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size:.78rem;" onclick="toggleUserStatusAjax(' + userId + ')"><i class="fa-solid fa-unlock me-1"></i><span>Mở Khóa</span></button>';
                     }
                 } else {
                     showToast("error", data.message || "Không thể cập nhật trạng thái người dùng.");
@@ -593,10 +658,10 @@
 
                     if (data.newStatus) {
                         statusTd.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill"><i class="fa-solid fa-eye me-1"></i>Hiển Thị</span>';
-                        actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size:.78rem;" onclick="toggleServiceStatusAjax(${serviceId})"><i class="fa-solid fa-eye-slash me-1"></i><span>Ẩn Dịch Vụ</span></button>`;
+                        actionTd.innerHTML = '<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size:.78rem;" onclick="toggleServiceStatusAjax(' + serviceId + ')"><i class="fa-solid fa-eye-slash me-1"></i><span>Ẩn Dịch Vụ</span></button>';
                     } else {
                         statusTd.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill"><i class="fa-solid fa-eye-slash me-1"></i>Bị Ẩn</span>';
-                        actionTd.innerHTML = `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" style="font-size:.78rem;" onclick="toggleServiceStatusAjax(${serviceId})"><i class="fa-solid fa-eye me-1"></i><span>Hiện Dịch Vụ</span></button>`;
+                        actionTd.innerHTML = '<button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" style="font-size:.78rem;" onclick="toggleServiceStatusAjax(' + serviceId + ')"><i class="fa-solid fa-eye me-1"></i><span>Hiện Dịch Vụ</span></button>';
                     }
                 } else {
                     showToast("error", data.message || "Không thể cập nhật trạng thái dịch vụ.");
@@ -635,6 +700,56 @@
                 showToast("error", "Lỗi kết nối máy chủ!");
             });
         }
+
+        // 7. INTERACTIVE TIME SLOT CHIPS FOR ADMIN
+        const availableDefaultHours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+
+        function renderSlotChipsFromInput() {
+            const input = document.getElementById('clinicTimeSlotsInput');
+            const container = document.getElementById('adminSlotChips');
+            if (!input || !container) return;
+
+            const currentVal = input.value || '';
+            const selectedList = currentVal.split(',').map(s => s.trim());
+
+            let html = '';
+            availableDefaultHours.forEach(hour => {
+                const isSelected = selectedList.includes(hour);
+                const styleAttr = isSelected
+                    ? 'background: linear-gradient(135deg, #0ea5e9, #10b981) !important; color: #ffffff !important; border: 1px solid #38bdf8 !important; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35) !important;'
+                    : 'background: rgba(30, 41, 59, 0.85) !important; color: #94a3b8 !important; border: 1px solid rgba(148, 163, 184, 0.25) !important;';
+                const icon = isSelected ? 'fa-solid fa-circle-check text-white' : 'fa-regular fa-circle text-muted';
+                html += '<button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1" style="' + styleAttr + '" onclick="toggleSlotChip(\'' + hour + '\')">' +
+                        '<i class="' + icon + ' me-1"></i> ' + hour +
+                        '</button>';
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleSlotChip(hour) {
+            const input = document.getElementById('clinicTimeSlotsInput');
+            if (!input) return;
+            let selectedList = input.value ? input.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+            if (selectedList.includes(hour)) {
+                selectedList = selectedList.filter(h => h !== hour);
+            } else {
+                selectedList.push(hour);
+                selectedList.sort();
+            }
+            input.value = selectedList.join(',');
+            renderSlotChipsFromInput();
+        }
+
+        function selectAllSlots(all) {
+            const input = document.getElementById('clinicTimeSlotsInput');
+            if (!input) return;
+            input.value = all ? availableDefaultHours.join(',') : '';
+            renderSlotChipsFromInput();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSlotChipsFromInput();
+        });
     </script>
 </body>
 

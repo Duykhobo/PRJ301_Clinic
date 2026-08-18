@@ -1,45 +1,63 @@
 package util;
 
+import java.util.Map;
 import java.util.regex.Pattern;
+import exception.ValidationException;
 
 /**
- * ValidationUtil - Tiện ích Kiểm tra Định dạng Dữ liệu Đầu vào (Server-side
- * Regex).
+ * ValidationUtil - Tiện ích Kiểm tra & Tách lỗi Từng Field (Field-Level Validation).
+ * Viết gọn, tối ưu logic với toán tử 3 ngôi (Ternary Operator).
  */
 public class ValidationUtil {
 
-    // Regular Expression Definitions
-    public static final String USERNAME_REGEX = "^[a-zA-Z0-9_]{4,20}$";
-    public static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{6,32}$";
-    public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
-    public static final String PHONE_REGEX = "^(03|05|07|08|09)\\d{8}$";
-    public static final String FULLNAME_REGEX = "^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầnẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\\s]{2,100}$";
-    public static final String TRANSACTION_CODE_REGEX = "^CLINIC\\d+$";
+    private static final String USERNAME_REGEX = "^[a-zA-Z0-9_]{4,20}$";
+    private static final String PHONE_REGEX = "^(03|05|07|08|09)\\d{8}$";
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
 
-    public static boolean isValidUsername(String username) {
-        return username != null && Pattern.matches(USERNAME_REGEX, username);
+    public static boolean isValidUsername(String u) {
+        return (u != null && !u.trim().isEmpty()) ? Pattern.matches(USERNAME_REGEX, u.trim()) : false;
     }
 
-    public static boolean isValidPassword(String password) {
-        return password != null && Pattern.matches(PASSWORD_REGEX, password);
+    public static boolean isValidPassword(String p) {
+        return (p != null) ? p.length() >= 6 && p.length() <= 32 : false;
     }
 
-    public static boolean isValidEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            return true; // Cho phép NULL / Rỗng cho khách hàng đăng ký tại quầy chỉ dùng SĐT
+    public static boolean isValidFullname(String f) {
+        return (f != null && !f.trim().isEmpty()) ? f.trim().length() >= 2 && f.trim().length() <= 100 : false;
+    }
+
+    public static boolean isValidPhone(String p) {
+        return (p != null && !p.trim().isEmpty()) ? Pattern.matches(PHONE_REGEX, p.trim()) : false;
+    }
+
+    public static boolean isValidEmail(String e) {
+        return (e != null && !e.trim().isEmpty()) ? Pattern.matches(EMAIL_REGEX, e.trim()) : false;
+    }
+
+    /**
+     * Gán lỗi cho từng field cụ thể nếu điều kiện không thỏa mãn
+     */
+    public static void validateField(Map<String, String> errors, String field, boolean isValid, String message) {
+        if (!isValid && errors != null) {
+            errors.put(field, message);
         }
-        return Pattern.matches(EMAIL_REGEX, email);
     }
 
-    public static boolean isValidPhone(String phone) {
-        return phone != null && Pattern.matches(PHONE_REGEX, phone);
-    }
+    public static void validateBookingParams(String doctorIdStr, String serviceIdStr, String scheduleIdStr, String appointmentDateStr) {
+        boolean missing = (doctorIdStr == null || doctorIdStr.trim().isEmpty()) ||
+                          (serviceIdStr == null || serviceIdStr.trim().isEmpty()) ||
+                          (scheduleIdStr == null || scheduleIdStr.trim().isEmpty()) ||
+                          (appointmentDateStr == null || appointmentDateStr.trim().isEmpty());
+        if (missing) {
+            throw new ValidationException("Thông tin đặt lịch không đầy đủ. Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ và Ca giờ!");
+        }
 
-    public static boolean isValidFullname(String fullname) {
-        return fullname != null && Pattern.matches(FULLNAME_REGEX, fullname);
-    }
-
-    public static boolean isValidTransactionCode(String code) {
-        return code != null && Pattern.matches(TRANSACTION_CODE_REGEX, code);
+        try {
+            Integer.parseInt(doctorIdStr);
+            Integer.parseInt(serviceIdStr);
+            Integer.parseInt(scheduleIdStr);
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Mã Bác sĩ, Dịch vụ hoặc Ca làm việc không hợp lệ!");
+        }
     }
 }

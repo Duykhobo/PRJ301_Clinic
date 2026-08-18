@@ -33,9 +33,21 @@
   <div class="sb-section-label">Quản Trị Hệ Thống</div>
   <ul class="sb-menu">
     <li>
-      <a href="${pageContext.request.contextPath}/admin/dashboard" class="active">
-        <span class="sb-icon"><i class="fa-solid fa-chart-line"></i></span>
-        Dashboard Quản Trị
+      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=users" class="${empty param.tab || param.tab == 'users' ? 'active' : ''}">
+        <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
+        Quản Lý Người Dùng
+      </a>
+    </li>
+    <li>
+      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=services" class="${param.tab == 'services' ? 'active' : ''}">
+        <span class="sb-icon"><i class="fa-solid fa-hand-holding-medical"></i></span>
+        Quản Lý Dịch Vụ
+      </a>
+    </li>
+    <li>
+      <a href="${pageContext.request.contextPath}/admin/dashboard?tab=settings" class="${param.tab == 'settings' ? 'active' : ''}">
+        <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span>
+        Cấu Hình Hệ Thống
       </a>
     </li>
   </ul>

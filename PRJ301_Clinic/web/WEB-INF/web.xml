@@ -6,6 +6,41 @@
 
     <display-name>PRJ301 Clinic Spa Appointment System</display-name>
 
+    <!-- ========================================================= -->
+    <!-- BỘ LỌC HỆ THỐNG (FILTERS)                                 -->
+    <!-- THỨ TỰ BẮT BUỘC: Encoding -> Transaction -> Authentication-->
+    <!-- ========================================================= -->
+
+    <!-- 1. Cố định Encoding UTF-8 cho toàn bộ Request/Response -->
+    <filter>
+        <filter-name>EncodingFilter</filter-name>
+        <filter-class>filter.EncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 2. Quản lý Connection và Tự động Commit/Rollback -->
+    <filter>
+        <filter-name>TransactionFilter</filter-name>
+        <filter-class>filter.TransactionFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>TransactionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 3. Chặn quyền truy cập (yêu cầu session sau khi đã có DB Connection) -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>filter.AuthenticationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <!-- 1. Cấu hình Session Timeout (30 Phút) -->
     <session-config>
         <session-timeout>30</session-timeout>
@@ -17,7 +52,98 @@
         <welcome-file>MainController</welcome-file>
     </welcome-file-list>
 
-    <!-- 3. Cấu hình Cặp Trang Lỗi Tập trung (Global Error Page Mapping) -->
+    <!-- 3. Khai báo Servlet Mappings Tường Minh (Chống lỗi 404 do Annotation Scan) -->
+    <servlet>
+        <servlet-name>DoctorServlet</servlet-name>
+        <servlet-class>controller.DoctorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DoctorServlet</servlet-name>
+        <url-pattern>/doctor/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminServlet</servlet-name>
+        <servlet-class>controller.AdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/admin/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ReceptionistServlet</servlet-name>
+        <servlet-class>controller.ReceptionistServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceptionistServlet</servlet-name>
+        <url-pattern>/receptionist/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BookingServlet</servlet-name>
+        <servlet-class>controller.BookingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookingServlet</servlet-name>
+        <url-pattern>/booking</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>controller.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HistoryServlet</servlet-name>
+        <servlet-class>controller.HistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HistoryServlet</servlet-name>
+        <url-pattern>/history</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-class>controller.ProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>SepayWebhookServlet</servlet-name>
+        <servlet-class>controller.SepayWebhookServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SepayWebhookServlet</servlet-name>
+        <url-pattern>/sepay-webhook</url-pattern>
+    </servlet-mapping>
+
+    <!-- 4. Cấu hình Cặp Trang Lỗi Tập trung (Global Error Page Mapping) -->
     <error-page>
         <error-code>403</error-code>
         <location>/WEB-INF/views/error/403.jsp</location>
@@ -37,5 +163,17 @@
         <exception-type>java.lang.Throwable</exception-type>
         <location>/WEB-INF/views/error/500.jsp</location>
     </error-page>
+
+    <!-- 5. MIME Type UTF-8 cho Static Assets (.js, .css)
+         Tomcat mac dinh khong dinh kem charset vao Content-Type cua file tinh,
+         nen browser co the doc sai encoding. Khai bao tuong minh o day de fix. -->
+    <mime-mapping>
+        <extension>js</extension>
+        <mime-type>text/javascript;charset=UTF-8</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css;charset=UTF-8</mime-type>
+    </mime-mapping>
 
 </web-app>
