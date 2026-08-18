@@ -464,3 +464,267 @@ select.form-control-glass option[value=""] {
     text-align: right !important;
     word-break: break-word;
 }
+
+/* ============================================================================
+   DESIGN REVIEW KIT STANDARDIZED COMPONENT TOKENS
+   ============================================================================ */
+:root {
+    --sz-green: #1b5e3b;
+    --sz-green-dark: #0f3d2e;
+    --sz-tennis: #2e7d32;
+    --sz-gold: #e0b322;
+    --sz-sand: #f5f2eb;
+    --sz-ink: #10261c;
+    --sz-muted-ink: #526359;
+    --sz-line: #e3dfd3;
+    --sz-success-bg: #eaf6ed;
+    --sz-success-fg: #1e6b3c;
+    --sz-danger-bg: #fbebed;
+    --sz-danger-fg: #842029;
+    --sz-warn-bg: #fdf6e2;
+    --sz-warn-fg: #8a6d12;
+    --sz-info-bg: #e7f1fb;
+    --sz-info-fg: #1b4f8a;
+    --sz-muted-bg: #f1efe7;
+    --sz-muted-fg: #555e58;
+}
+
+/* 1. BUTTONS & PILLS */
+.btn-sz {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 650;
+    font-size: 0.92rem;
+    padding: 0.65rem 1.35rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.25;
+}
+.btn-sz:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+.btn-sz-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    color: #fff !important;
+}
+.btn-sz-gold {
+    background: var(--sz-gold);
+    color: var(--sz-ink) !important;
+}
+.btn-sz-ghost {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff !important;
+}
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+    transition: all 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-icon:hover {
+    background: rgba(14, 165, 233, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    transform: translateY(-2px);
+}
+
+/* 2. BADGES & ALERTS */
+.sz-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+.sz-badge-success { background: var(--sz-success-bg); color: var(--sz-success-fg); }
+.sz-badge-danger  { background: var(--sz-danger-bg);  color: var(--sz-danger-fg); }
+.sz-badge-warn    { background: var(--sz-warn-bg);    color: var(--sz-warn-fg); }
+.sz-badge-info    { background: var(--sz-info-bg);    color: var(--sz-info-fg); }
+.sz-badge-muted   { background: var(--sz-muted-bg);   color: var(--sz-muted-fg); }
+
+.alert-soft {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    border-radius: 1rem;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.9rem;
+}
+.alert-soft.s-success { background: rgba(30, 107, 60, 0.15); color: #34d399; }
+.alert-soft.s-danger  { background: rgba(132, 32, 41, 0.2);  color: #f87171; }
+.alert-soft.s-warn    { background: rgba(138, 109, 18, 0.2); color: #fbbf24; }
+.alert-soft.s-info    { background: rgba(27, 79, 138, 0.2);  color: #38bdf8; }
+
+/* 3. FILTER PILL TRAY */
+.pill-tray {
+    display: inline-flex;
+    gap: 0.35rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 999px;
+    padding: 4px;
+    flex-wrap: wrap;
+}
+.filter-pill {
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    padding: 0.45rem 1.15rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+}
+.filter-pill:hover {
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+}
+.filter-pill.active {
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    color: #fff !important;
+}
+.filter-pill .sz-count {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    padding: 0.1em 0.55em;
+    font-size: 0.75rem;
+    margin-left: 0.3rem;
+}
+
+/* 4. DATE PILLS & TIME SLOT GRID */
+.date-pill-row {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+}
+.date-pill {
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 0.9rem;
+    padding: 0.5rem 0.95rem;
+    text-align: center;
+    cursor: pointer;
+    min-width: 74px;
+    transition: all 0.13s;
+    flex-shrink: 0;
+    color: #fff;
+}
+.date-pill small {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+.date-pill b { font-size: 1.05rem; }
+.date-pill.active {
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    border-color: #38bdf8;
+    color: #fff;
+}
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.5rem;
+}
+.slot {
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.3rem;
+    text-align: center;
+    font-weight: 700;
+    background: rgba(15, 23, 42, 0.7);
+    cursor: pointer;
+    font-size: 0.92rem;
+    transition: all 0.13s;
+    user-select: none;
+    color: #fff;
+}
+.slot small {
+    display: block;
+    font-weight: 500;
+    font-size: 0.66rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+}
+.slot.is-available:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+}
+.slot.is-selected {
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    border-color: #38bdf8;
+    color: #fff;
+}
+.slot.is-booked {
+    background: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.3);
+    color: #fca5a5;
+    cursor: not-allowed;
+}
+.slot.is-past {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* 5. INVOICE PAPER (PRINTABLE & MODERN) */
+.invoice-paper {
+    background: #fff;
+    color: #10261c;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(16, 38, 28, 0.07);
+    box-shadow: 0 10px 24px rgba(16, 38, 28, 0.06);
+    padding: 2.4rem;
+}
+.invoice-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 1.4rem;
+    border-bottom: 2px solid #10261c;
+}
+.kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.45rem 0;
+    font-size: 0.93rem;
+}
+.kv .k { color: #526359; }
+.kv .v { font-weight: 650; text-align: right; }
+.kv-total {
+    border-top: 2px solid #10261c;
+    margin-top: 0.5rem;
+    padding-top: 0.7rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+@media print {
+    body * { visibility: hidden; }
+    .invoice-paper, .invoice-paper * { visibility: visible; }
+    .invoice-paper { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; }
+}
