@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import config.DBContext;
 import constant.SystemConstant;
 import model.Appointment;
 import model.DoctorSchedule;
@@ -47,6 +50,21 @@ public class AppointmentDAOTest {
     @DisplayName("Test 1: Đặt lịch hẹn mới thành công (Atomic Transaction)")
     public void testCreateBookingSuccess() {
         System.out.println("\n--- [TEST 1] Testing createBookingAtomic() ---");
+
+        // 💡 Dọn dẹp lịch hẹn thử nghiệm cũ và mở khóa slot để sẵn sàng test nguyên tử
+        try ( Connection conn = DBContext.getConnection()) {
+            // 1. Xóa các appointment thử nghiệm cũ để tránh vướng điều kiện EXISTS
+            try ( PreparedStatement ps1 = conn.prepareStatement("DELETE FROM Appointments WHERE notes LIKE '%JUnit 5%'")) {
+                ps1.executeUpdate();
+            }
+            // 2. Mở lại trạng thái is_available = 1 cho các slot của Bác sĩ 1
+            try ( PreparedStatement ps2 = conn.prepareStatement("UPDATE DoctorSchedules SET is_available = 1 WHERE doctor_id = 1")) {
+                ps2.executeUpdate();
+            }
+            System.out.println("-> Đã dọn dẹp dữ liệu lịch hẹn cũ và mở khóa slot thành công.");
+        } catch (Exception e) {
+            System.err.println("-> Cảnh báo: Không thể dọn dẹp dữ liệu test trong DB: " + e.getMessage());
+        }
 
         // 1. Lấy slot khả dụng của Bác sĩ 1 (thử ngày Hôm nay hoặc 2026-08-15)
         Date testDate = new Date(System.currentTimeMillis());

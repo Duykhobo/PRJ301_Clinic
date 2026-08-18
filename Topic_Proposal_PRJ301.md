@@ -101,24 +101,15 @@ graph TD
 | 🔴**MỨC 1: BẮT BUỘC** _(Mandatory / Core Rules)_ | - Phân tầng**MVC-V2** trên NetBeans Java Web (Ant). |                                     |                          |
 
 - JDBC thuần `PreparedStatement` & **HikariCP** SQL Server.
-
 - **BCrypt** password hashing & **4 Filters** (`Encoding`, `Transaction`, `Auth`, `Role`).
-
 - Phân quyền **4 vai trò** (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).
-
 - **CRUD 100% trên 7 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).
-
 - Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** _(Tiêu chí qua môn & Pass Hard Rules)_ | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 | | 🟡 **MỨC 2: QUAN TRỌNG** _(High Priority / Real-world)_ | - Thanh toán tự động **SePay VietQR Động**.
-
 - Tự động sinh mã `payment_content = "CLINIC" + id`.
-
 - Đối soát **Webhook SePay** tự động & Manual Verify cho Admin.
-
 - Bảng `ClinicSettings` **Cấu hình Động** (giờ mở cửa, duration slot,...).
-
 - Phân quyền **Bảo mật Y tế** (Medical Privacy Scoping DAO). | **HOÀN THIỆN MVP** _(Tiêu chí thực tế & tự động hóa)_ | Tạo trải nghiệm ứng dụng thực tế chuyên nghiệp | | 🟢 **MỨC 3: MỞ RỘNG** _(Optional / Advanced 10/10)_ | - **Quản lý Transaction Tự động**: Cơ chế `ThreadLocal` kết hợp `TransactionFilter` giúp rollback an toàn triệt để Connection Leak.
-
-- **4 thành phần SQL Server nâng cao**: 
+- **4 thành phần SQL Server nâng cao**:
 
  \* Trigger `trg_UpdateSlotStatusOnAppointment`
 
@@ -175,7 +166,6 @@ erDiagram
         string key
         string value
     }
-
 ```
 
 ### 1. Chi tiết Thiết kế 7 Bảng CSDL (7 Models):
@@ -480,7 +470,6 @@ public class SystemConstant {
         "08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"
     };
 }
-
 ```
 
 ---
@@ -527,7 +516,6 @@ graph TD
     <exception-type>java.lang.Throwable</exception-type>
     <location>/WEB-INF/views/common/500.jsp</location>
 </error-page>
-
 ```
 
 ---
@@ -565,7 +553,6 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 |                                                                                   |
 |                        [  BẤM ĐẶT LỊCH HẸN & THANH TOÁN  ]                       |
 +-----------------------------------------------------------------------------------+
-
 ```
 
 #### 🖼️ Wireframe 2: Màn hình Thanh toán SePay VietQR Động (`/patient/payment`)
@@ -588,7 +575,6 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 |                                                  |                                |
 |  [ 🔴 GIẢ LẬP SEPAY WEBHOOK (DEMO) ]             | [ 💳 CHỌN TIỀN MẶT KHI ĐẾN ]   |
 +--------------------------------------------------+--------------------------------+
-
 ```
 
 #### 🖼️ Wireframe 3: Dashboard Quản trị Admin & Thống kê (`/admin/dashboard`)
@@ -614,7 +600,6 @@ Giao diện ứng dụng được thiết kế theo nguyên tắc **Responsive F
 |  | 15 | Lê Hoàng Nam| Tẩy trắng  | 1,500,000đ  | [🟡 PENDING]  | [Duyệt Tay (Paid)]|
 |  | 16 | Phạm Mai    | Skin Care  |   850,000đ  | [🔵 CONFIRMED]| [Xác nhận Tiền Mặt]|
 +-----------------------------------------------------------------------------------+
-
 ```
 
 ---
@@ -635,7 +620,6 @@ graph TD
     C --> C2[Bắt buộc: HTML5 & Bootstrap Form Validation]
     C --> C3[Mở rộng: Cypress / Playwright E2E UI Test]
     C --> C4[Mở rộng: Lighthouse Performance & Audit]
-
 ```
 
 ### 1. Công cụ Kiểm thử phía Server (Back-end Testing Tools)
@@ -693,7 +677,6 @@ PRJ301_Assignment/
 ├── nbproject/                      # File cấu hình dự án NetBeans IDE
 ├── build.xml                       # Ant Build Script
 └── database.sql                    # Script CSDL SQL Server (Schema 7 Bảng + 8 Indexes + Mock Data)
-
 ```
 
 ---

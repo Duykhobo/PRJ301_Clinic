@@ -3,7 +3,9 @@ package controller;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -20,6 +22,7 @@ import model.*;
 import service.BookingService;
 import service.ClinicService;
 import util.EmailUtil;
+import util.ValidationUtil;
 
 /**
  * BookingServlet - Điều hướng & Xử lý Đặt Lịch Hẹn Khám Bệnh Nhân (/booking).
@@ -87,16 +90,32 @@ public class BookingServlet extends HttpServlet {
         }
         User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
+        String serviceIdStr = request.getParameter("serviceId") != null ? request.getParameter("serviceId").trim() : "";
+        String doctorIdStr = request.getParameter("doctorId") != null ? request.getParameter("doctorId").trim() : "";
+        String scheduleIdStr = request.getParameter("scheduleId") != null ? request.getParameter("scheduleId").trim() : "";
+        String appointmentDateStr = request.getParameter("appointmentDate") != null ? request.getParameter("appointmentDate").trim() : "";
+        String notes = request.getParameter("notes") != null ? request.getParameter("notes").trim() : "";
+
+        request.setAttribute("selectedServiceId", serviceIdStr);
+        request.setAttribute("selectedDoctorId", doctorIdStr);
+        request.setAttribute("selectedAppointmentDate", appointmentDateStr);
+        request.setAttribute("selectedScheduleId", scheduleIdStr);
+        request.setAttribute("notes", notes);
+
+        Map<String, String> errors = new java.util.HashMap<>();
+        ValidationUtil.validateField(errors, "serviceId", !serviceIdStr.isEmpty(), "Vui lòng chọn dịch vụ khám/spa!");
+        ValidationUtil.validateField(errors, "doctorId", !doctorIdStr.isEmpty(), "Vui lòng chọn bác sĩ phụ trách!");
+        ValidationUtil.validateField(errors, "appointmentDate", !appointmentDateStr.isEmpty(), "Vui lòng chọn ngày khám hợp lệ!");
+        ValidationUtil.validateField(errors, "scheduleId", !scheduleIdStr.isEmpty(), "Vui lòng chọn khung giờ khám còn trống!");
+
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ, Ngày và Khung giờ khám!");
+            doGet(request, response);
+            return;
+        }
+
         try {
-            String serviceIdStr = request.getParameter("serviceId");
-            String doctorIdStr = request.getParameter("doctorId");
-            String scheduleIdStr = request.getParameter("scheduleId");
-            String appointmentDateStr = request.getParameter("appointmentDate");
-            String notes = request.getParameter("notes");
-
-            // ✅ REFACTOR CLEAN CODE: Gọi 1 dòng ValidationUtil duy nhất!
-            util.ValidationUtil.validateBookingParams(doctorIdStr, serviceIdStr, scheduleIdStr, appointmentDateStr);
-
             int serviceId = Integer.parseInt(serviceIdStr);
             int doctorId = Integer.parseInt(doctorIdStr);
             int scheduleId = Integer.parseInt(scheduleIdStr);
@@ -136,11 +155,15 @@ public class BookingServlet extends HttpServlet {
 
                 response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
             } else {
+                errors.put("scheduleId", "Khung giờ này vừa được đặt bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
+                request.setAttribute("errors", errors);
                 request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
                         "Khung giờ này vừa được đăng ký thành công bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
                 doGet(request, response);
             }
         } catch (SlotAlreadyBookedException e) {
+            errors.put("scheduleId", e.getMessage());
+            request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, e.getMessage());
             doGet(request, response);
         } catch (Exception e) {

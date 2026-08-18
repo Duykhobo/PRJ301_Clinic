@@ -66,9 +66,8 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     /**
-     * Tạo lịch hẹn mới (Atomic Booking).
-     * Hàm này được quản lý tự động bởi TransactionFilter. Không cần try-catch
-     * rollback thủ công.
+     * Tạo lịch hẹn mới (Atomic Booking). Hàm này được quản lý tự động bởi
+     * TransactionFilter. Không cần try-catch rollback thủ công.
      */
     public boolean createBookingAtomic(Appointment app) throws SlotAlreadyBookedException {
 
@@ -126,6 +125,8 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
             if (newAppId <= 0) {
                 return false;
             }
+
+            app.setId(newAppId);
 
             // 3. Cập nhật mã Payment Content (Dành cho SePay)
             String paymentContent = "CLN" + newAppId;
@@ -291,11 +292,10 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public RevenueReport getRevenueReport(Date startDate, Date endDate) {
         String sql = "EXEC dbo.sp_GetClinicRevenueReport ?, ?";
-        try (Connection conn = DBContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = DBContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, startDate);
             ps.setDate(2, endDate);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new RevenueReport(
                             rs.getInt("total_appointments"),

@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,7 +21,7 @@ import util.ValidationUtil;
 
 /**
  * LoginServlet - Điều hướng & Xử lý Đăng nhập Người dùng (/login).
- * Mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
+ * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "LoginServlet", urlPatterns = { "/login" })
 public class LoginServlet extends HttpServlet {
@@ -31,12 +33,6 @@ public class LoginServlet extends HttpServlet {
         this.userService = new UserService();
     }
 
-    /**
-     * Hiển thị trang Đăng nhập (GET).
-     * 1. Check xem đã đăng nhập chưa (session != null && SESSION_USER != null).
-     * 2. Nếu đã đăng nhập -> chuyển hướng về trang tương ứng theo Role.
-     * 3. Nếu chưa -> forward tới RouterConstant.LOGIN_JSP.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -47,56 +43,44 @@ public class LoginServlet extends HttpServlet {
             redirectByRole(response, request.getContextPath(), user.getRole());
             return;
         }
-
         request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
     }
 
-    /**
-     * Xử lý Đăng nhập khi bấm Submit Form (POST).
-     * Quy trình 4 bước:
-     * Bước 1: Lấy thông tin username, password từ request.getParameter()
-     * Bước 2: Fail-fast Validation dùng ValidationUtil.isValidUsername(), check null password
-     * Bước 3: Gọi userService.login(username, password)
-     * Bước 4: Nếu user != null -> lưu session.setAttribute(SESSION_USER, user), chuyển hướng theo Role
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        String username = request.getParameter("username") != null ? request.getParameter("username").trim() : "";
+        String password = request.getParameter("password") != null ? request.getParameter("password") : "";
         String redirect = request.getParameter("redirect");
 
-        // 1. Fail-fast Validation
-        if (!ValidationUtil.isValidUsername(username)) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_USERNAME);
-            request.setAttribute("username", username);
+        request.setAttribute("username", username);
+        Map<String, String> errors = new HashMap<>();
+
+        ValidationUtil.validateField(errors, "username", !username.isEmpty(), "Vui lòng nhập tên đăng nhập!");
+        ValidationUtil.validateField(errors, "password", !password.isEmpty(), "Vui lòng nhập mật khẩu!");
+
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!");
             request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
             return;
         }
 
-        if (password == null || password.trim().isEmpty()) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng nhập mật khẩu!");
-            request.setAttribute("username", username);
-            request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
-            return;
-        }
-
-        // 2. Xác thực tài khoản qua Tầng Service
-        User user = userService.login(username.trim(), password);
+        User user = userService.login(username, password);
         if (user == null) {
+            errors.put("general", MessageConstant.ERR_LOGIN_FAILED);
+            request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_LOGIN_FAILED);
-            request.setAttribute("username", username);
             request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
             return;
         }
 
-        // 3. Đăng nhập thành công -> Lưu Session
         HttpSession session = request.getSession();
         session.setAttribute(SystemConstant.SESSION_USER, user);
 
-        // 4. Chuyển hướng theo Role hoặc theo param redirect
-        if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("/login")) {
+        boolean hasRedirect = redirect != null && !redirect.trim().isEmpty() && !redirect.contains("/login");
+        if (hasRedirect) {
             response.sendRedirect(request.getContextPath() + redirect);
         } else {
             redirectByRole(response, request.getContextPath(), user.getRole());
@@ -104,14 +88,10 @@ public class LoginServlet extends HttpServlet {
     }
 
     private void redirectByRole(HttpServletResponse response, String contextPath, String role) throws IOException {
-        if (RoleConstant.ADMIN.equalsIgnoreCase(role)) {
-            response.sendRedirect(contextPath + RouterConstant.DASHBOARD_ADMIN);
-        } else if (RoleConstant.DOCTOR.equalsIgnoreCase(role)) {
-            response.sendRedirect(contextPath + RouterConstant.DASHBOARD_DOCTOR);
-        } else if (RoleConstant.RECEPTIONIST.equalsIgnoreCase(role)) {
-            response.sendRedirect(contextPath + RouterConstant.DASHBOARD_RECEPTIONIST);
-        } else {
-            response.sendRedirect(contextPath + RouterConstant.ROUTE_HOME);
-        }
+        String target = RoleConstant.ADMIN.equalsIgnoreCase(role) ? RouterConstant.DASHBOARD_ADMIN :
+                        RoleConstant.DOCTOR.equalsIgnoreCase(role) ? RouterConstant.DASHBOARD_DOCTOR :
+                        RoleConstant.RECEPTIONIST.equalsIgnoreCase(role) ? RouterConstant.DASHBOARD_RECEPTIONIST :
+                        RouterConstant.ROUTE_HOME;
+        response.sendRedirect(contextPath + target);
     }
 }

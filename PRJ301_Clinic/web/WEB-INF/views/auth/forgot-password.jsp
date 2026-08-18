@@ -65,11 +65,14 @@
                     <div class="mb-4">
                         <label class="form-label text-muted fw-semibold">Địa Chỉ Email Đăng Ký (*)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.email ? 'is-invalid' : ''}" style="border-right: none;">
                                 <i class="fa-solid fa-envelope text-cyan"></i>
                             </span>
-                            <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0" value="${email}" required autofocus placeholder="nhapemail@gmail.com">
+                            <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.email ? 'is-invalid' : ''}" value="${email}" required autofocus placeholder="nhapemail@gmail.com">
                         </div>
+                        <c:if test="${not empty errors.email}">
+                            <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
+                        </c:if>
                         <div class="form-text text-muted small mt-2">
                             <i class="fa-solid fa-circle-info me-1 text-cyan"></i>Mật khẩu tạm thời sẽ được gửi trực tiếp đến hòm thư này.
                         </div>

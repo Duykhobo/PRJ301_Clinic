@@ -62,20 +62,26 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold">Tên Đăng Nhập (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.username ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-user text-cyan"></i>
                                 </span>
-                                <input type="text" name="username" class="form-control form-control-glass border-start-0 ps-0" value="${username}" required placeholder="vd: patient123">
+                                <input type="text" name="username" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.username ? 'is-invalid' : ''}" value="${username}" required placeholder="vd: patient123">
                             </div>
+                            <c:if test="${not empty errors.username}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.username}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold">Họ và Tên (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.fullname ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-id-card text-cyan"></i>
                                 </span>
-                                <input type="text" name="fullname" class="form-control form-control-glass border-start-0 ps-0" value="${fullname}" required placeholder="vd: Nguyễn Văn A">
+                                <input type="text" name="fullname" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.fullname ? 'is-invalid' : ''}" value="${fullname}" required placeholder="vd: Nguyễn Văn A">
                             </div>
+                            <c:if test="${not empty errors.fullname}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.fullname}</span></div>
+                            </c:if>
                         </div>
                     </div>
 
@@ -83,20 +89,26 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold">Số Điện Thoại (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.phone ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-phone text-cyan"></i>
                                 </span>
-                                <input type="tel" name="phone" class="form-control form-control-glass border-start-0 ps-0" value="${phone}" required placeholder="vd: 0901234567">
+                                <input type="tel" name="phone" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.phone ? 'is-invalid' : ''}" value="${phone}" required placeholder="vd: 0901234567">
                             </div>
+                            <c:if test="${not empty errors.phone}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.phone}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold">Email (Tùy chọn)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.email ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-envelope text-cyan"></i>
                                 </span>
-                                <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0" value="${email}" placeholder="vd: email@gmail.com">
+                                <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.email ? 'is-invalid' : ''}" value="${email}" placeholder="vd: email@gmail.com">
                             </div>
+                            <c:if test="${not empty errors.email}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
+                            </c:if>
                         </div>
                     </div>
 
@@ -105,29 +117,35 @@
                             <label class="form-label text-muted fw-semibold">Mật Khẩu (*)</label>
                             <div class="input-password-wrapper">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.password ? 'is-invalid' : ''}" style="border-right: none;">
                                         <i class="fa-solid fa-lock text-cyan"></i>
                                     </span>
-                                    <input type="password" id="regPassword" name="password" class="form-control form-control-glass border-start-0 ps-0 pe-5" required placeholder="Nhập mật khẩu">
+                                    <input type="password" id="regPassword" name="password" class="form-control form-control-glass border-start-0 ps-0 pe-5 ${not empty errors.password ? 'is-invalid' : ''}" required placeholder="Nhập mật khẩu">
                                 </div>
                                 <button type="button" class="btn-password-toggle me-2" onclick="togglePassword('regPassword', this)" title="Hiện mật khẩu">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
+                            <c:if test="${not empty errors.password}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.password}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold">Xác Nhận Mật Khẩu (*)</label>
                             <div class="input-password-wrapper">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.confirmPassword ? 'is-invalid' : ''}" style="border-right: none;">
                                         <i class="fa-solid fa-lock text-cyan"></i>
                                     </span>
-                                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control form-control-glass border-start-0 ps-0 pe-5" required placeholder="Nhập lại mật khẩu">
+                                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control form-control-glass border-start-0 ps-0 pe-5 ${not empty errors.confirmPassword ? 'is-invalid' : ''}" required placeholder="Nhập lại mật khẩu">
                                 </div>
                                 <button type="button" class="btn-password-toggle me-2" onclick="togglePassword('regConfirmPassword', this)" title="Hiện mật khẩu">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
+                            <c:if test="${not empty errors.confirmPassword}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.confirmPassword}</span></div>
+                            </c:if>
                         </div>
                     </div>
 

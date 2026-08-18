@@ -9,7 +9,7 @@
     --card-bg: rgba(15, 23, 42, 0.75);
     --card-border: rgba(56, 189, 248, 0.2);
     --card-border-hover: rgba(56, 189, 248, 0.45);
-    
+
     /* Medical & Wellness Brand Colors */
     --primary-cyan: #0ea5e9;
     --primary-cyan-hover: #0284c7;
@@ -18,11 +18,11 @@
     --medical-emerald-hover: #059669;
     --accent-blue: #3b82f6;
     --accent-orange: #f97316;
-    
+
     --text-main: #f8fafc;
     --text-muted: #cbd5e1;
     --text-subtle: #94a3b8;
-    
+
     --glass-blur: blur(20px);
     --border-radius-lg: 24px;
     --border-radius-md: 14px;
@@ -34,7 +34,7 @@
 
 /* 2. BASE STYLES & RADIAL AMBIENT BACKGROUND */
 body {
-    background: 
+    background:
         radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
         radial-gradient(circle at 88% 82%, rgba(16, 185, 129, 0.1) 0%, transparent 45%),
         radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
@@ -64,6 +64,13 @@ h1, h2, h3, h4, h5, h6, .display-4, .display-5, .display-6 {
     color: #34d399 !important;
 }
 
+.fs-7 {
+    font-size: 0.85rem !important;
+}
+.fs-8 {
+    font-size: 0.75rem !important;
+}
+
 /* 3. REUSABLE MEDICAL GLASSMORPHISM CARD */
 .glass-card {
     background: var(--card-bg);
@@ -74,6 +81,13 @@ h1, h2, h3, h4, h5, h6, .display-4, .display-5, .display-6 {
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 20px rgba(14, 165, 233, 0.05);
     padding: 2.5rem;
     transition: var(--transition-smooth);
+}
+
+@media (max-width: 576px) {
+    .glass-card {
+        padding: 1.5rem 1.25rem;
+        border-radius: 16px;
+    }
 }
 
 .glass-card:hover {
@@ -99,6 +113,24 @@ h1, h2, h3, h4, h5, h6, .display-4, .display-5, .display-6 {
     background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
+    color: #ffffff;
+}
+
+.btn-success-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-success-gradient:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
     color: #ffffff;
 }
 
@@ -140,6 +172,30 @@ h1, h2, h3, h4, h5, h6, .display-4, .display-5, .display-6 {
 
 .form-control-glass::placeholder {
     color: var(--text-subtle);
+}
+
+.form-control-glass.is-invalid,
+.form-control.is-invalid,
+.sz-input.is-invalid {
+    border-color: #f87171 !important;
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.input-group:has(.is-invalid) .input-group-text {
+    border-color: #f87171 !important;
+    color: #f87171 !important;
+}
+
+.field-error-text {
+    color: #f87171 !important;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-top: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    animation: fadeIn 0.2s ease-in-out;
 }
 
 /* 5.1 HIGH-END GLASSMORPHIC DROPDOWN SELECT STYLES */
@@ -249,22 +305,22 @@ select.form-control-glass option[value=""] {
     cursor: not-allowed !important;
 }
 
-/* 8. GLOBAL NAVBAR & FOOTER STYLES */
+/* 8. GLOBAL NAVBAR & FOOTER STYLES (DA FIX RESPONSIVE) */
 .navbar-glass {
-    background: rgba(11, 19, 43, 0.88) !important;
+    background: rgba(11, 19, 43, 0.92) !important;
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--card-border);
     transition: var(--transition-smooth);
 }
 
-.navbar-glass .nav-link,
-.navbar-glass .navbar-brand,
-.navbar-glass .btn,
-.navbar-glass .dropdown-toggle,
-.navbar-glass .hotline-box {
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
+/* Chỉ áp dụng white-space: nowrap ở màn hình máy tính để không làm tràn mobile */
+@media (min-width: 992px) {
+    .navbar-glass .nav-link,
+    .navbar-glass .btn,
+    .navbar-glass .dropdown-toggle {
+        white-space: nowrap;
+    }
 }
 
 .text-white-hover:hover {
@@ -299,12 +355,31 @@ select.form-control-glass option[value=""] {
 
 /* 10. CUSTOM ANIMATIONS */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-fade-in {
     animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* 11. FLATPICKR GLASSMORPHISM DATEPICKER STYLES */
@@ -364,4 +439,28 @@ select.form-control-glass option[value=""] {
     background: transparent !important;
 }
 
+/* ==========================================
+   CSS DÙNG RIÊNG CHO TRANG THANH TOÁN SEPAY
+   ========================================== */
 
+/* Ép nền tối Glassmorphic & Viền Neon Cyan */
+.payment-box {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    border-radius: 20px !important;
+}
+
+/* Nhãn bên trái (Mã ca khám, Tên dịch vụ...) */
+.payment-label {
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important; /* Chống rớt chữ xuống dòng */
+}
+
+/* Giá trị bên phải (Tên bác sĩ, Giá tiền...) */
+.payment-value {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    text-align: right !important;
+    word-break: break-word;
+}

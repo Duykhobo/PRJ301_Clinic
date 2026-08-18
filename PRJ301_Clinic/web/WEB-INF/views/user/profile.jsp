@@ -127,17 +127,26 @@
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Họ và Tên <span class="text-cyan">*</span></label>
-                                    <input type="text" name="fullname" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.fullname}" required placeholder="Nhập họ và tên...">
+                                    <input type="text" name="fullname" class="form-control form-control-custom ${not empty errors.fullname ? 'is-invalid' : ''}" value="${not empty param.fullname ? param.fullname : sessionScope.LOGIN_USER.fullname}" required placeholder="Nhập họ và tên...">
+                                    <c:if test="${not empty errors.fullname}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.fullname}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Địa Chỉ Email <span class="text-cyan">*</span></label>
-                                        <input type="email" name="email" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.email}" required placeholder="nhapemail@gmail.com">
+                                        <input type="email" name="email" class="form-control form-control-custom ${not empty errors.email ? 'is-invalid' : ''}" value="${not empty param.email ? param.email : sessionScope.LOGIN_USER.email}" required placeholder="nhapemail@gmail.com">
+                                        <c:if test="${not empty errors.email}">
+                                            <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
+                                        </c:if>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Số Điện Thoại <span class="text-cyan">*</span></label>
-                                        <input type="text" name="phone" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.phone}" required placeholder="09xxxxxxxx">
+                                        <input type="text" name="phone" class="form-control form-control-custom ${not empty errors.phone ? 'is-invalid' : ''}" value="${not empty param.phone ? param.phone : sessionScope.LOGIN_USER.phone}" required placeholder="09xxxxxxxx">
+                                        <c:if test="${not empty errors.phone}">
+                                            <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.phone}</span></div>
+                                        </c:if>
                                     </div>
                                 </div>
 
@@ -154,17 +163,26 @@
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Mật Khẩu Hiện Tại <span class="text-cyan">*</span></label>
-                                    <input type="password" name="oldPassword" class="form-control form-control-custom" required placeholder="Nhập mật khẩu hiện tại...">
+                                    <input type="password" name="oldPassword" class="form-control form-control-custom ${not empty errors.oldPassword ? 'is-invalid' : ''}" required placeholder="Nhập mật khẩu hiện tại...">
+                                    <c:if test="${not empty errors.oldPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.oldPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Mật Khẩu Mới <span class="text-cyan">*</span></label>
-                                    <input type="password" name="newPassword" class="form-control form-control-custom" required placeholder="Ít nhất 6 ký tự...">
+                                    <input type="password" name="newPassword" class="form-control form-control-custom ${not empty errors.newPassword ? 'is-invalid' : ''}" required placeholder="Ít nhất 6 ký tự...">
+                                    <c:if test="${not empty errors.newPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.newPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="mb-4">
                                     <label class="form-label text-white fw-semibold">Xác Nhận Mật Khẩu Mới <span class="text-cyan">*</span></label>
-                                    <input type="password" name="confirmPassword" class="form-control form-control-custom" required placeholder="Nhập lại mật khẩu mới...">
+                                    <input type="password" name="confirmPassword" class="form-control form-control-custom ${not empty errors.confirmPassword ? 'is-invalid' : ''}" required placeholder="Nhập lại mật khẩu mới...">
+                                    <c:if test="${not empty errors.confirmPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.confirmPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary-gradient rounded-pill px-4 py-2 fw-bold">

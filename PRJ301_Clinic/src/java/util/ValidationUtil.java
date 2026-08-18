@@ -1,10 +1,12 @@
 package util;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 import exception.ValidationException;
 
 /**
- * ValidationUtil - Tiện ích Kiểm tra Định dạng Dữ liệu Đầu Vào (Fail-Fast Validation).
+ * ValidationUtil - Tiện ích Kiểm tra & Tách lỗi Từng Field (Field-Level Validation).
+ * Viết gọn, tối ưu logic với toán tử 3 ngôi (Ternary Operator).
  */
 public class ValidationUtil {
 
@@ -12,47 +14,41 @@ public class ValidationUtil {
     private static final String PHONE_REGEX = "^(03|05|07|08|09)\\d{8}$";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
 
-    public static boolean isValidUsername(String username) {
-        if (username == null || username.trim().isEmpty()) {
-            return false;
-        }
-        return Pattern.matches(USERNAME_REGEX, username.trim());
+    public static boolean isValidUsername(String u) {
+        return (u != null && !u.trim().isEmpty()) ? Pattern.matches(USERNAME_REGEX, u.trim()) : false;
     }
 
-    public static boolean isValidPassword(String password) {
-        if (password == null || password.length() < 6 || password.length() > 32) {
-            return false;
-        }
-        return true;
+    public static boolean isValidPassword(String p) {
+        return (p != null) ? p.length() >= 6 && p.length() <= 32 : false;
     }
 
-    public static boolean isValidFullname(String fullname) {
-        if (fullname == null || fullname.trim().isEmpty()) {
-            return false;
-        }
-        int len = fullname.trim().length();
-        return len >= 2 && len <= 100;
+    public static boolean isValidFullname(String f) {
+        return (f != null && !f.trim().isEmpty()) ? f.trim().length() >= 2 && f.trim().length() <= 100 : false;
     }
 
-    public static boolean isValidPhone(String phone) {
-        if (phone == null || phone.trim().isEmpty()) {
-            return false;
-        }
-        return Pattern.matches(PHONE_REGEX, phone.trim());
+    public static boolean isValidPhone(String p) {
+        return (p != null && !p.trim().isEmpty()) ? Pattern.matches(PHONE_REGEX, p.trim()) : false;
     }
 
-    public static boolean isValidEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            return false;
+    public static boolean isValidEmail(String e) {
+        return (e != null && !e.trim().isEmpty()) ? Pattern.matches(EMAIL_REGEX, e.trim()) : false;
+    }
+
+    /**
+     * Gán lỗi cho từng field cụ thể nếu điều kiện không thỏa mãn
+     */
+    public static void validateField(Map<String, String> errors, String field, boolean isValid, String message) {
+        if (!isValid && errors != null) {
+            errors.put(field, message);
         }
-        return Pattern.matches(EMAIL_REGEX, email.trim());
     }
 
     public static void validateBookingParams(String doctorIdStr, String serviceIdStr, String scheduleIdStr, String appointmentDateStr) {
-        if (doctorIdStr == null || doctorIdStr.trim().isEmpty() ||
-            serviceIdStr == null || serviceIdStr.trim().isEmpty() ||
-            scheduleIdStr == null || scheduleIdStr.trim().isEmpty() ||
-            appointmentDateStr == null || appointmentDateStr.trim().isEmpty()) {
+        boolean missing = (doctorIdStr == null || doctorIdStr.trim().isEmpty()) ||
+                          (serviceIdStr == null || serviceIdStr.trim().isEmpty()) ||
+                          (scheduleIdStr == null || scheduleIdStr.trim().isEmpty()) ||
+                          (appointmentDateStr == null || appointmentDateStr.trim().isEmpty());
+        if (missing) {
             throw new ValidationException("Thông tin đặt lịch không đầy đủ. Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ và Ca giờ!");
         }
 
