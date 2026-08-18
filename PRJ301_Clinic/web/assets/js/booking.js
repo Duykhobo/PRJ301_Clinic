@@ -1,8 +1,7 @@
 /**
- * booking.js - Logic dat lich kham benh nhan
- * Su dung Unicode escape cho tieng Viet de tranh loi encoding.
+ * booking.js - Logic Đặt Lịch Khám Bệnh Nhân & AJAX Khung Giờ Khám (Slots)
  * Context path inject: window.BOOKING_CTX
- * Phu thuoc: Flatpickr, SweetAlert2
+ * Phụ thuộc: Flatpickr, SweetAlert2
  */
 
 'use strict';
@@ -10,76 +9,108 @@
 var fpInstance = null;
 
 // =====================================================================
-// 1. KHOI TAO FLATPICKR (Vo hieu hoa Chu Nhat)
+// 1. KHỞI TẠO FLATPICKR (Vô hiệu hóa Chủ Nhật)
 // =====================================================================
 document.addEventListener('DOMContentLoaded', function () {
-    fpInstance = flatpickr('#appointmentDate', {
-        locale: 'vn',
-        dateFormat: 'Y-m-d',
-        defaultDate: getNextWorkday(new Date()),
-        altInput: true,
-        altFormat: 'd/m/Y',
-        altInputClass: 'form-control form-control-glass border-start-0 ps-0',
-        minDate: 'today',
-        disableMobile: true,
-        disable: [
-            function (date) {
-                return date.getDay() === 0; // 0 = Sunday
+    var dateInput = document.getElementById('appointmentDate');
+    var initialDate = (dateInput && dateInput.value) ? dateInput.value : getNextWorkday(new Date());
+
+    if (typeof flatpickr !== 'undefined' && dateInput) {
+        var localeOption = (flatpickr.l10ns && flatpickr.l10ns.vn) ? flatpickr.l10ns.vn : 'default';
+        fpInstance = flatpickr('#appointmentDate', {
+            locale: localeOption,
+            dateFormat: 'Y-m-d',
+            defaultDate: initialDate,
+            altInput: true,
+            altFormat: 'd/m/Y',
+            altInputClass: 'form-control form-control-glass border-start-0 ps-0',
+            minDate: 'today',
+            disableMobile: true,
+            disable: [
+                function (date) {
+                    return date.getDay() === 0; // 0 = Chủ Nhật (Phòng khám nghỉ)
+                }
+            ],
+            onChange: function (selectedDates, dateStr) {
+                updateStepProgress();
+                fetchSlots();
             }
-        ],
-        onChange: function () {
-            updateStepProgress();
-            fetchSlots();
-        },
-        onReady: function () {
-            updateStepProgress();
-            fetchSlots();
-        }
-    });
+        });
+    }
+
+    // Nạp trạng thái ban đầu
+    updateStepProgress();
+    fetchSlots();
 });
 
 // =====================================================================
-// 2. LAY NGAY LAM VIEC KE TIEP (bo qua Chu Nhat)
+// 2. LẤY NGÀY LÀM VIỆC KẾ TIẾP (Bỏ qua Chủ Nhật)
 // =====================================================================
 function getNextWorkday(date) {
     var d = new Date(date);
-    if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-    return d;
+    if (d.getDay() === 0) {
+        d.setDate(d.getDate() + 1);
+    }
+    return formatDateISO(d);
 }
 
 // =====================================================================
-// 3. NUT CHON NHANH - tu skip Chu Nhat
+// 3. HELPER FORMAT DATE YYYY-MM-DD
+// =====================================================================
+function formatDateISO(d) {
+    var year = d.getFullYear();
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+}
+
+// =====================================================================
+// 4. NÚT CHỌN NHANH NGÀY (Hôm nay / Ngày mai / Ngày kia)
 // =====================================================================
 function setQuickDate(daysToAdd) {
     var d = new Date();
     d.setDate(d.getDate() + daysToAdd);
-    if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+    if (d.getDay() === 0) {
+        d.setDate(d.getDate() + 1); // Bỏ qua Chủ Nhật sang Thứ Hai
+    }
 
-    var dateStr = d.getFullYear() + '-'
-        + String(d.getMonth() + 1).padStart(2, '0') + '-'
-        + String(d.getDate()).padStart(2, '0');
+    var dateStr = formatDateISO(d);
+
+    var input = document.getElementById('appointmentDate');
+    if (input) {
+        input.value = dateStr;
+    }
 
     if (fpInstance) {
-        fpInstance.setDate(dateStr, true);
+        fpInstance.setDate(dateStr, true); // true = kích hoạt event onChange
     } else {
-        document.getElementById('appointmentDate').value = dateStr;
         updateStepProgress();
         fetchSlots();
     }
 }
 
 // =====================================================================
-// 4. CAP NHAT THANH TIEN TRINH 4 BUOC
+// 5. LẤY GIÁ TRỊ NGÀY ĐANG CHỌN (An toàn với Flatpickr)
+// =====================================================================
+function getSelectedDateStr() {
+    if (fpInstance && fpInstance.selectedDates && fpInstance.selectedDates.length > 0) {
+        return formatDateISO(fpInstance.selectedDates[0]);
+    }
+    var input = document.getElementById('appointmentDate');
+    return input ? input.value.trim() : '';
+}
+
+// =====================================================================
+// 6. CẬP NHẬT THANH TIẾN TRÌNH 4 BƯỚC (STEP PROGRESS)
 // =====================================================================
 function updateStepProgress() {
-    var _s  = document.getElementById('serviceSelect');
-    var _d  = document.getElementById('doctorSelect');
-    var _dt = document.getElementById('appointmentDate');
+    var _s = document.getElementById('serviceSelect');
+    var _d = document.getElementById('doctorSelect');
     var _sl = document.getElementById('selectedScheduleId');
 
-    var sVal    = _s  ? _s.value  : '';
-    var dVal    = _d  ? _d.value  : '';
-    var dateVal = _dt ? _dt.value : '';
+    var sVal = _s ? _s.value : '';
+    var dVal = _d ? _d.value : '';
+    var dateVal = getSelectedDateStr();
     var slotVal = _sl ? _sl.value : '';
 
     function setStep(id, active) {
@@ -97,141 +128,181 @@ function updateStepProgress() {
 }
 
 // =====================================================================
-// 5. CHON CA KHAM (slot pill)
+// 7. CHỌN CA KHÁM (SLOT BUTTON)
 // =====================================================================
 function selectSlot(scheduleId, btnElement) {
-    document.getElementById('selectedScheduleId').value = scheduleId;
+    var hiddenInput = document.getElementById('selectedScheduleId');
+    if (hiddenInput) {
+        hiddenInput.value = scheduleId;
+    }
+
     document.querySelectorAll('.slot-pill').forEach(function (btn) {
-        if (!btn.disabled) btn.className = 'btn w-100 py-2 slot-pill slot-btn-available';
+        if (!btn.disabled) {
+            btn.className = 'btn w-100 py-2.5 slot-pill slot-btn-available';
+        }
     });
-    btnElement.className = 'btn w-100 py-2 slot-pill slot-btn-selected';
+
+    if (btnElement) {
+        btnElement.className = 'btn w-100 py-2.5 slot-pill slot-btn-selected';
+    }
+
     updateStepProgress();
 }
 
 // =====================================================================
-// 6. FETCH DANH SACH CA TRONG (AJAX)
-//    Dung string concatenation - tranh JSP EL nuot bien JS trong template literal
+// 8. FETCH DANH SÁCH CA KHÁM CỦA BÁC SĨ (AJAX)
 // =====================================================================
 function fetchSlots() {
     var _dr = document.getElementById('doctorSelect');
-    var _da = document.getElementById('appointmentDate');
     var doctorId = _dr ? _dr.value : '';
-    var date     = _da ? _da.value : '';
-    var grid     = document.getElementById('slotMatrixGrid');
-    var ctx      = window.BOOKING_CTX || '';
+    var date = getSelectedDateStr();
+    var grid = document.getElementById('slotMatrixGrid') || document.getElementById('slotsContainer');
+    var ctx = window.BOOKING_CTX || '';
+    var currentScheduleId = document.getElementById('selectedScheduleId') ? document.getElementById('selectedScheduleId').value : '';
+
+    if (!grid) return;
 
     if (!doctorId || !date) {
         grid.innerHTML = '<div class="col-12 text-center text-muted py-3 border border-dashed rounded-3"'
             + ' style="border-color:rgba(255,255,255,0.1)!important;">'
             + '<i class="fa-solid fa-info-circle me-1 text-cyan"></i>'
-            + 'Vui l\u00f2ng ch\u1ecdn B\u00e1c s\u0129 v\u00e0 Ng\u00e0y kh\u00e1m \u0111\u1ec3 n\u1ea1p s\u01a1 \u0111\u1ed3 ca kh\u00e1m kh\u1ea3 d\u1ee5ng.'
+            + 'Vui lòng chọn Bác sĩ và Ngày khám để nạp sơ đồ ca khám khả dụng.'
             + '</div>';
         return;
     }
 
     grid.innerHTML = '<div class="col-12 text-center text-cyan py-3">'
         + '<i class="fa-solid fa-spinner fa-spin me-2"></i>'
-        + '\u0110ang n\u1ea1p danh s\u00e1ch ca kh\u00e1m t\u1eeb CSDL y t\u1ebf\u2026'
+        + 'Đang nạp danh sách ca khám từ CSDL y tế…'
         + '</div>';
 
     var url = ctx + '/booking?action=get-slots&doctorId=' + encodeURIComponent(doctorId) + '&date=' + encodeURIComponent(date);
 
     fetch(url)
-    .then(function (res) { return res.json(); })
-    .then(function (slots) {
-        if (!slots || slots.length === 0) {
-            grid.innerHTML = '<div class="col-12 text-center text-warning py-3 border border-dashed rounded-3"'
-                + ' style="border-color:rgba(255,255,255,0.1)!important;">'
+        .then(function (res) { return res.json(); })
+        .then(function (slots) {
+            if (!slots || slots.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center text-warning py-3 border border-dashed rounded-3"'
+                    + ' style="border-color:rgba(255,255,255,0.1)!important;">'
+                    + '<i class="fa-solid fa-triangle-exclamation me-1"></i>'
+                    + 'Bác sĩ chưa có ca làm việc nào trong ngày này hoặc phòng khám chưa mở ca.'
+                    + '</div>';
+                return;
+            }
+
+            var html = '';
+            var hasSelected = false;
+
+            slots.forEach(function (slot) {
+                var isAvailable = (slot.isAvailable === true || slot.isAvailable === 1 || slot.isAvailable === 'true');
+                var isSelected = (currentScheduleId && String(slot.id) === String(currentScheduleId));
+                if (isSelected) hasSelected = true;
+
+                var btnClass = isSelected
+                    ? 'slot-btn-selected'
+                    : (isAvailable ? 'slot-btn-available' : 'slot-btn-booked');
+
+                var icon = isSelected
+                    ? 'fa-solid fa-circle-check text-cyan'
+                    : (isAvailable ? 'fa-regular fa-clock text-emerald' : 'fa-solid fa-lock text-muted');
+
+                var disabledAttr = (isAvailable || isSelected) ? '' : 'disabled';
+                var statusText = isAvailable ? '' : ' (Đã đặt)';
+                var startStr = slot.startTime ? slot.startTime.substring(0, 5) : '';
+                var endStr = slot.endTime ? slot.endTime.substring(0, 5) : '';
+
+                html += '<div class="col-6 col-md-4 col-lg-3">'
+                    + '<button type="button" class="btn w-100 py-2.5 slot-pill ' + btnClass + '" '
+                    + 'onclick="selectSlot(' + slot.id + ', this)" ' + disabledAttr + '>'
+                    + '<i class="' + icon + ' me-1.5"></i><strong>' + startStr + '</strong> - ' + endStr + '<small class="d-block opacity-75">' + statusText + '</small>'
+                    + '</button></div>';
+            });
+
+            grid.innerHTML = html;
+
+            if (!hasSelected && currentScheduleId) {
+                // Ca đã chọn trước đó không khả dụng trong ngày/bác sĩ mới
+                var hiddenInput = document.getElementById('selectedScheduleId');
+                if (hiddenInput) hiddenInput.value = '';
+                updateStepProgress();
+            }
+        })
+        .catch(function (err) {
+            console.error('Lỗi khi fetch slots:', err);
+            grid.innerHTML = '<div class="col-12 text-center text-danger py-3 border border-dashed rounded-3" style="border-color:rgba(239,68,68,0.3)!important;">'
                 + '<i class="fa-solid fa-triangle-exclamation me-1"></i>'
-                + 'B\u00e1c s\u0129 ch\u01b0a c\u00f3 ca l\u00e0m vi\u1ec7c n\u00e0o trong ng\u00e0y n\u00e0y.'
+                + 'Không thể nạp lịch khám. Vui lòng thử lại sau.'
                 + '</div>';
-            return;
-        }
-
-        var html = '';
-        slots.forEach(function (slot) {
-            var isAvailable  = (slot.isAvailable === true || slot.isAvailable === 1);
-            var btnClass     = isAvailable ? 'slot-btn-available' : 'slot-btn-booked';
-            var icon         = isAvailable ? 'fa-regular fa-clock text-emerald' : 'fa-solid fa-lock';
-            var disabledAttr = isAvailable ? '' : 'disabled';
-            var statusText   = isAvailable ? '' : ' (\u0110\u00e3 \u0111\u01b0\u1ee3c \u0111\u1eb7t)';
-            var startStr     = slot.startTime ? slot.startTime.substring(0, 5) : '';
-            var endStr       = slot.endTime   ? slot.endTime.substring(0, 5)   : '';
-
-            html += '<div class="col-6 col-md-4">'
-                  + '<button type="button" class="btn w-100 py-2 slot-pill ' + btnClass + '" '
-                  + 'onclick="selectSlot(' + slot.id + ', this)" ' + disabledAttr + '>'
-                  + '<i class="' + icon + ' me-1"></i>' + startStr + ' - ' + endStr + statusText
-                  + '</button></div>';
         });
-        grid.innerHTML = html;
-    })
-    .catch(function () {
-        grid.innerHTML = '<div class="col-12 text-center text-danger py-3">'
-            + '<i class="fa-solid fa-triangle-exclamation me-1"></i>'
-            + 'L\u1ed7i khi n\u1ea1p l\u1ecbch kh\u00e1m t\u1eeb CSDL.'
-            + '</div>';
-    });
 }
 
 // =====================================================================
-// 7. VALIDATE FORM TRUOC KHI SUBMIT
+// 9. VALIDATE FORM TRƯỚC KHI SUBMIT (CUSTOM UI VALIDATION)
 // =====================================================================
 function validateBookingForm(event) {
     var _svc = document.getElementById('serviceSelect');
     var _doc = document.getElementById('doctorSelect');
-    var _dat = document.getElementById('appointmentDate');
     var _sch = document.getElementById('selectedScheduleId');
 
-    var serviceId  = _svc ? _svc.value : '';
-    var doctorId   = _doc ? _doc.value : '';
-    var apptDate   = _dat ? _dat.value : '';
-    var scheduleId = _sch ? _sch.value : '';
+    var serviceId = _svc ? _svc.value.trim() : '';
+    var doctorId = _doc ? _doc.value.trim() : '';
+    var apptDate = getSelectedDateStr();
+    var scheduleId = _sch ? _sch.value.trim() : '';
 
     if (!serviceId) {
-        showToast('Vui l\u00f2ng ch\u1ecdn D\u1ecbch v\u1ee5 kh\u00e1m / Spa!');
+        showToast('Vui lòng chọn Dịch vụ khám hoặc Spa!');
         if (_svc) _svc.focus();
-        event.preventDefault(); return false;
+        if (event) event.preventDefault();
+        return false;
     }
     if (!doctorId) {
-        showToast('Vui l\u00f2ng ch\u1ecdn B\u00e1c s\u0129 ph\u1ee5 tr\u00e1ch!');
+        showToast('Vui lòng chọn Bác sĩ phụ trách!');
         if (_doc) _doc.focus();
-        event.preventDefault(); return false;
+        if (event) event.preventDefault();
+        return false;
     }
     if (!apptDate) {
-        showToast('Vui l\u00f2ng ch\u1ecdn Ng\u00e0y kh\u00e1m mong mu\u1ed1n!');
-        if (_dat) _dat.focus();
-        event.preventDefault(); return false;
+        showToast('Vui lòng chọn Ngày khám mong muốn!');
+        if (event) event.preventDefault();
+        return false;
     }
     if (!scheduleId) {
-        showToast('Vui l\u00f2ng b\u1ea5m ch\u1ecdn m\u1ed9t Ca kh\u00e1m 60 ph\u00fat c\u00f2n tr\u1ed1ng (n\u00fat m\u00e0u xanh)!');
-        event.preventDefault(); return false;
+        showToast('Vui lòng bấm chọn một Ca khám 60 phút khả dụng (màu xanh)!');
+        if (event) event.preventDefault();
+        return false;
     }
 
     var chosen = new Date(apptDate);
     if (chosen.getDay() === 0) {
-        showToast('Ph\u00f2ng kh\u00e1m kh\u00f4ng l\u00e0m vi\u1ec7c v\u00e0o Ch\u1ee7 Nh\u1eadt. Vui l\u00f2ng ch\u1ecdn ng\u00e0y kh\u00e1c!');
-        event.preventDefault(); return false;
+        showToast('Phòng khám không làm việc vào Chủ Nhật. Vui lòng chọn ngày khác!');
+        if (event) event.preventDefault();
+        return false;
     }
 
     var submitBtn = document.getElementById('submitBookingBtn');
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>\u0110ang kh\u1edfi t\u1ea1o \u0111\u01a1n h\u1eb9n y t\u1ebf\u2026';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang khởi tạo đơn hẹn y tế…';
     }
     return true;
 }
 
 // =====================================================================
-// 8. TOAST HELPER
+// 10. TOAST NOTIFICATION HELPER
 // =====================================================================
 if (typeof showToast === 'undefined') {
     window.showToast = function (msg) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                toast: true, position: 'top-end', showConfirmButton: false,
-                timer: 3500, timerProgressBar: true, icon: 'warning',
-                title: msg, background: '#1e293b', color: '#fff'
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true,
+                icon: 'warning',
+                title: msg,
+                background: '#1e293b',
+                color: '#fff'
             });
         } else {
             alert(msg);

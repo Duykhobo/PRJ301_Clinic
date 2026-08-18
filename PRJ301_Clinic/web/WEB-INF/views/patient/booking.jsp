@@ -51,9 +51,9 @@
                 <%-- Component Banner Thông Báo Lỗi & Toast Notification --%>
                 <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-                <form id="bookingForm" action="${pageContext.request.contextPath}/booking" method="POST" novalidate onsubmit="return validateBookingForm(event)">
+                <form id="bookingForm" action="${pageContext.request.contextPath}/booking" method="POST" novalidate="true" onsubmit="return validateBookingForm(event)">
                     <input type="hidden" name="csrfToken" value="${csrfToken}">
-                    <input type="hidden" id="selectedScheduleId" name="scheduleId">
+                    <input type="hidden" id="selectedScheduleId" name="scheduleId" value="${selectedScheduleId}">
 
                     <%-- Bước 1: Chọn Dịch vụ --%>
                     <div class="mb-3">
@@ -84,7 +84,7 @@
                             <select name="doctorId" id="doctorSelect" class="form-select form-control-glass border-start-0 ps-0 ${not empty errors.doctorId ? 'is-invalid' : ''}" onchange="updateStepProgress(); fetchSlots();">
                                 <option value="">-- Chọn bác sĩ chuyên khoa --</option>
                                 <c:forEach items="${doctors}" var="d">
-                                    <option value="${d.id}" ${selectedDoctorId == d.id ? 'selected' : ''}>${d.doctorName} (${d.specialty})</option>
+                                    <option value="${d.id}" ${selectedDoctorId == d.id ? 'selected' : ''}>BS. ${not empty d.doctorName ? d.doctorName : d.fullname} (${d.specialty})</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -120,7 +120,10 @@
 
                     <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
                     <div class="mb-4">
-                        <label class="form-label text-muted fw-semibold d-block">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label text-muted fw-semibold mb-0">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
+                            <span class="small text-muted" id="slotInstructionText"><i class="fa-solid fa-circle-info me-1 text-cyan"></i>Chọn bác sĩ &amp; ngày để nạp ca khám</span>
+                        </div>
 
                         <%-- Thanh Chú Giải (Legend Badge Bar) --%>
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-3 fs-7">
@@ -131,25 +134,14 @@
                                 <i class="fa-solid fa-circle-check me-1"></i>Đang chọn
                             </span>
                             <span class="badge slot-btn-booked px-3 py-2 rounded-pill">
-                    </div>
-
-                    <%-- Bước 4: Chọn Khung giờ khám (Time Slot Grid) --%>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label text-muted fw-semibold mb-0">4. Chọn Khung Giờ Khám (*)</label>
-                            <span class="small text-muted" id="slotInstructionText"><i class="fa-solid fa-circle-info me-1 text-cyan"></i>Chọn bác sĩ &amp; ngày để hiển thị ca khám</span>
+                                <i class="fa-solid fa-lock me-1"></i>Đã được đặt
+                            </span>
                         </div>
 
-                        <%-- Slot Status Legend --%>
-                        <div class="d-flex gap-3 mb-2 small text-muted">
-                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-emerald" style="width:8px;height:8px;"></span><span>Còn trống</span></div>
-                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-secondary" style="width:8px;height:8px;"></span><span>Đã đặt</span></div>
-                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-cyan" style="width:8px;height:8px;"></span><span>Đang chọn</span></div>
-                        </div>
-
-                        <div id="slotsContainer" class="d-flex flex-wrap gap-2 pt-1 ${not empty errors.scheduleId ? 'is-invalid' : ''}">
-                            <div class="text-muted small p-3 text-center w-100 border border-secondary border-opacity-25 rounded-3">
-                                <i class="fa-solid fa-calendar-xmark me-2 text-warning"></i>Vui lòng chọn Bác sĩ và Ngày khám trước để hệ thống tải khung giờ rảnh.
+                        <%-- Ma trận Nút Bấm Khung Giờ (Dynamic Slot Grid Matrix) --%>
+                        <div class="row g-2" id="slotMatrixGrid">
+                            <div class="col-12 text-center text-muted py-3 border border-dashed rounded-3" style="border-color: rgba(255,255,255,0.1) !important;">
+                                <i class="fa-solid fa-info-circle me-1 text-cyan"></i>Vui lòng chọn Bác sĩ và Ngày khám để nạp sơ đồ ca khám khả dụng.
                             </div>
                         </div>
                         <c:if test="${not empty errors.scheduleId}">
