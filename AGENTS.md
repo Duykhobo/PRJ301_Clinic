@@ -4,6 +4,7 @@
 > 1. **Single Source of Truth (SSOT)**: You MUST continuously track, strictly adhere to, and keep [Topic_Proposal_PRJ301.md](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/Topic_Proposal_PRJ301.md) updated at all times throughout the project lifecycle.
 > 2. **UI/UX Reference Standards**: You MUST reference the Design Review Kit documented in [DESIGN_REVIEW_KIT.html](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/DESIGN_REVIEW_KIT.html) for all front-end UI/UX implementations.
 > 3. **Clean Code & Field-Level Validation**: You MUST enforce concise code (using ternary operators `?:`), full field-level error separation on forms, and strict feature branching with automated CI/CD.
+> 4. **DRY Principle (Don't Repeat Yourself)**: You MUST strictly prevent code duplication across all architectural layers (DAO, Service, Controller, View, CSS).
 
 ---
 
@@ -56,7 +57,7 @@ Mọi màn hình JSP và Stylesheet phải tuân thủ chuẩn [DESIGN_REVIEW_KI
 
 ---
 
-## 🧼 3. CLEAN CODE & FIELD-LEVEL VALIDATION RULES (QUY TẮC BẮT BUỘC)
+## 🧼 3. CLEAN CODE, FIELD-LEVEL VALIDATION & DRY ENFORCEMENT (QUY TẮC BẮT BUỘC)
 
 1. **Toán tử 3 ngôi (`?:`) & Code tinh gọn**:
    - Luôn sử dụng toán tử 3 ngôi cho việc gán giá trị mặc định, kiểm tra null-safety, trim chuỗi và render trạng thái giao diện:
@@ -75,6 +76,13 @@ Mọi màn hình JSP và Stylesheet phải tuân thủ chuẩn [DESIGN_REVIEW_KI
      </c:if>
      ```
    - **Sticky Form Inputs**: Luôn giữ lại toàn bộ dữ liệu hợp lệ mà người dùng đã nhập (`value="${...}"`), không bao giờ xóa trắng form bắt người dùng nhập lại.
+
+3. **Triệt tiêu lặp code (DRY - Don't Repeat Yourself Principle)**:
+   - **Tầng DAO**: Kế thừa `BaseDAO` / `RowMapper` cho các câu truy vấn JDBC mẫu, không copy-paste các đoạn code mở ResultSet/PreparedStatement giống hệt nhau.
+   - **Tầng Controller**: Kế thừa `BaseRoleServlet` cho kiểm tra Role và phân trang. Luôn sử dụng hằng số từ `RouterConstant`, `MessageConstant`, `SystemConstant`, `RoleConstant` thay vì hardcode chuỗi string.
+   - **Tầng Service & Util**: Tái sử dụng logic nghiệp vụ và đóng gói validation/hashing/date format vào `util.*` (`ValidationUtil`, `DateUtil`, `BCryptUtil`, `JsonUtil`, `SePayQRUtil`).
+   - **Tầng JSP View**: Tách các thành phần giao diện lặp lại vào thư mục `/WEB-INF/views/components/` (`head.jsp`, `navbar.jsp`, `footer.jsp`, `alerts.jsp`, `sidebar-*.jsp`) và tái sử dụng qua `<jsp:include>`.
+   - **Tầng CSS**: Khai báo và sử dụng biến Design Tokens (`:root`) và utility classes dùng chung, không viết lặp inline CSS style.
 
 ---
 
