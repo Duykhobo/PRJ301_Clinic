@@ -1,7 +1,8 @@
 /**
- * booking.js - Logic Đặt Lịch Khám Bệnh Nhân & AJAX Khung Giờ Khám (Slots)
+ * booking.js - Logic Dat Lich Kham Benh Nhan & AJAX Khung Gio Kham (Slots)
  * Context path inject: window.BOOKING_CTX
- * Phụ thuộc: Flatpickr, SweetAlert2
+ * Phu thuoc: Flatpickr, SweetAlert2
+ * Chu y: 100% Tieng Viet duoc escape sang Unicode de khong bi loi font tren bat ky Browser/Server nao.
  */
 
 'use strict';
@@ -9,7 +10,7 @@
 var fpInstance = null;
 
 // =====================================================================
-// 1. KHỞI TẠO FLATPICKR (Vô hiệu hóa Chủ Nhật)
+// 1. KHOI TAO FLATPICKR (Vo hieu hoa Chu Nhat)
 // =====================================================================
 document.addEventListener('DOMContentLoaded', function () {
     var dateInput = document.getElementById('appointmentDate');
@@ -28,23 +29,23 @@ document.addEventListener('DOMContentLoaded', function () {
             disableMobile: true,
             disable: [
                 function (date) {
-                    return date.getDay() === 0; // 0 = Chủ Nhật (Phòng khám nghỉ)
+                    return date.getDay() === 0; // 0 = Chu Nhat (Phong kham nghi)
                 }
             ],
-            onChange: function (selectedDates, dateStr) {
+            onChange: function () {
                 updateStepProgress();
                 fetchSlots();
             }
         });
     }
 
-    // Nạp trạng thái ban đầu
+    // Nap trang thai ban dau
     updateStepProgress();
     fetchSlots();
 });
 
 // =====================================================================
-// 2. LẤY NGÀY LÀM VIỆC KẾ TIẾP (Bỏ qua Chủ Nhật)
+// 2. LAY NGAY LAM VIEC KE TIEP (Bo qua Chu Nhat)
 // =====================================================================
 function getNextWorkday(date) {
     var d = new Date(date);
@@ -65,13 +66,13 @@ function formatDateISO(d) {
 }
 
 // =====================================================================
-// 4. NÚT CHỌN NHANH NGÀY (Hôm nay / Ngày mai / Ngày kia)
+// 4. NUT CHON NHANH NGAY (Hom nay / Ngay mai / Ngay kia)
 // =====================================================================
 function setQuickDate(daysToAdd) {
     var d = new Date();
     d.setDate(d.getDate() + daysToAdd);
     if (d.getDay() === 0) {
-        d.setDate(d.getDate() + 1); // Bỏ qua Chủ Nhật sang Thứ Hai
+        d.setDate(d.getDate() + 1); // Bo qua Chu Nhat sang Thu Hai
     }
 
     var dateStr = formatDateISO(d);
@@ -82,7 +83,7 @@ function setQuickDate(daysToAdd) {
     }
 
     if (fpInstance) {
-        fpInstance.setDate(dateStr, true); // true = kích hoạt event onChange
+        fpInstance.setDate(dateStr, true); // true = kich hoat event onChange
     } else {
         updateStepProgress();
         fetchSlots();
@@ -90,7 +91,7 @@ function setQuickDate(daysToAdd) {
 }
 
 // =====================================================================
-// 5. LẤY GIÁ TRỊ NGÀY ĐANG CHỌN (An toàn với Flatpickr)
+// 5. LAY GIA TRI NGAY DANG CHON (An toan voi Flatpickr)
 // =====================================================================
 function getSelectedDateStr() {
     if (fpInstance && fpInstance.selectedDates && fpInstance.selectedDates.length > 0) {
@@ -101,7 +102,7 @@ function getSelectedDateStr() {
 }
 
 // =====================================================================
-// 6. CẬP NHẬT THANH TIẾN TRÌNH 4 BƯỚC (STEP PROGRESS)
+// 6. CAP NHAT THANH TIEN TRINH 4 BUOC (STEP PROGRESS)
 // =====================================================================
 function updateStepProgress() {
     var _s = document.getElementById('serviceSelect');
@@ -128,7 +129,7 @@ function updateStepProgress() {
 }
 
 // =====================================================================
-// 7. CHỌN CA KHÁM (SLOT BUTTON)
+// 7. CHON CA KHAM (SLOT BUTTON)
 // =====================================================================
 function selectSlot(scheduleId, btnElement) {
     var hiddenInput = document.getElementById('selectedScheduleId');
@@ -150,7 +151,7 @@ function selectSlot(scheduleId, btnElement) {
 }
 
 // =====================================================================
-// 8. FETCH DANH SÁCH CA KHÁM CỦA BÁC SĨ (AJAX)
+// 8. FETCH DANH SACH CA KHAM CUA BAC SI (AJAX)
 // =====================================================================
 function fetchSlots() {
     var _dr = document.getElementById('doctorSelect');
@@ -166,14 +167,14 @@ function fetchSlots() {
         grid.innerHTML = '<div class="col-12 text-center text-muted py-3 border border-dashed rounded-3"'
             + ' style="border-color:rgba(255,255,255,0.1)!important;">'
             + '<i class="fa-solid fa-info-circle me-1 text-cyan"></i>'
-            + 'Vui lòng chọn Bác sĩ và Ngày khám để nạp sơ đồ ca khám khả dụng.'
+            + 'Vui l\u00f2ng ch\u1ecdn B\u00e1c s\u0129 v\u00e0 Ng\u00e0y kh\u00e1m \u0111\u1ec3 n\u1ea1p s\u01a1 \u0111\u1ed3 ca kh\u00e1m kh\u1ea3 d\u1ee5ng.'
             + '</div>';
         return;
     }
 
     grid.innerHTML = '<div class="col-12 text-center text-cyan py-3">'
         + '<i class="fa-solid fa-spinner fa-spin me-2"></i>'
-        + 'Đang nạp danh sách ca khám từ CSDL y tế…'
+        + '\u0110ang n\u1ea1p danh s\u00e1ch ca kh\u00e1m t\u1eeb CSDL y t\u1ebf\u2026'
         + '</div>';
 
     var url = ctx + '/booking?action=get-slots&doctorId=' + encodeURIComponent(doctorId) + '&date=' + encodeURIComponent(date);
@@ -185,7 +186,7 @@ function fetchSlots() {
                 grid.innerHTML = '<div class="col-12 text-center text-warning py-3 border border-dashed rounded-3"'
                     + ' style="border-color:rgba(255,255,255,0.1)!important;">'
                     + '<i class="fa-solid fa-triangle-exclamation me-1"></i>'
-                    + 'Bác sĩ chưa có ca làm việc nào trong ngày này hoặc phòng khám chưa mở ca.'
+                    + 'B\u00e1c s\u0129 ch\u01b0a c\u00f3 ca l\u00e0m vi\u1ec7c n\u00e0o trong ng\u00e0y n\u00e0y.'
                     + '</div>';
                 return;
             }
@@ -207,7 +208,7 @@ function fetchSlots() {
                     : (isAvailable ? 'fa-regular fa-clock text-emerald' : 'fa-solid fa-lock text-muted');
 
                 var disabledAttr = (isAvailable || isSelected) ? '' : 'disabled';
-                var statusText = isAvailable ? '' : ' (Đã đặt)';
+                var statusText = isAvailable ? '' : ' (\u0110\u00e3 \u0111\u1eb7t)';
                 var startStr = slot.startTime ? slot.startTime.substring(0, 5) : '';
                 var endStr = slot.endTime ? slot.endTime.substring(0, 5) : '';
 
@@ -221,23 +222,22 @@ function fetchSlots() {
             grid.innerHTML = html;
 
             if (!hasSelected && currentScheduleId) {
-                // Ca đã chọn trước đó không khả dụng trong ngày/bác sĩ mới
                 var hiddenInput = document.getElementById('selectedScheduleId');
                 if (hiddenInput) hiddenInput.value = '';
                 updateStepProgress();
             }
         })
         .catch(function (err) {
-            console.error('Lỗi khi fetch slots:', err);
+            console.error('Loi khi fetch slots:', err);
             grid.innerHTML = '<div class="col-12 text-center text-danger py-3 border border-dashed rounded-3" style="border-color:rgba(239,68,68,0.3)!important;">'
                 + '<i class="fa-solid fa-triangle-exclamation me-1"></i>'
-                + 'Không thể nạp lịch khám. Vui lòng thử lại sau.'
+                + 'Kh\u00f4ng th\u1ec3 n\u1ea1p l\u1ecbch kh\u00e1m. Vui l\u00f2ng th\u1eed l\u1ea1i sau.'
                 + '</div>';
         });
 }
 
 // =====================================================================
-// 9. VALIDATE FORM TRƯỚC KHI SUBMIT (CUSTOM UI VALIDATION)
+// 9. VALIDATE FORM TRUOC KHI SUBMIT (CUSTOM UI VALIDATION)
 // =====================================================================
 function validateBookingForm(event) {
     var _svc = document.getElementById('serviceSelect');
@@ -250,31 +250,31 @@ function validateBookingForm(event) {
     var scheduleId = _sch ? _sch.value.trim() : '';
 
     if (!serviceId) {
-        showToast('Vui lòng chọn Dịch vụ khám hoặc Spa!');
+        showToast('Vui l\u00f2ng ch\u1ecdn D\u1ecbch v\u1ee5 kh\u00e1m ho\u1eb7c Spa!');
         if (_svc) _svc.focus();
         if (event) event.preventDefault();
         return false;
     }
     if (!doctorId) {
-        showToast('Vui lòng chọn Bác sĩ phụ trách!');
+        showToast('Vui l\u00f2ng ch\u1ecdn B\u00e1c s\u0129 ph\u1ee5 tr\u00e1ch!');
         if (_doc) _doc.focus();
         if (event) event.preventDefault();
         return false;
     }
     if (!apptDate) {
-        showToast('Vui lòng chọn Ngày khám mong muốn!');
+        showToast('Vui l\u00f2ng ch\u1ecdn Ng\u00e0y kh\u00e1m mong mu\u1ed1n!');
         if (event) event.preventDefault();
         return false;
     }
     if (!scheduleId) {
-        showToast('Vui lòng bấm chọn một Ca khám 60 phút khả dụng (màu xanh)!');
+        showToast('Vui l\u00f2ng b\u1ea5m ch\u1ecdn m\u1ed9t Ca kh\u00e1m 60 ph\u00fat kh\u1ea3 d\u1ee5ng (m\u00e0u xanh)!');
         if (event) event.preventDefault();
         return false;
     }
 
     var chosen = new Date(apptDate);
     if (chosen.getDay() === 0) {
-        showToast('Phòng khám không làm việc vào Chủ Nhật. Vui lòng chọn ngày khác!');
+        showToast('Ph\u00f2ng kh\u00e1m kh\u00f4ng l\u00e0m vi\u1ec7c v\u00e0o Ch\u1ee7 Nh\u1eadt. Vui l\u00f2ng ch\u1ecdn ng\u00e0y kh\u00e1c!');
         if (event) event.preventDefault();
         return false;
     }
@@ -282,7 +282,7 @@ function validateBookingForm(event) {
     var submitBtn = document.getElementById('submitBookingBtn');
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang khởi tạo đơn hẹn y tế…';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>\u0110ang kh\u1edfi t\u1ea1o \u0111\u01a1n h\u1eb9n y t\u1ebf\u2026';
     }
     return true;
 }
