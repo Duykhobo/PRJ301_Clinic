@@ -39,7 +39,7 @@
             </div>
 
             <%-- DATE FILTER --%>
-            <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="GET" class="filter-bar">
+            <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="GET" class="filter-bar" novalidate="true">
                 <div class="filter-wrap">
                     <i class="fa-solid fa-calendar-days fi text-cyan"></i>
                     <input type="text" name="date" class="filter-input flatpickr-date" value="${selectedDate}" placeholder="Chọn ngày" autocomplete="off">
@@ -197,7 +197,7 @@
                                     <td style="text-align:right; padding-right:1.4rem;">
                                         <div class="d-flex gap-2 justify-content-end align-items-center">
                                             <c:if test="${app.paymentStatus == 'REFUND_PENDING'}">
-                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline">
+                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
                                                     <input type="hidden" name="action" value="confirm-refund">
                                                     <input type="hidden" name="appointmentId" value="${app.id}">
                                                     <input type="hidden" name="date" value="${selectedDate}">
@@ -208,7 +208,7 @@
                                             </c:if>
 
                                             <c:if test="${app.status == 'PENDING'}">
-                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline">
+                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
                                                     <input type="hidden" name="action" value="confirm-checkin">
                                                     <input type="hidden" name="appointmentId" value="${app.id}">
                                                     <input type="hidden" name="date" value="${selectedDate}">
@@ -219,7 +219,7 @@
                                             </c:if>
 
                                             <c:if test="${app.paymentStatus == 'UNPAID' && app.status != 'CANCELLED'}">
-                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline">
+                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
                                                     <input type="hidden" name="action" value="collect-cash">
                                                     <input type="hidden" name="appointmentId" value="${app.id}">
                                                     <input type="hidden" name="date" value="${selectedDate}">
@@ -230,7 +230,7 @@
                                             </c:if>
 
                                             <c:if test="${app.status != 'COMPLETED' && app.status != 'CANCELLED'}">
-                                                <form id="cancelForm_${app.id}" action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline">
+                                                <form id="cancelForm_${app.id}" action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
                                                     <input type="hidden" name="action" value="cancel-appointment">
                                                     <input type="hidden" name="appointmentId" value="${app.id}">
                                                     <input type="hidden" name="date" value="${selectedDate}">
@@ -293,7 +293,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" id="walkInForm">
+            <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" id="walkInForm" novalidate="true">
                 <input type="hidden" name="action" value="walk-in-booking">
                 <input type="hidden" name="date" value="${selectedDate}">
                 <div class="modal-body p-4">

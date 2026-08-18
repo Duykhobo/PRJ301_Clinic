@@ -116,7 +116,7 @@
                     <div class="tab-content" id="profileTabsContent">
                         <%-- TAB 1: EDIT PROFILE --%>
                         <div class="tab-pane fade ${activeTab == 'password' ? '' : 'show active'}" id="info-pane" role="tabpanel">
-                            <form action="${pageContext.request.contextPath}/profile" method="POST">
+                            <form action="${pageContext.request.contextPath}/profile" method="POST" novalidate="true">
                                 <input type="hidden" name="action" value="update-profile">
 
                                 <div class="mb-3">
@@ -158,7 +158,7 @@
 
                         <%-- TAB 2: CHANGE PASSWORD --%>
                         <div class="tab-pane fade ${activeTab == 'password' ? 'show active' : ''}" id="password-pane" role="tabpanel">
-                            <form action="${pageContext.request.contextPath}/profile" method="POST">
+                            <form action="${pageContext.request.contextPath}/profile" method="POST" novalidate="true">
                                 <input type="hidden" name="action" value="change-password">
 
                                 <div class="mb-3">

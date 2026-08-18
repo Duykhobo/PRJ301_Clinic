@@ -78,7 +78,12 @@ Mọi màn hình JSP và Stylesheet phải tuân thủ chuẩn [DESIGN_REVIEW_KI
      ```
    - **Sticky Form Inputs**: Luôn giữ lại toàn bộ dữ liệu hợp lệ mà người dùng đã nhập (`value="${...}"`), không bao giờ xóa trắng form bắt người dùng nhập lại.
 
-3. **Triệt tiêu lặp code (DRY - Don't Repeat Yourself Principle)**:
+4. **Bắt buộc `novalidate="true"` trên 100% Form & Cấm dùng popup mặc định của HTML (Custom UI Only)**:
+   - Tất cả các thẻ `<form>` trong toàn bộ các trang JSP bắt buộc phải khai báo thuộc tính `novalidate="true"` (hoặc `novalidate`).
+   - Tuyệt đối **KHÔNG sử dụng bóng bóng/tooltip báo lỗi mặc định của HTML5/Browser** (gây vỡ trải nghiệm và không nhất quán giữa các trình duyệt).
+   - 100% phản hồi lỗi phải thông qua **Custom UI hoàn chỉnh**: viền đỏ mềm mại `.is-invalid`, khối thông báo lỗi riêng biệt kèm icon `.field-error-text` bên dưới ô input, hoặc hộp thông báo `.alert-soft`.
+
+5. **Triệt tiêu lặp code (DRY - Don't Repeat Yourself Principle)**:
    - **Tầng DAO**: Kế thừa `BaseDAO` / `RowMapper` cho các câu truy vấn JDBC mẫu, không copy-paste các đoạn code mở ResultSet/PreparedStatement giống hệt nhau.
    - **Tầng Controller**: Kế thừa `BaseRoleServlet` cho kiểm tra Role và phân trang. Luôn sử dụng hằng số từ `RouterConstant`, `MessageConstant`, `SystemConstant`, `RoleConstant` thay vì hardcode chuỗi string.
    - **Tầng Service & Util**: Tái sử dụng logic nghiệp vụ và đóng gói validation/hashing/date format vào `util.*` (`ValidationUtil`, `DateUtil`, `BCryptUtil`, `JsonUtil`, `SePayQRUtil`).

@@ -39,7 +39,7 @@
                 </div>
 
                 <%-- DATE FILTER --%>
-                <form action="${pageContext.request.contextPath}/doctor/dashboard" method="GET" class="filter-bar">
+                <form action="${pageContext.request.contextPath}/doctor/dashboard" method="GET" class="filter-bar" novalidate="true">
                     <input type="hidden" name="tab" value="${not empty param.tab ? param.tab : 'appointments'}">
                     <div class="filter-wrap">
                         <i class="fa-solid fa-calendar-days fi text-cyan"></i>
@@ -277,7 +277,7 @@
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="${pageContext.request.contextPath}/doctor/dashboard" method="POST">
+                    <form action="${pageContext.request.contextPath}/doctor/dashboard" method="POST" novalidate="true">
                         <input type="hidden" name="action" value="save-diagnosis">
                         <input type="hidden" name="appointmentId" id="modalAppointmentId">
                         <input type="hidden" name="date" value="${selectedDate}">
@@ -330,7 +330,7 @@
                         <h6 class="modal-title fw-bold text-cyan"><i class="fa-solid fa-clock me-2"></i>Đăng Ký Ca Khám Mới</h6>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form id="addSlotForm" onsubmit="addSlotAjax(event)">
+                    <form id="addSlotForm" onsubmit="addSlotAjax(event)" novalidate="true">
                         <input type="hidden" name="action" value="add-slot">
                         <input type="hidden" name="ajax" value="true">
                         <input type="hidden" name="date" id="addSlotDate" value="${selectedDate}">

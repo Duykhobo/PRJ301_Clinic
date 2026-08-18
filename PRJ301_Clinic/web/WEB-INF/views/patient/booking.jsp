@@ -131,14 +131,25 @@
                                 <i class="fa-solid fa-circle-check me-1"></i>Đang chọn
                             </span>
                             <span class="badge slot-btn-booked px-3 py-2 rounded-pill">
-                                <i class="fa-solid fa-lock me-1"></i>Đã được đặt
-                            </span>
+                    </div>
+
+                    <%-- Bước 4: Chọn Khung giờ khám (Time Slot Grid) --%>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label text-muted fw-semibold mb-0">4. Chọn Khung Giờ Khám (*)</label>
+                            <span class="small text-muted" id="slotInstructionText"><i class="fa-solid fa-circle-info me-1 text-cyan"></i>Chọn bác sĩ &amp; ngày để hiển thị ca khám</span>
                         </div>
 
-                        <%-- Ma trận Nút Bấm Khung Giờ (Dynamic Slot Grid Matrix) --%>
-                        <div class="row g-2" id="slotMatrixGrid">
-                            <div class="col-12 text-center text-muted py-3 border border-dashed rounded-3" style="border-color: rgba(255,255,255,0.1) !important;">
-                                <i class="fa-solid fa-info-circle me-1 text-cyan"></i>Vui lòng chọn Bác sĩ và Ngày khám để nạp sơ đồ ca khám khả dụng.
+                        <%-- Slot Status Legend --%>
+                        <div class="d-flex gap-3 mb-2 small text-muted">
+                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-emerald" style="width:8px;height:8px;"></span><span>Còn trống</span></div>
+                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-secondary" style="width:8px;height:8px;"></span><span>Đã đặt</span></div>
+                            <div class="d-flex align-items-center gap-1.5"><span class="badge rounded-circle p-1 bg-cyan" style="width:8px;height:8px;"></span><span>Đang chọn</span></div>
+                        </div>
+
+                        <div id="slotsContainer" class="d-flex flex-wrap gap-2 pt-1 ${not empty errors.scheduleId ? 'is-invalid' : ''}">
+                            <div class="text-muted small p-3 text-center w-100 border border-secondary border-opacity-25 rounded-3">
+                                <i class="fa-solid fa-calendar-xmark me-2 text-warning"></i>Vui lòng chọn Bác sĩ và Ngày khám trước để hệ thống tải khung giờ rảnh.
                             </div>
                         </div>
                         <c:if test="${not empty errors.scheduleId}">
@@ -149,7 +160,7 @@
                     <%-- Bước 5: Ghi chú --%>
                     <div class="mb-4">
                         <label class="form-label text-muted fw-semibold">5. Ghi Chú Tình Trạng Sức Khỏe (Tùy chọn)</label>
-                        <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập triệu chứng, tiền sử dị ứng thuốc hoặc yêu cầu thêm cho bác sĩ..."></textarea>
+                        <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập triệu chứng, tiền sử dị ứng thuốc hoặc yêu cầu thêm cho bác sĩ...">${param.notes}</textarea>
                     </div>
 
                     <button type="submit" id="submitBookingBtn" class="btn btn-primary-gradient w-100 py-3 fs-6 rounded-pill">
@@ -163,25 +174,8 @@
         <jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <%-- Inject context path cho booking.js (không dùng JSP EL trong file .js tĩnh) --%>
+        <%-- Inject context path cho booking.js --%>
         <script>window.BOOKING_CTX = '${pageContext.request.contextPath}';</script>
         <script src="${pageContext.request.contextPath}/assets/js/booking.js" charset="UTF-8"></script>
-
-    </body>
-</html>                      <a href="${pageContext.request.contextPath}/MainController?action=history"
-                               class="btn btn-outline-glass w-100 py-2.5 rounded-pill text-center">
-                                <i class="fa-solid fa-clock-rotate-left me-2"></i>Xem Nhật Ký Khám Bệnh
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <%-- Footer Component --%>
-        <jsp:include page="/WEB-INF/views/components/footer.jsp" />
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

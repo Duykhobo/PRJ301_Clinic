@@ -54,7 +54,7 @@
                         <%-- Component Thông Báo Lỗi --%>
                         <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-                        <form action="${pageContext.request.contextPath}/MainController" method="POST">
+                        <form action="${pageContext.request.contextPath}/MainController" method="POST" novalidate="true">
                             <input type="hidden" name="action" value="login">
                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                             <c:if test="${not empty param.redirect}">

@@ -59,7 +59,7 @@
                 <%-- Component Thông Báo Lỗi / Thành Công --%>
                 <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-                <form action="${pageContext.request.contextPath}/MainController" method="POST">
+                <form action="${pageContext.request.contextPath}/MainController" method="POST" novalidate="true">
                     <input type="hidden" name="action" value="forgot-password">
 
                     <div class="mb-4">
