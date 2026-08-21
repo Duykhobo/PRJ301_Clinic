@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import constant.RoleConstant;
 import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.DoctorScheduleDAO;
@@ -251,12 +252,37 @@ public class BookingServlet extends HttpServlet {
     }
 
     private void handlePayCash(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        User loginUser = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
+        if (loginUser == null) {
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN);
+            return;
+        }
+
         try {
             int appointmentId = Integer.parseInt(request.getParameter("id"));
-            boolean updated = bookingService.switchToCashPayment(appointmentId);
-            if (updated) {
-                request.getSession().setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR,
-                        "Đã chuyển phương thức sang Thanh toán Tiền mặt khi đến khám thành công!");
+            Appointment app = bookingService.getAppointmentById(appointmentId);
+
+            if (app != null) {
+                boolean isOwner = (app.getPatientId() == loginUser.getId());
+                boolean isStaff = RoleConstant.ADMIN.equalsIgnoreCase(loginUser.getRole())
+                        || RoleConstant.RECEPTIONIST.equalsIgnoreCase(loginUser.getRole());
+
+                if (isOwner || isStaff) {
+                    if (!SystemConstant.PAYMENT_PAID.equalsIgnoreCase(app.getPaymentStatus())) {
+                        boolean updated = bookingService.switchToCashPayment(appointmentId);
+                        if (updated) {
+                            request.getSession().setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR,
+                                    "Đã chuyển phương thức sang Thanh toán Tiền mặt khi đến khám thành công!");
+                        }
+                    } else {
+                        request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
+                                "Hóa đơn này đã được thanh toán, không thể chuyển phương thức!");
+                    }
+                } else {
+                    request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
+                            "Bạn không có quyền thay đổi phương thức thanh toán của lịch hẹn này!");
+                }
             }
         } catch (Exception ignored) {
         }

@@ -116,19 +116,19 @@ class NotificationCenter {
             const iconHtml = this.getIconForType(n.type);
             const targetLink = n.link ? (n.link.startsWith('http') ? n.link : this.contextPath + '/' + n.link.replace(/^\//, '')) : 'javascript:void(0);';
 
-            html += 
-                <a href=" + targetLink + " class="noti-item  + itemBg + " onclick="notificationCenter.markSingleRead( + n.id + )">
-                     + iconHtml + 
+            html += `
+                <a href="${targetLink}" class="noti-item ${itemBg}" onclick="notificationCenter.markSingleRead(${n.id})">
+                    ${iconHtml}
                     <div class="noti-content">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="noti-title mb-0  + (isUnread ? 'text-white fw-bold' : 'text-white-50') + "> + n.title + </h6>
-                             + (isUnread ? '<span class="noti-dot"></span>' : '') + 
+                            <h6 class="noti-title mb-0 ${isUnread ? 'text-white fw-bold' : 'text-white-50'}">${n.title}</h6>
+                            ${isUnread ? '<span class="noti-dot"></span>' : ''}
                         </div>
-                        <p class="noti-msg mb-1 text-white-50"> + n.message + </p>
-                        <span class="noti-time text-cyan"><i class="fa-regular fa-clock me-1"></i> + (n.timeAgo || 'Vừa xong') + </span>
+                        <p class="noti-msg mb-1 text-white-50">${n.message}</p>
+                        <span class="noti-time text-cyan"><i class="fa-regular fa-clock me-1"></i>${n.timeAgo || 'Vừa xong'}</span>
                     </div>
                 </a>
-            ;
+            `;
         });
 
         this.notificationList.innerHTML = html;
