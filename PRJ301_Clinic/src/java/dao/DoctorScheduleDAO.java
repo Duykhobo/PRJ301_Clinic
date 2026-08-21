@@ -229,13 +229,13 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     }
 
     public boolean insertSlot(int doctorId, Date workDate, Time startTime, Time endTime) {
-        String checkSql = "SELECT TOP 1 * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? AND start_time = ?";
-        DoctorSchedule existing = queryOne(checkSql, this::mapResultSetToSchedule, doctorId, workDate, startTime);
+        String checkSql = "SELECT TOP 1 * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? AND start_time = CAST(? AS TIME)";
+        DoctorSchedule existing = queryOne(checkSql, this::mapResultSetToSchedule, doctorId, workDate, startTime.toString());
         if (existing != null) {
             return false;
         }
-        String sql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, 1)";
-        return executeUpdate(sql, doctorId, workDate, startTime, endTime);
+        String sql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, CAST(? AS TIME), CAST(? AS TIME), 1)";
+        return executeUpdate(sql, doctorId, workDate, startTime.toString(), endTime.toString());
     }
 
     public boolean deleteSlot(int slotId, int doctorId) {
