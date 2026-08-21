@@ -17,34 +17,34 @@ import constant.SystemConstant;
 import dao.*;
 import exception.SlotAlreadyBookedException;
 import model.Appointment;
+import model.DoctorSchedule;
 import model.Service;
 import model.User;
 import util.EmailUtil;
 import util.PaginationUtil;
 
 /**
- * ReceptionistServlet - Servlet Quản lý Không gian Làm việc của Lễ Tân.
- * Theo dõi ca khám sảnh, tiếp nhận Bệnh nhân check-in, thu tiền mặt & hủy ca
- * khi cần.
+ * ReceptionistServlet - Điều hướng sảnh chờ và Live Check-in tiếp đón bệnh nhân.
+ * Hỗ trợ Phân trang, Live Search và Quản lý Doanh thu Tiền mặt / SePay.
  */
 @WebServlet(name = "ReceptionistServlet", urlPatterns = { "/receptionist/dashboard" })
 public class ReceptionistServlet extends BaseRoleServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ReceptionistServlet.class.getName());
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
-    private final UserDAO userDAO = new UserDAO();
-    private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
-    private final ServiceDAO serviceDAO = new ServiceDAO();
     private final DoctorScheduleDAO doctorScheduleDAO = new DoctorScheduleDAO();
+    private final ServiceDAO serviceDAO = new ServiceDAO();
+    private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. Phân quyền cực gọn với BaseRoleServlet
         User loginUser = requireRole(request, response, "RECEPTIONIST");
-        if (loginUser == null)
+        if (loginUser == null) {
             return;
+        }
 
         String action = request.getParameter("action");
 
@@ -55,12 +55,12 @@ public class ReceptionistServlet extends BaseRoleServlet {
                 String dateStr = request.getParameter("date");
                 Date workDate = Date.valueOf(dateStr);
 
-                java.util.List<model.DoctorSchedule> slots = doctorScheduleDAO.findSchedulesByDoctorAndDate(doctorId,
+                List<DoctorSchedule> slots = doctorScheduleDAO.findSchedulesByDoctorAndDate(doctorId,
                         workDate);
 
                 StringBuilder json = new StringBuilder("[");
                 for (int i = 0; i < slots.size(); i++) {
-                    model.DoctorSchedule s = slots.get(i);
+                    DoctorSchedule s = slots.get(i);
                     if (i > 0)
                         json.append(",");
                     json.append("{\"id\":").append(s.getId())
@@ -155,12 +155,42 @@ public class ReceptionistServlet extends BaseRoleServlet {
 
             if ("confirm-checkin".equals(action)) {
                 appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_CONFIRMED);
+                Appointment app = appointmentDAO.findById(appointmentId);
+                if (app != null) {
+                    NotificationDAO.pushNotification(app.getPatientId(), "Đã tiếp nhận vào sảnh",
+                            "Bạn đã được tiếp nhận vào sảnh chờ khám cho ca #" + appointmentId + ". Bác sĩ sẽ gọi tên bạn sớm.",
+                            "APPOINTMENT", "history");
+                    try {
+                        model.DoctorProfile dp = doctorProfileDAO.findById(app.getDoctorId());
+                        if (dp != null && dp.getUserId() > 0) {
+                            NotificationDAO.pushNotification(dp.getUserId(), "Bệnh nhân đã vào sảnh",
+                                    "Bệnh nhân ca #" + appointmentId + " (" + (app.getStartTime() != null ? app.getStartTime() : "") + ") đã check-in vào sảnh chờ khám.",
+                                    "APPOINTMENT", "doctor/dashboard?tab=appointments");
+                        }
+                    } catch (Exception ignored) {}
+                }
                 setSuccess(request, "Đã tiếp nhận bệnh nhân ca #" + appointmentId + " vào sảnh chờ khám!");
 
             } else if ("collect-cash".equals(action)) {
                 appointmentDAO.updatePayment(appointmentId, SystemConstant.PAYMENT_PAID, SystemConstant.METHOD_CASH);
-                appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_COMPLETED);
-                setSuccess(request, "✅ Thu tiền mặt & hoàn tất ca khám #" + appointmentId + " thành công!");
+                Appointment currentApp = appointmentDAO.findById(appointmentId);
+                if (currentApp != null && SystemConstant.STATUS_PENDING.equalsIgnoreCase(currentApp.getStatus())) {
+                    appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_CONFIRMED);
+                    NotificationDAO.pushNotification(currentApp.getPatientId(), "Đã tiếp nhận vào sảnh & thu tiền",
+                            "Đã thu tiền mặt & tiếp nhận bạn vào sảnh chờ khám cho ca #" + appointmentId + ".",
+                            "APPOINTMENT", "history");
+                    try {
+                        model.DoctorProfile dp = doctorProfileDAO.findById(currentApp.getDoctorId());
+                        if (dp != null && dp.getUserId() > 0) {
+                            NotificationDAO.pushNotification(dp.getUserId(), "Bệnh nhân đã vào sảnh",
+                                    "Bệnh nhân ca #" + appointmentId + " đã hoàn tất thủ tục và vào sảnh chờ khám.",
+                                    "APPOINTMENT", "doctor/dashboard?tab=appointments");
+                        }
+                    } catch (Exception ignored) {}
+                    setSuccess(request, "✅ Đã thu tiền mặt & tiếp nhận bệnh nhân ca #" + appointmentId + " vào sảnh chờ khám!");
+                } else {
+                    setSuccess(request, "✅ Đã thu tiền mặt & cập nhật thanh toán ca #" + appointmentId + " thành công!");
+                }
 
             } else if ("cancel-appointment".equals(action)) {
                 Appointment app = appointmentDAO.findById(appointmentId);

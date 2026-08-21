@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -92,6 +93,26 @@
                         <div class="mb-2"><i class="fa-solid fa-phone me-2 text-warning"></i>SĐT: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.phone}"/></strong></div>
                         <div><i class="fa-solid fa-calendar-alt me-2 text-emerald"></i>Thành viên từ: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.createdAt}"/></strong></div>
                     </div>
+
+                    <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT' && not empty loyaltyProfile}">
+                        <%-- SPA & CLINIC: VIP LOYALTY CARD (100% REAL DATA VIA JSTL & EL) --%>
+                        <div class="p-3 mt-3 rounded-3 text-start" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge ${loyaltyProfile.tierBadgeClass} px-2 py-1 rounded-pill fw-bold">
+                                    <i class="fa-solid fa-crown me-1 text-warning"></i><c:out value="${loyaltyProfile.tierName}"/>
+                                </span>
+                                <small class="text-white-50"><i class="fa-solid fa-star text-warning me-1"></i><fmt:formatNumber value="${loyaltyProfile.totalPoints}" type="number"/> Điểm</small>
+                            </div>
+                            <div class="fs-7 text-white fw-semibold mb-1">Đặc quyền Hội viên Spa:</div>
+                            <ul class="list-unstyled mb-0 text-white-50 fs-8">
+                                <c:if test="${loyaltyProfile.discountPercent > 0}">
+                                    <li><i class="fa-solid fa-check text-emerald me-1"></i>Ưu đãi giảm <strong class="text-warning">${loyaltyProfile.discountPercent}%</strong> tất cả hóa đơn</li>
+                                </c:if>
+                                <li><i class="fa-solid fa-check text-emerald me-1"></i>Tổng chi tiêu: <strong class="text-cyan"><fmt:formatNumber value="${loyaltyProfile.totalSpent}" pattern="#,##0"/> VNĐ</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald me-1"></i><c:out value="${loyaltyProfile.specialBenefit}"/></li>
+                            </ul>
+                        </div>
+                    </c:if>
                 </div>
             </div>
 

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Sảnh Lễ Tân | PRJ301 Clinic Reception</title>
+    <title>Lễ Tân &amp; Tiếp Đón | Phòng Khám &amp; Spa PRJ301</title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
 
@@ -207,27 +207,51 @@
                                                 </form>
                                             </c:if>
 
-                                            <c:if test="${app.status == 'PENDING'}">
-                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
-                                                    <input type="hidden" name="action" value="confirm-checkin">
-                                                    <input type="hidden" name="appointmentId" value="${app.id}">
-                                                    <input type="hidden" name="date" value="${selectedDate}">
-                                                    <button type="submit" class="btn-checkin rounded-pill">
-                                                        <i class="fa-solid fa-user-check me-1"></i>Check-in
-                                                    </button>
-                                                </form>
-                                            </c:if>
+                                            <c:choose>
+                                                <%-- Trường hợp 1: Ca mới Chờ Đón và Chưa Thu Tiền --%>
+                                                <c:when test="${app.status == 'PENDING' && app.paymentStatus == 'UNPAID'}">
+                                                    <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
+                                                        <input type="hidden" name="action" value="collect-cash">
+                                                        <input type="hidden" name="appointmentId" value="${app.id}">
+                                                        <input type="hidden" name="date" value="${selectedDate}">
+                                                        <button type="submit" class="btn-collect rounded-pill" title="Thu tiền mặt tại quầy và check-in vào sảnh">
+                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền &amp; Check-in
+                                                        </button>
+                                                    </form>
+                                                    <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
+                                                        <input type="hidden" name="action" value="confirm-checkin">
+                                                        <input type="hidden" name="appointmentId" value="${app.id}">
+                                                        <input type="hidden" name="date" value="${selectedDate}">
+                                                        <button type="submit" class="btn-checkin rounded-pill" title="Chỉ tiếp nhận vào sảnh, thu tiền sau">
+                                                            <i class="fa-solid fa-user-check me-1"></i>Chỉ Check-in
+                                                        </button>
+                                                    </form>
+                                                </c:when>
 
-                                            <c:if test="${app.paymentStatus == 'UNPAID' && app.status != 'CANCELLED'}">
-                                                <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
-                                                    <input type="hidden" name="action" value="collect-cash">
-                                                    <input type="hidden" name="appointmentId" value="${app.id}">
-                                                    <input type="hidden" name="date" value="${selectedDate}">
-                                                    <button type="submit" class="btn-collect rounded-pill">
-                                                        <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền
-                                                    </button>
-                                                </form>
-                                            </c:if>
+                                                <%-- Trường hợp 2: Ca mới Chờ Đón và ĐÃ Thanh Toán (Ví dụ qua VietQR SePay) --%>
+                                                <c:when test="${app.status == 'PENDING'}">
+                                                    <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
+                                                        <input type="hidden" name="action" value="confirm-checkin">
+                                                        <input type="hidden" name="appointmentId" value="${app.id}">
+                                                        <input type="hidden" name="date" value="${selectedDate}">
+                                                        <button type="submit" class="btn-checkin rounded-pill" title="Tiếp nhận bệnh nhân vào sảnh chờ khám">
+                                                            <i class="fa-solid fa-user-check me-1"></i>Check-in
+                                                        </button>
+                                                    </form>
+                                                </c:when>
+
+                                                <%-- Trường hợp 3: Đã Check-in nhưng vẫn Chưa Thu Tiền --%>
+                                                <c:when test="${app.paymentStatus == 'UNPAID' && app.status != 'CANCELLED'}">
+                                                    <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
+                                                        <input type="hidden" name="action" value="collect-cash">
+                                                        <input type="hidden" name="appointmentId" value="${app.id}">
+                                                        <input type="hidden" name="date" value="${selectedDate}">
+                                                        <button type="submit" class="btn-collect rounded-pill" title="Thu tiền mặt">
+                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền Mặt
+                                                        </button>
+                                                    </form>
+                                                </c:when>
+                                            </c:choose>
 
                                             <c:if test="${app.status != 'COMPLETED' && app.status != 'CANCELLED'}">
                                                 <form id="cancelForm_${app.id}" action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">

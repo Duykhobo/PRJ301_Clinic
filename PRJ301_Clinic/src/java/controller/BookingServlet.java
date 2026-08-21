@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,7 @@ public class BookingServlet extends HttpServlet {
         request.setAttribute("selectedScheduleId", scheduleIdStr);
         request.setAttribute("notes", notes);
 
-        Map<String, String> errors = new java.util.HashMap<>();
+        Map<String, String> errors = new HashMap<>();
         ValidationUtil.validateField(errors, "serviceId", !serviceIdStr.isEmpty(), "Vui lòng chọn dịch vụ khám/spa!");
         ValidationUtil.validateField(errors, "doctorId", !doctorIdStr.isEmpty(), "Vui lòng chọn bác sĩ phụ trách!");
         ValidationUtil.validateField(errors, "appointmentDate", !appointmentDateStr.isEmpty(), "Vui lòng chọn ngày khám hợp lệ!");
@@ -215,7 +216,7 @@ public class BookingServlet extends HttpServlet {
 
             List<DoctorSchedule> slots = (date != null && doctorId > 0)
                     ? clinicService.getSchedules(doctorId, date)
-                    : new java.util.ArrayList<>();
+                    : new ArrayList<>();
 
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < slots.size(); i++) {

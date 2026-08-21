@@ -26,3 +26,12 @@
 <link href="${pageContext.request.contextPath}/assets/css/sidebar.css" rel="stylesheet">
 <link href="${pageContext.request.contextPath}/assets/css/dashboard.css" rel="stylesheet">
 
+<!-- Context Path Global Config & Notifications -->
+<script>
+    window.CONTEXT_PATH = "${pageContext.request.contextPath}";
+    window.APP_CONTEXT_PATH = "${pageContext.request.contextPath}";
+    try { localStorage.removeItem("PRJ301_APP_LANG"); } catch (e) {}
+</script>
+<script src="${pageContext.request.contextPath}/assets/js/notifications.js" defer></script>
+
+

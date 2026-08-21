@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Đặt Lịch Khám | PRJ301 Clinic</title>
+        <title>Đặt Lịch Khám | Phòng Khám &amp; Spa PRJ301</title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
     </head>
     <body class="d-flex flex-column min-vh-100">

@@ -139,6 +139,14 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
             String slotSql = "UPDATE DoctorSchedules SET is_available = 0 WHERE id = ?";
             executeUpdate(slotSql, app.getScheduleId());
 
+            // 5. Đẩy thông báo tức thì tới Bệnh nhân & Lễ tân
+            NotificationDAO.pushNotification(app.getPatientId(), "Đặt lịch khám thành công",
+                    "Lịch hẹn ca #" + newAppId + " (" + app.getAppointmentDate() + ") đã được tạo thành công.",
+                    "APPOINTMENT", "history");
+            NotificationDAO.pushNotificationToRole("RECEPTIONIST", "Lịch hẹn mới #" + newAppId,
+                    "Bệnh nhân vừa đặt lịch khám mới cho ngày " + app.getAppointmentDate() + ".",
+                    "APPOINTMENT", "receptionist/dashboard");
+
             return true;
 
         } catch (SQLException e) {
@@ -287,7 +295,19 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     public boolean updatePayment(int appointmentId, String paymentStatus, String paymentMethod) {
         String sql = "UPDATE Appointments SET payment_status = ?, payment_method = ? WHERE id = ?";
-        return executeUpdate(sql, paymentStatus, paymentMethod, appointmentId);
+        boolean ok = executeUpdate(sql, paymentStatus, paymentMethod, appointmentId);
+        if (ok && SystemConstant.PAYMENT_PAID.equalsIgnoreCase(paymentStatus)) {
+            Appointment app = findById(appointmentId);
+            if (app != null) {
+                NotificationDAO.pushNotification(app.getPatientId(), "Thanh toán thành công",
+                        "Hóa đơn ca khám #" + appointmentId + " đã được xác nhận thanh toán thành công (" + (paymentMethod != null ? paymentMethod : "VietQR") + ").",
+                        "PAYMENT", "history");
+                NotificationDAO.pushNotificationToRole("ADMIN", "Doanh thu mới #" + appointmentId,
+                        "Hệ thống vừa ghi nhận thanh toán thành công cho ca #" + appointmentId + ".",
+                        "PAYMENT", "admin/dashboard");
+            }
+        }
+        return ok;
     }
 
     public RevenueReport getRevenueReport(Date startDate, Date endDate) {

@@ -336,7 +336,7 @@ GO
 
 -- 7. Chèn ClinicSettings (Cấu hình Hệ thống & Ngân hàng VietQR SePay)
 INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
-('CLINIC_NAME', N'Phòng Khám & Spa Nha Khoa Quốc Tế PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
+('CLINIC_NAME', N'Phòng Khám & Spa PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
 ('CLINIC_HOTLINE', '0901234567', N'Số điện thoại tổng đài tư vấn và đặt hẹn'),
 ('CLINIC_EMAIL', 'contact@prj301clinic.com', N'Email hỗ trợ bệnh nhân và tiếp nhận phản hồi'),
 ('CLINIC_ADDRESS', N'123 Đường Nguyễn Văn Cừ, Phường 4, Quận 5, TP. Hồ Chí Minh', N'Địa chỉ cơ sở chính'),
@@ -477,4 +477,34 @@ GO
 UPDATE Appointments 
 SET payment_content = 'CLN' + CAST(id AS VARCHAR) 
 WHERE payment_content IS NULL OR payment_content = '';
+GO
+
+-- =========================================================================
+-- 7. BẢNG TRUNG TÂM THÔNG BÁO HỆ THỐNG ĐA VAI TRÒ (NOTIFICATIONS)
+-- =========================================================================
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notifications' AND xtype='U')
+BEGIN
+    CREATE TABLE Notifications (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
+        title NVARCHAR(255) NOT NULL,
+        message NVARCHAR(1000) NOT NULL,
+        type VARCHAR(50) DEFAULT 'INFO', -- 'APPOINTMENT', 'SCHEDULE', 'PAYMENT', 'MEDICAL', 'SYSTEM'
+        is_read BIT DEFAULT 0,
+        link VARCHAR(255) NULL,
+        created_at DATETIME DEFAULT GETDATE()
+    );
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Notification_User')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Notification_User ON Notifications(user_id);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Notification_Unread')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Notification_Unread ON Notifications(user_id, is_read);
+END
 GO

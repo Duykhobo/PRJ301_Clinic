@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Thanh Toán SePay VietQR | PRJ301 Clinic</title>
+        <title>Thanh Toán SePay VietQR | Phòng Khám &amp; Spa PRJ301</title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
         <!-- File CSS tách riêng -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/payment.css">
@@ -95,9 +95,9 @@
                             </button>
 
                             <%-- Nút Chuyển sang Tiền mặt khi đến khám (Fallback Option) --%>
-                            <a href="${pageContext.request.contextPath}/booking?action=pay-cash&id=${appointment.id}" class="btn btn-outline-glass w-100 py-2.5 rounded-pill shadow-sm text-center fw-medium" onclick="return confirm('Bạn có chắc chắn muốn chuyển sang hình thức Thanh toán tiền mặt khi đến khám?');">
+                            <button type="button" class="btn btn-outline-glass w-100 py-2.5 rounded-pill shadow-sm text-center fw-medium" onclick="confirmPayCash(${appointment.id})">
                                 <i class="fa-solid fa-money-bill-wave text-warning me-2"></i>Chọn Thanh Toán Tiền Mặt Khi Đến Khám
-                            </a>
+                            </button>
 
                             <div class="row g-2 mt-1">
                                 <div class="col-6">
@@ -122,61 +122,83 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                                let pollInterval = null;
+            let pollInterval = null;
 
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    pollInterval = setInterval(checkPaymentStatus, 3000);
-                                });
+            document.addEventListener('DOMContentLoaded', function () {
+                pollInterval = setInterval(checkPaymentStatus, 3000);
+            });
 
-                                function checkPaymentStatus() {
-                                    fetch('${pageContext.request.contextPath}/booking?action=check-payment-status&id=${appointment.id}')
-                                                    .then(res => res.json())
-                                                    .then(data => {
-                                                        if (data.paymentStatus === 'PAID') {
-                                                            clearInterval(pollInterval);
-                                                            const badge = document.getElementById('paymentStatusBadge');
-                                                            const text = document.getElementById('paymentStatusText');
-                                                            const spinner = document.getElementById('paymentStatusSpinner');
+            function checkPaymentStatus() {
+                fetch('${pageContext.request.contextPath}/booking?action=check-payment-status&id=${appointment.id}')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.paymentStatus === 'PAID') {
+                            clearInterval(pollInterval);
+                            const badge = document.getElementById('paymentStatusBadge');
+                            const text = document.getElementById('paymentStatusText');
+                            const spinner = document.getElementById('paymentStatusSpinner');
 
-                                                            if (badge && text) {
-                                                                badge.className = 'badge px-3 py-2 rounded-pill slot-btn-selected mb-2 d-inline-flex align-items-center justify-content-center gap-2 w-100';
-                                                                spinner.className = 'fa-solid fa-circle-check text-emerald';
-                                                                text.innerText = 'ĐÃ THANH TOÁN SEPAY THÀNH CÔNG!';
-                                                            }
+                            if (badge && text) {
+                                badge.className = 'badge px-3 py-2 rounded-pill slot-btn-selected mb-2 d-inline-flex align-items-center justify-content-center gap-2 w-100';
+                                spinner.className = 'fa-solid fa-circle-check text-emerald';
+                                text.innerText = 'ĐÃ THANH TOÁN SEPAY THÀNH CÔNG!';
+                            }
 
-                                                            if (typeof showToast === 'function') {
-                                                                showToast('Xác nhận thanh toán SePay VietQR thành công!', true);
-                                                            }
+                            if (typeof showToast === 'function') {
+                                showToast('Xác nhận thanh toán SePay VietQR thành công!', true);
+                            }
 
-                                                            setTimeout(() => {
-                                                                window.location.href = '${pageContext.request.contextPath}/MainController?action=history';
-                                                            }, 2000);
-                                                        }
-                                                    })
-                                                    .catch(err => console.log('Checking status...'));
-                                        }
+                            setTimeout(() => {
+                                window.location.href = '${pageContext.request.contextPath}/MainController?action=history';
+                            }, 2000);
+                        }
+                    })
+                    .catch(err => console.log('Checking status...'));
+            }
 
-                                        function simulateSepayWebhook(appointmentId) {
-                                            if (typeof showToast === 'function') {
-                                                showToast('Đang gửi tín hiệu mô phỏng thanh toán SePay...', false);
-                                            }
-                                            fetch('${pageContext.request.contextPath}/sepay-webhook?appointmentId=' + appointmentId)
-                                                    .then(res => res.json())
-                                                    .then(data => {
-                                                        if (data.status === 200) {
-                                                            checkPaymentStatus();
-                                                        } else {
-                                                            if (typeof showToast === 'function') {
-                                                                showToast('Lỗi mô phỏng thanh toán: ' + data.message, false);
-                                                            }
-                                                        }
-                                                    })
-                                                    .catch(err => {
-                                                        if (typeof showToast === 'function') {
-                                                            showToast('Khởi chạy mô phỏng thất bại', false);
-                                                        }
-                                                    });
-                                        }
+            function confirmPayCash(appointmentId) {
+                Swal.fire({
+                    title: 'Xác Nhận Thanh Toán Tiền Mặt?',
+                    text: 'Bạn có chắc chắn muốn chuyển sang hình thức thanh toán tiền mặt trực tiếp tại quầy lễ tân khi đến khám?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fa-solid fa-money-bill-wave me-1"></i> Đồng Ý',
+                    cancelButtonText: 'Quay Lại',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    customClass: {
+                        popup: 'border border-warning border-opacity-40 shadow-lg'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '${pageContext.request.contextPath}/booking?action=pay-cash&id=' + appointmentId;
+                    }
+                });
+            }
+
+            function simulateSepayWebhook(appointmentId) {
+                if (typeof showToast === 'function') {
+                    showToast('Đang gửi tín hiệu mô phỏng thanh toán SePay...', false);
+                }
+                fetch('${pageContext.request.contextPath}/sepay-webhook?appointmentId=' + appointmentId)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            checkPaymentStatus();
+                        } else {
+                            if (typeof showToast === 'function') {
+                                showToast('Lỗi mô phỏng thanh toán: ' + data.message, false);
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showToast === 'function') {
+                            showToast('Khởi chạy mô phỏng thất bại', false);
+                        }
+                    });
+            }
         </script>
     </body>
 </html>

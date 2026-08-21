@@ -1,17 +1,68 @@
-# NetBeans & Ant Build Artifacts
-build/
-dist/
-nbproject/private/
-nbproject/project.fragment
+# =========================================================================
+# 🚫 NETBEANS & ANT BUILD ARTIFACTS (KHÔNG ĐẨY LÊN GIT)
+# =========================================================================
+**/build/
+**/dist/
+**/nbproject/private/
+**/nbproject/project.fragment
+**/nbproject/project.fragment.bak
 
-# Temp & Log Files
-*.log
-*.class
-*.tmp
-*.bak
+# =========================================================================
+# 🚫 JAVA COMPILED CLASSES & TEMP
+# =========================================================================
+**/*.class
+**/*.log
+**/*.tmp
+**/*.bak
+**/*.swp
+**/*.swo
+**/*~
+**/*.war
+**/*.ear
 
-# IDE & OS Files
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
+# Bắt buộc GIỮ LẠI các thư viện JAR trong web/WEB-INF/lib/
+!**/web/WEB-INF/lib/*.jar
+
+# =========================================================================
+# 🚫 IDEs, EDITORS & OS METADATA
+# =========================================================================
+# macOS
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Icon?
+
+# Windows
+**/Thumbs.db
+**/ehthumbs.db
+**/Desktop.ini
+**/$RECYCLE.BIN/
+
+# JetBrains IntelliJ IDEA
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+**/out/
+
+# Visual Studio Code
+**/.vscode/
+**/*.code-workspace
+
+# Eclipse
+**/.settings/
+**/.project
+**/.classpath
+
+# Ant / Maven / Gradle temp
+**/.gradle/
+**/target/
+
+# =========================================================================
+# 🚫 LOCAL REFERENCE & INTERNAL DEV MARKDOWN FILES (ẨN KHỎI GIT)
+# =========================================================================
+NETBEANS_CODE_TEMPLATES_PRJ301.md
+PRJ301_Clinic/AGENTS.md
+VIDEO_PRESENTATION_AND_DEMO_GUIDE.md
+Agile_Development_Guide.md
+TASKS_AND_TODO.md
