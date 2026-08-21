@@ -60,13 +60,13 @@ jobs:
         working-directory: ./PRJ301_Clinic
         run: |
           echo "Compiling PRJ301 Clinic Java Sources..."
-          ant compile
+          ant -Dlibs.CopyLibs.classpath=lib/org-netbeans-modules-java-j2seproject-copylibstask.jar compile
 
       - name: 📦 6. Package Web Application Archive (Ant Dist WAR)
         working-directory: ./PRJ301_Clinic
         run: |
           echo "Building PRJ301_Clinic.war package..."
-          ant dist
+          ant -Dlibs.CopyLibs.classpath=lib/org-netbeans-modules-java-j2seproject-copylibstask.jar dist
           echo "Build successful! Checking generated WAR file:"
           ls -lh dist/
 

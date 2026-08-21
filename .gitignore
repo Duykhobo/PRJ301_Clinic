@@ -20,8 +20,9 @@
 **/*.war
 **/*.ear
 
-# Bắt buộc GIỮ LẠI các thư viện JAR trong web/WEB-INF/lib/
+# Bắt buộc GIỮ LẠI các thư viện JAR trong web/WEB-INF/lib/ và lib/
 !**/web/WEB-INF/lib/*.jar
+!**/lib/*.jar
 
 # =========================================================================
 # 🚫 IDEs, EDITORS & OS METADATA
