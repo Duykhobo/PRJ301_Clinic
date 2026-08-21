@@ -1,23 +1,30 @@
 package dao;
 
-import config.DBContext;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import config.DBContext;
+
 /**
  * Lớp trừu tượng BaseDAO giúp triệt tiêu 90% lặp code trong JDBC (DRY Principle).
- * Tự động quản lý Connection qua {@link config.DBContext}, try-with-resources và tham số Varargs.
- *
- * <p><b>📖 Sau khi tích hợp ThreadLocal (MVC-V2):</b><br>
- * {@code DBContext.getConnection()} không còn tạo connection mới mỗi lần gọi nữa — nó trả về
- * connection đang được ThreadLocal giữ cho request hiện tại. Nhờ đó, tất cả các method trong
- * BaseDAO tự động tham gia vào cùng 1 Transaction mà TransactionFilter đã mở.</p>
+ * Tự động lấy Connection qua {@link config.DBContext} (được quản lý bởi TransactionFilter),
+ * try-with-resources cho Statement/ResultSet, tham số Varargs và cơ chế Auto-Reflection RowMapper.
  *
  * @param <T> Kiểu dữ liệu Model POJO
  */
@@ -25,18 +32,112 @@ public abstract class BaseDAO<T> {
 
     private static final Logger LOGGER = Logger.getLogger(BaseDAO.class.getName());
 
+    // =========================================================================
+    // 🚀 1. AUTO-REFLECTION ROWMAPPER (MINI-ORM THUẦN JAVA)
+    // =========================================================================
+
+    /**
+     * Tự động ánh xạ ResultSet sang Model POJO bất kỳ bằng Java Reflection & ResultSetMetaData.
+     * Tự động chuẩn hóa chuyển đổi giữa snake_case (Database) và camelCase (Java POJO).
+     *
+     * @param <E> Kiểu Model cần ánh xạ
+     * @param clazz Class của Model POJO
+     * @return RowMapper<E>
+     */
+    public static <E> RowMapper<E> autoMapper(Class<E> clazz) {
+        return rs -> {
+            try {
+                E instance = clazz.getDeclaredConstructor().newInstance();
+                ResultSetMetaData meta = rs.getMetaData();
+                int colCount = meta.getColumnCount();
+
+                // Lưu map: "tencotkhongdau" -> Chỉ số cột trong ResultSet (1-indexed)
+                Map<String, Integer> colMap = new HashMap<>();
+                for (int i = 1; i <= colCount; i++) {
+                    String rawColName = meta.getColumnLabel(i);
+                    colMap.put(rawColName.replace("_", "").toLowerCase(), i);
+                }
+
+                for (Field field : clazz.getDeclaredFields()) {
+                    if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+
+                    // Chuẩn hóa tên trường Java: "phoneNumber" -> "phonenumber"
+                    String cleanFieldName = field.getName().replace("_", "").toLowerCase();
+                    Integer colIdx = colMap.get(cleanFieldName);
+
+                    if (colIdx != null) {
+                        Class<?> type = field.getType();
+                        Object val = null;
+
+                        if (type == String.class) {
+                            val = rs.getString(colIdx);
+                        } else if (type == int.class || type == Integer.class) {
+                            val = rs.getObject(colIdx) != null ? rs.getInt(colIdx) : (type == int.class ? 0 : null);
+                        } else if (type == long.class || type == Long.class) {
+                            val = rs.getObject(colIdx) != null ? rs.getLong(colIdx) : (type == long.class ? 0L : null);
+                        } else if (type == double.class || type == Double.class) {
+                            val = rs.getObject(colIdx) != null ? rs.getDouble(colIdx) : (type == double.class ? 0.0 : null);
+                        } else if (type == float.class || type == Float.class) {
+                            val = rs.getObject(colIdx) != null ? rs.getFloat(colIdx) : (type == float.class ? 0.0f : null);
+                        } else if (type == boolean.class || type == Boolean.class) {
+                            val = rs.getBoolean(colIdx);
+                        } else if (type == BigDecimal.class) {
+                            val = rs.getBigDecimal(colIdx);
+                        } else if (type == Date.class) {
+                            val = rs.getDate(colIdx);
+                        } else if (type == Time.class) {
+                            val = rs.getTime(colIdx);
+                        } else if (type == Timestamp.class) {
+                            val = rs.getTimestamp(colIdx);
+                        } else {
+                            val = rs.getObject(colIdx);
+                        }
+
+                        if (val != null || !type.isPrimitive()) {
+                            field.set(instance, val);
+                        }
+                    }
+                }
+                return instance;
+            } catch (Exception e) {
+                throw new SQLException("Lỗi AutoMapper cho class " + clazz.getSimpleName() + ": " + e.getMessage(), e);
+            }
+        };
+    }
+
+    /**
+     * Truy vấn SELECT 1 bản ghi tự động bằng Reflection AutoMapper.
+     */
+    protected <E> E queryOneAuto(String sql, Class<E> clazz, Object... params) {
+        return queryOne(sql, autoMapper(clazz), params);
+    }
+
+    /**
+     * Truy vấn SELECT danh sách List tự động bằng Reflection AutoMapper.
+     */
+    protected <E> List<E> queryListAuto(String sql, Class<E> clazz, Object... params) {
+        return queryList(sql, autoMapper(clazz), params);
+    }
+
+    // =========================================================================
+    // 🧱 2. STANDARD JDBC QUERY HELPERS
+    // =========================================================================
+
     /**
      * Truy vấn SELECT trả về 1 bản ghi duy nhất.
      */
-    protected T queryOne(String sql, RowMapper<T> mapper, Object... params) {
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            setParameters(ps, params);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapper.mapRow(rs);
+    protected <E> E queryOne(String sql, RowMapper<E> mapper, Object... params) {
+        try {
+            Connection conn = DBContext.getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                setParameters(ps, params);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return mapper.mapRow(rs);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -46,18 +147,18 @@ public abstract class BaseDAO<T> {
     }
 
     /**
-     * Truy vấn SELECT trả về danh sách List<T>.
+     * Truy vấn SELECT trả về danh sách List.
      */
-    protected List<T> queryList(String sql, RowMapper<T> mapper, Object... params) {
-        List<T> list = new ArrayList<>();
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            setParameters(ps, params);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapper.mapRow(rs));
+    protected <E> List<E> queryList(String sql, RowMapper<E> mapper, Object... params) {
+        List<E> list = new ArrayList<>();
+        try {
+            Connection conn = DBContext.getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                setParameters(ps, params);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(mapper.mapRow(rs));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -68,60 +169,34 @@ public abstract class BaseDAO<T> {
 
     /**
      * Truy vấn {@code SELECT COUNT(*)} trả về một số nguyên.
-     *
-     * <p><b>📖 Tại sao cần method này?</b><br>
-     * Hiện tại {@code AppointmentDAO} và {@code UserDAO} có 5–6 hàm {@code countXxx()} đều
-     * viết thủ công JDBC (~8 dòng mỗi hàm). Method này thay thế tất cả bằng 1 dòng gọi.</p>
-     *
-     * <p><b>📖 Logic cần implement — tương tự {@link #queryOne} nhưng trả về int:</b></p>
-     * <ol>
-     *   <li>Mở connection bằng {@code DBContext.getConnection()}.</li>
-     *   <li>Tạo {@code PreparedStatement}, gán params bằng {@code setParameters()}.</li>
-     *   <li>Thực thi và đọc {@code ResultSet}: nếu {@code rs.next()} → trả về {@code rs.getInt(1)}.</li>
-     *   <li>Bắt {@code SQLException} → log lỗi.</li>
-     *   <li>Mặc định trả về {@code 0}.</li>
-     * </ol>
-     *
-     * <p><b>Ví dụ sau khi implement:</b></p>
-     * <pre>
-     * // AppointmentDAO — thay thế 8 dòng JDBC thủ công:
-     * public int countPatientAppointments(int patientId) {
-     *     return queryCount("SELECT COUNT(*) FROM Appointments WHERE patient_id = ?", patientId);
-     * }
-     * </pre>
-     *
-     * @param sql    Câu SQL {@code SELECT COUNT(*)}
-     * @param params Tham số cho PreparedStatement
-     * @return Kết quả đếm, mặc định là {@code 0} nếu có lỗi
      */
     protected int queryCount(String sql, Object... params) {
-        // TODO [BƯỚC 2]: Implement queryCount()
-        // Gợi ý cấu trúc:
-        // try (Connection conn = DBContext.getConnection();
-        //      PreparedStatement ps = conn.prepareStatement(sql)) {
-        //     setParameters(ps, params);
-        //     try (ResultSet rs = ps.executeQuery()) {
-        //         if (rs.next()) return rs.getInt(1);
-        //     }
-        // } catch (SQLException e) {
-        //     LOGGER.log(Level.SEVERE, "Lỗi queryCount: " + sql, e);
-        // }
-        // return 0;
-        throw new UnsupportedOperationException("TODO: Implement queryCount()");
+        try {
+            Connection conn = DBContext.getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                setParameters(ps, params);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi queryCount: " + sql, e);
+        }
+        return 0;
     }
 
     /**
      * Thực thi lệnh INSERT, UPDATE, DELETE.
-     *
-     * @return số dòng bị ảnh hưởng (affected rows) > 0 nếu thành công.
      */
     protected boolean executeUpdate(String sql, Object... params) {
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            setParameters(ps, params);
-            return ps.executeUpdate() > 0;
-
+        try {
+            Connection conn = DBContext.getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                setParameters(ps, params);
+                return ps.executeUpdate() > 0;
+            }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi thực thi executeUpdate: " + sql, e);
         }
@@ -154,10 +229,11 @@ public abstract class BaseDAO<T> {
     }
 
     /**
-     * Helper thực thi INSERT và tự động lấy ID sinh tự động (Generated Key) trong 1 Transaction.
+     * Thực thi câu lệnh INSERT và trả về khóa chính (ID) tự động tăng.
      */
-    protected int executeInsertAndGetGeneratedKey(Connection conn, String sql, Object... params) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+    protected int executeInsertAndGetGeneratedKey(String sql, Object... params) throws SQLException {
+        Connection conn = DBContext.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             setParameters(ps, params);
             int affected = ps.executeUpdate();
             if (affected > 0) {
@@ -169,65 +245,6 @@ public abstract class BaseDAO<T> {
             }
         }
         return -1;
-    }
-
-    // =========================================================================
-    // ⚠️ DEPRECATED ZONE — Sau khi implement TransactionFilter
-    // =========================================================================
-    // Các method bên dưới (TransactionCallback + executeTransaction) sẽ trở nên
-    // không cần thiết sau khi TransactionFilter đảm nhiệm toàn bộ việc quản lý
-    // transaction. Giữ lại ở đây để tham khảo trong quá trình học.
-    //
-    // ❓ Câu hỏi tự suy ngẫm:
-    //    Sau khi có TransactionFilter + ThreadLocal, tại sao executeTransaction()
-    //    trở nên thừa? Điều gì thay thế nó?
-    // =========================================================================
-
-    /**
-     * Functional Interface phục vụ thực thi Transaction chung 1 Connection.
-     *
-     * @deprecated Sử dụng TransactionFilter + ThreadLocal thay thế. Giữ lại để tham khảo.
-     */
-    @Deprecated
-    @FunctionalInterface
-    protected interface TransactionCallback<E> {
-        E doInTransaction(Connection conn) throws Exception;
-    }
-
-    /**
-     * Helper quản lý Giao dịch Nguyên tử (Atomic Transaction Helper).
-     * Tự động mở connection, disable auto-commit, commit khi thành công và rollback khi gặp sự cố.
-     */
-    protected <E> E executeTransaction(TransactionCallback<E> action) throws Exception {
-        Connection conn = null;
-        try {
-            conn = DBContext.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu Transaction
-
-            E result = action.doInTransaction(conn); // Thực thi các bước dùng chung connection này
-
-            conn.commit(); // Commit giao dịch
-            return result;
-
-        } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback(); // Rollback an toàn khi gặp sự cố
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Lỗi rollback transaction", ex);
-                }
-            }
-            throw e; // Ném lại ngoại lệ cho tầng trên xử lý
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close(); // Đóng connection trả lại Pool
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Lỗi đóng connection", ex);
-                }
-            }
-        }
     }
 
     /**

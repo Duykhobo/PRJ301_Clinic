@@ -1,106 +1,135 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<nav class="navbar navbar-expand-xl sticky-top navbar-glass py-3 mb-4">
-    <div class="container-fluid container-xl">
-        <%-- Medical Logo & Brand Name --%>
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4 text-nowrap flex-shrink-0 me-3" 
-           href="${pageContext.request.contextPath}/MainController?action=home">
-            <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
+<nav class="navbar navbar-expand-xl sticky-top navbar-glass py-2 mb-4" style="background: rgba(11, 19, 43, 0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(56, 189, 248, 0.2);">
+    <div class="container-fluid px-3 px-xxl-4">
+        <%-- Medical Logo & Brand Name (100% Full Visibility & Zero Truncation) --%>
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white me-2 me-xl-3 flex-shrink-0"
+           href="${pageContext.request.contextPath}/MainController?action=home"
+           data-i18n="nav_brand">
+            <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm flex-shrink-0"
+                 style="width: 36px; height: 36px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
                 <i class="fa-solid fa-heart-pulse fs-5"></i>
             </div>
-            <span class="fw-bold text-white tracking-wide text-nowrap">${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : 'PRJ301 Clinic & Spa'}</span>
+            <span class="fw-bold text-white tracking-wide text-nowrap" style="font-size: 1.05rem;">
+                Phòng Khám &amp; Spa PRJ301
+            </span>
         </a>
 
         <%-- Mobile Toggle Button --%>
-        <button class="navbar-toggler border-0 text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-            <i class="fa-solid fa-bars fs-3 text-cyan"></i>
+        <button class="navbar-toggler border-0 text-white shadow-none ms-auto me-2 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <i class="fa-solid fa-bars fs-4 text-cyan"></i>
         </button>
 
-        <%-- Navbar Links & Right User Auth Actions --%>
+        <%-- Navbar Links & Right Actions --%>
         <div class="collapse navbar-collapse" id="mainNavbar">
-            <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-1 gap-xxl-2">
+            <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-1 gap-xxl-2 pt-2 pt-xl-0">
                 <li class="nav-item">
-                    <a class="nav-link text-white-50 text-white-hover px-3 py-2 rounded-3 transition-all text-nowrap" 
-                       href="${pageContext.request.contextPath}/MainController?action=home">
-                        <i class="fa-solid fa-house me-1 text-cyan"></i>Trang Chủ
+                    <a class="nav-link text-white-50 text-white-hover px-2 px-xxl-3 py-1.5 rounded-3 transition-all text-nowrap"
+                       href="${pageContext.request.contextPath}/MainController?action=home"
+                       data-i18n="nav_home">
+                        <i class="fa-solid fa-house me-1 text-cyan"></i><span>Trang Chủ</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white-50 text-white-hover px-3 py-2 rounded-3 transition-all text-nowrap" 
-                       href="${pageContext.request.contextPath}/MainController?action=home#services">
-                        <i class="fa-solid fa-teeth me-1 text-cyan"></i>Dịch Vụ & Spa
+                    <a class="nav-link text-white-50 text-white-hover px-2 px-xxl-3 py-1.5 rounded-3 transition-all text-nowrap"
+                       href="${pageContext.request.contextPath}/MainController?action=home#services"
+                       data-i18n="nav_services">
+                        <i class="fa-solid fa-teeth me-1 text-cyan"></i><span>Dịch Vụ &amp; Spa</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white-50 text-white-hover px-3 py-2 rounded-3 transition-all text-nowrap" 
-                       href="${pageContext.request.contextPath}/MainController?action=home#doctors">
-                        <i class="fa-solid fa-user-doctor me-1 text-cyan"></i>Đội Ngũ Bác Sĩ
+                    <a class="nav-link text-white-50 text-white-hover px-2 px-xxl-3 py-1.5 rounded-3 transition-all text-nowrap"
+                       href="${pageContext.request.contextPath}/MainController?action=home#doctors"
+                       data-i18n="nav_doctors">
+                        <i class="fa-solid fa-user-doctor me-1 text-cyan"></i><span>Đội Ngũ Bác Sĩ</span>
                     </a>
                 </li>
                 <c:if test="${not empty sessionScope.LOGIN_USER}">
                     <li class="nav-item">
-                        <a class="nav-link text-white-50 text-white-hover px-3 py-2 rounded-3 transition-all text-nowrap" 
-                           href="${pageContext.request.contextPath}/MainController?action=history">
-                            <i class="fa-solid fa-clock-rotate-left me-1 text-cyan"></i>Lịch Sử Khám
+                        <a class="nav-link text-white-50 text-white-hover px-2 px-xxl-3 py-1.5 rounded-3 transition-all text-nowrap"
+                           href="${pageContext.request.contextPath}/MainController?action=history"
+                           data-i18n="nav_history">
+                            <i class="fa-solid fa-clock-rotate-left me-1 text-cyan"></i><span>Lịch Sử Khám</span>
                         </a>
                     </li>
                 </c:if>
             </ul>
 
-            <%-- Right User Auth Actions & Emergency Hotline --%>
-            <div class="d-flex align-items-center gap-3 mt-3 mt-xl-0 flex-shrink-0">
-                <div class="d-none d-xxl-flex align-items-center gap-2 text-white-50 small me-2 border-end pe-3 border-secondary border-opacity-25 hotline-box text-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-headset text-emerald fs-5 flex-shrink-0"></i>
-                    <div class="text-nowrap">
-                        <div class="fs-7 text-muted text-nowrap">Hotline Y Tế 24/7</div>
-                        <strong class="text-cyan text-nowrap">${not empty clinicSettings['CLINIC_HOTLINE'] ? clinicSettings['CLINIC_HOTLINE'] : '0901 234 567'}</strong>
+            <%-- Right User Auth Actions --%>
+            <div class="d-flex align-items-center gap-2 mt-2 mt-xl-0 pt-2 pt-xl-0 border-top border-xl-0 border-secondary border-opacity-25 flex-nowrap">
+                <%-- Hotline 24/7 (Hidden on screens < 1400px) --%>
+                <div class="d-none d-xxl-flex align-items-center gap-2 text-white-50 small me-1 border-end pe-3 border-secondary border-opacity-25 flex-shrink-0">
+                    <i class="fa-solid fa-headset text-emerald fs-5"></i>
+                    <div>
+                        <div class="fs-8 text-muted">Hotline Y Tế 24/7</div>
+                        <strong class="text-cyan">${not empty clinicSettings['CLINIC_HOTLINE'] ? clinicSettings['CLINIC_HOTLINE'] : '0901 234 567'}</strong>
                     </div>
                 </div>
 
                 <c:choose>
                     <c:when test="${empty sessionScope.LOGIN_USER}">
-                        <a href="${pageContext.request.contextPath}/MainController?action=login-page" 
-                           class="btn btn-outline-glass px-4 rounded-pill text-nowrap flex-shrink-0">
-                            <i class="fa-solid fa-right-to-bracket me-1"></i>Đăng Nhập
+                        <a href="${pageContext.request.contextPath}/MainController?action=login-page"
+                           class="btn btn-outline-glass px-2 px-sm-3 rounded-pill text-center py-1.5 fs-7 text-nowrap flex-shrink-0"
+                           data-i18n="btn_login">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i><span>Đăng Nhập</span>
                         </a>
-                        <a href="${pageContext.request.contextPath}/MainController?action=booking-page" 
-                           class="btn btn-primary-gradient px-4 rounded-pill text-nowrap flex-shrink-0">
-                            <i class="fa-solid fa-calendar-check me-1"></i>Đặt Lịch Khám
+                        <a href="${pageContext.request.contextPath}/MainController?action=booking-page"
+                           class="btn btn-primary-gradient px-2 px-sm-3 rounded-pill text-center py-1.5 fs-7 text-nowrap flex-shrink-0"
+                           data-i18n="btn_booking">
+                            <i class="fa-solid fa-calendar-check me-1"></i><span>Đặt Lịch Khám</span>
                         </a>
                     </c:when>
                     <c:otherwise>
+                        <%-- Notification Bell Component --%>
+                        <jsp:include page="/WEB-INF/views/components/notification-bell.jsp" />
+
                         <%-- User Dropdown --%>
-                        <div class="dropdown text-nowrap flex-shrink-0">
-                            <button class="btn btn-outline-glass dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-2 text-nowrap flex-shrink-0" 
+                        <div class="dropdown flex-shrink-0">
+                            <button class="btn btn-outline-glass dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-1.5"
                                     type="button" data-bs-toggle="dropdown">
-                                <div class="avatar-circle text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 34px; height: 34px; background: linear-gradient(135deg, #0ea5e9, #10b981); color: #fff !important;">
+                                <div class="avatar-circle text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+                                     style="width: 28px; height: 28px; background: linear-gradient(135deg, #0ea5e9, #10b981); color: #fff !important; font-size: 0.8rem;">
                                     ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
                                 </div>
-                                <span class="fw-semibold text-white me-1 text-nowrap"><c:out value="${sessionScope.LOGIN_USER.fullname}"/></span>
+                                <span class="fw-semibold text-white text-truncate d-none d-sm-inline" style="max-width: 110px; font-size: 0.85rem;">
+                                    <c:out value="${sessionScope.LOGIN_USER.fullname}"/>
+                                </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end glass-dropdown border-0 shadow-lg mt-2 p-2 rounded-4">
-                                <li class="dropdown-header text-muted px-3 py-2 text-nowrap">
-                                    <small>Vai trò hệ thống:</small><br>
-                                    <strong class="text-cyan">${sessionScope.LOGIN_USER.role}</strong>
+                                <li class="dropdown-header text-muted px-3 py-2">
+                                    <div class="d-flex justify-content-between align-items-center gap-2">
+                                        <small data-i18n="role_label">Vai trò:</small>
+                                        <strong class="text-cyan">${sessionScope.LOGIN_USER.role}</strong>
+                                    </div>
+                                    <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT' && not empty loyaltyProfile}">
+                                        <div class="mt-1">
+                                            <span class="badge ${loyaltyProfile.tierBadgeClass} rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+                                                <i class="fa-solid fa-crown me-1 text-warning"></i><c:out value="${loyaltyProfile.tierName}"/>
+                                            </span>
+                                        </div>
+                                    </c:if>
                                 </li>
                                 <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
                                 <li>
-                                    <a class="dropdown-item rounded-3 py-2 text-white text-nowrap" 
-                                       href="${pageContext.request.contextPath}/profile">
-                                        <i class="fa-solid fa-id-card me-2 text-cyan"></i>Hồ Sơ Cá Nhân
+                                    <a class="dropdown-item rounded-3 py-2 text-white"
+                                       href="${pageContext.request.contextPath}/profile"
+                                       data-i18n="nav_profile">
+                                        <i class="fa-solid fa-id-card me-2 text-cyan"></i><span>Hồ Sơ Cá Nhân</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item rounded-3 py-2 text-white text-nowrap" 
-                                       href="${pageContext.request.contextPath}/MainController?action=history">
-                                        <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i>Lịch Sử Đặt Khám
+                                    <a class="dropdown-item rounded-3 py-2 text-white"
+                                       href="${pageContext.request.contextPath}/MainController?action=history"
+                                       data-i18n="nav_history">
+                                        <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i><span>Lịch Sử Đặt Khám</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item rounded-3 py-2 text-danger text-nowrap" 
-                                       href="${pageContext.request.contextPath}/MainController?action=logout">
-                                        <i class="fa-solid fa-right-from-bracket me-2"></i>Đăng Xuất
+                                    <a class="dropdown-item rounded-3 py-2 text-danger"
+                                       href="${pageContext.request.contextPath}/MainController?action=logout"
+                                       data-i18n="nav_logout">
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i><span>Đăng Xuất</span>
                                     </a>
                                 </li>
                             </ul>
@@ -111,5 +140,3 @@
         </div>
     </div>
 </nav>
-
-

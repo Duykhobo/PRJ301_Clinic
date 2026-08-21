@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -92,6 +93,26 @@
                         <div class="mb-2"><i class="fa-solid fa-phone me-2 text-warning"></i>SĐT: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.phone}"/></strong></div>
                         <div><i class="fa-solid fa-calendar-alt me-2 text-emerald"></i>Thành viên từ: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.createdAt}"/></strong></div>
                     </div>
+
+                    <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT' && not empty loyaltyProfile}">
+                        <%-- SPA & CLINIC: VIP LOYALTY CARD (100% REAL DATA VIA JSTL & EL) --%>
+                        <div class="p-3 mt-3 rounded-3 text-start" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge ${loyaltyProfile.tierBadgeClass} px-2 py-1 rounded-pill fw-bold">
+                                    <i class="fa-solid fa-crown me-1 text-warning"></i><c:out value="${loyaltyProfile.tierName}"/>
+                                </span>
+                                <small class="text-white-50"><i class="fa-solid fa-star text-warning me-1"></i><fmt:formatNumber value="${loyaltyProfile.totalPoints}" type="number"/> Điểm</small>
+                            </div>
+                            <div class="fs-7 text-white fw-semibold mb-1">Đặc quyền Hội viên Spa:</div>
+                            <ul class="list-unstyled mb-0 text-white-50 fs-8">
+                                <c:if test="${loyaltyProfile.discountPercent > 0}">
+                                    <li><i class="fa-solid fa-check text-emerald me-1"></i>Ưu đãi giảm <strong class="text-warning">${loyaltyProfile.discountPercent}%</strong> tất cả hóa đơn</li>
+                                </c:if>
+                                <li><i class="fa-solid fa-check text-emerald me-1"></i>Tổng chi tiêu: <strong class="text-cyan"><fmt:formatNumber value="${loyaltyProfile.totalSpent}" pattern="#,##0"/> VNĐ</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald me-1"></i><c:out value="${loyaltyProfile.specialBenefit}"/></li>
+                            </ul>
+                        </div>
+                    </c:if>
                 </div>
             </div>
 
@@ -116,7 +137,7 @@
                     <div class="tab-content" id="profileTabsContent">
                         <%-- TAB 1: EDIT PROFILE --%>
                         <div class="tab-pane fade ${activeTab == 'password' ? '' : 'show active'}" id="info-pane" role="tabpanel">
-                            <form action="${pageContext.request.contextPath}/profile" method="POST">
+                            <form action="${pageContext.request.contextPath}/profile" method="POST" novalidate="true">
                                 <input type="hidden" name="action" value="update-profile">
 
                                 <div class="mb-3">
@@ -127,17 +148,26 @@
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Họ và Tên <span class="text-cyan">*</span></label>
-                                    <input type="text" name="fullname" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.fullname}" required placeholder="Nhập họ và tên...">
+                                    <input type="text" name="fullname" class="form-control form-control-custom ${not empty errors.fullname ? 'is-invalid' : ''}" value="${not empty param.fullname ? param.fullname : sessionScope.LOGIN_USER.fullname}" required placeholder="Nhập họ và tên...">
+                                    <c:if test="${not empty errors.fullname}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.fullname}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Địa Chỉ Email <span class="text-cyan">*</span></label>
-                                        <input type="email" name="email" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.email}" required placeholder="nhapemail@gmail.com">
+                                        <input type="email" name="email" class="form-control form-control-custom ${not empty errors.email ? 'is-invalid' : ''}" value="${not empty param.email ? param.email : sessionScope.LOGIN_USER.email}" required placeholder="nhapemail@gmail.com">
+                                        <c:if test="${not empty errors.email}">
+                                            <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
+                                        </c:if>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Số Điện Thoại <span class="text-cyan">*</span></label>
-                                        <input type="text" name="phone" class="form-control form-control-custom" value="${sessionScope.LOGIN_USER.phone}" required placeholder="09xxxxxxxx">
+                                        <input type="text" name="phone" class="form-control form-control-custom ${not empty errors.phone ? 'is-invalid' : ''}" value="${not empty param.phone ? param.phone : sessionScope.LOGIN_USER.phone}" required placeholder="09xxxxxxxx">
+                                        <c:if test="${not empty errors.phone}">
+                                            <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.phone}</span></div>
+                                        </c:if>
                                     </div>
                                 </div>
 
@@ -149,22 +179,31 @@
 
                         <%-- TAB 2: CHANGE PASSWORD --%>
                         <div class="tab-pane fade ${activeTab == 'password' ? 'show active' : ''}" id="password-pane" role="tabpanel">
-                            <form action="${pageContext.request.contextPath}/profile" method="POST">
+                            <form action="${pageContext.request.contextPath}/profile" method="POST" novalidate="true">
                                 <input type="hidden" name="action" value="change-password">
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Mật Khẩu Hiện Tại <span class="text-cyan">*</span></label>
-                                    <input type="password" name="oldPassword" class="form-control form-control-custom" required placeholder="Nhập mật khẩu hiện tại...">
+                                    <input type="password" name="oldPassword" class="form-control form-control-custom ${not empty errors.oldPassword ? 'is-invalid' : ''}" required placeholder="Nhập mật khẩu hiện tại...">
+                                    <c:if test="${not empty errors.oldPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.oldPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Mật Khẩu Mới <span class="text-cyan">*</span></label>
-                                    <input type="password" name="newPassword" class="form-control form-control-custom" required placeholder="Ít nhất 6 ký tự...">
+                                    <input type="password" name="newPassword" class="form-control form-control-custom ${not empty errors.newPassword ? 'is-invalid' : ''}" required placeholder="Ít nhất 6 ký tự...">
+                                    <c:if test="${not empty errors.newPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.newPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <div class="mb-4">
                                     <label class="form-label text-white fw-semibold">Xác Nhận Mật Khẩu Mới <span class="text-cyan">*</span></label>
-                                    <input type="password" name="confirmPassword" class="form-control form-control-custom" required placeholder="Nhập lại mật khẩu mới...">
+                                    <input type="password" name="confirmPassword" class="form-control form-control-custom ${not empty errors.confirmPassword ? 'is-invalid' : ''}" required placeholder="Nhập lại mật khẩu mới...">
+                                    <c:if test="${not empty errors.confirmPassword}">
+                                        <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.confirmPassword}</span></div>
+                                    </c:if>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary-gradient rounded-pill px-4 py-2 fw-bold">

@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 <!-- SweetAlert2 CDN & Dark Theme -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -24,4 +25,13 @@
 <link href="${pageContext.request.contextPath}/assets/css/style.css" rel="stylesheet">
 <link href="${pageContext.request.contextPath}/assets/css/sidebar.css" rel="stylesheet">
 <link href="${pageContext.request.contextPath}/assets/css/dashboard.css" rel="stylesheet">
+
+<!-- Context Path Global Config & Notifications -->
+<script>
+    window.CONTEXT_PATH = "${pageContext.request.contextPath}";
+    window.APP_CONTEXT_PATH = "${pageContext.request.contextPath}";
+    try { localStorage.removeItem("PRJ301_APP_LANG"); } catch (e) {}
+</script>
+<script src="${pageContext.request.contextPath}/assets/js/notifications.js" defer></script>
+
 

@@ -245,30 +245,36 @@ INSERT INTO Users (username, password, email, fullname, phone, role, status) VAL
 ('admin', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'admin@clinic.com', N'Quản Trị Viên Master', '0901234567', 'ADMIN', 1),
 ('drminh', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drminh@clinic.com', N'BS. Nguyễn Văn Minh', '0912345678', 'DOCTOR', 1),
 ('drlan', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drlan@clinic.com', N'BS. Trần Thị Lan', '0923456789', 'DOCTOR', 1),
+('drhung', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'drhung@clinic.com', N'BS. Lê Hoàng Hùng', '0934567899', 'DOCTOR', 1),
 ('receptionist1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'letan@clinic.com', N'Lễ Tân Nguyễn Mai Phương', '0933334444', 'RECEPTIONIST', 1),
+('receptionist2', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'letan2@clinic.com', N'Lễ Tân Trần Bảo Ngọc', '0933335555', 'RECEPTIONIST', 1),
 ('patient1', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient1@gmail.com', N'Lê Hoàng Nam', '0934567890', 'PATIENT', 1),
 ('patient2', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient2@gmail.com', N'Phạm Thu Hương', '0945678901', 'PATIENT', 1),
 ('patient3', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient3@gmail.com', N'Vũ Ngọc Anh', '0956789012', 'PATIENT', 1),
-('patient4', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1);
+('patient4', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient4@gmail.com', N'Đặng Minh Trí', '0967890123', 'PATIENT', 1),
+('patient5', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient5@gmail.com', N'Hoàng Yến Nhi', '0978901234', 'PATIENT', 1),
+('patient6', '$2a$10$.Qa4y49MSgWskiEdoCjTmenbwxC93hcn2eTqcZyClZY3W3/UpOMfC', 'patient6@gmail.com', N'Bùi Đức Huy', '0989012345', 'PATIENT', 1);
 
 -- 2. Chèn Services (Danh mục Dịch vụ Phòng khám & Spa)
 INSERT INTO Services (service_name, price, duration_minutes, description, image_url, status) VALUES
 (N'Khám Tư Vấn Thử Nghiệm SePay (Mã Test)', 2000.00, 15, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 2.000 VNĐ.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
 (N'Kiểm Tra Da Mặt Định Kỳ (Mã Test)', 5000.00, 20, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 5.000 VNĐ.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
 (N'Lấy Cao Răng Thử Nghiệm (Mã Test)', 10000.00, 30, N'Dịch vụ thử nghiệm thanh toán chuyển khoản thật qua SePay 10.000 VNĐ.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
-(N'Khám & Tẩy Trắng Răng Laser', 1500000.00, 45, N'Tẩy trắng răng công nghệ Laser Whitening không gây ê buốt, sáng bóng tự nhiên.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
-(N'Khám Nha Khoa Tổng Quát', 300000.00, 30, N'Kiểm tra sức khỏe răng miệng, lấy cao răng đánh bóng chuyên sâu.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mặt Deep Cleansing Spa', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
-(N'Chăm Sóc Da Mụn & Phục Hồi Y Khoa', 650000.00, 50, N'Điều trị mụn chuyên y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1),
-(N'Trẻ Hóa Da Công Nghệ High Tech', 2500000.00, 90, N'Liệu trình nâng cơ, xóa nhăn và tái tạo collagen cho làn da tuổi trung niên.', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80', 1),
-(N'Niềng Răng Thẩm Mỹ Khám Tư Vấn', 500000.00, 45, N'Chụp X-quang panorama tư vấn phác đồ niềng răng trong suốt và mắc cài.', 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80', 1);
+(N'Khám & Tẩy Trắng Răng Laser Whitening', 1500000.00, 45, N'Tẩy trắng răng công nghệ Laser Whitening không gây ê buốt, sáng bóng tự nhiên.', 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80', 1),
+(N'Khám Nha Khoa Tổng Quát & Đánh Bóng', 300000.00, 30, N'Kiểm tra sức khỏe răng miệng toàn diện, lấy cao răng và đánh bóng chuyên sâu.', 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80', 1),
+(N'Chăm Sóc Da Mặt Deep Cleansing Spa', 850000.00, 60, N'Liệu trình làm sạch sâu, thải độc chì và trẻ hóa làn da căng mịn.', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80', 1),
+(N'Chăm Sóc Da Mụn & Phục Hồi Y Khoa', 650000.00, 50, N'Điều trị mụn chuyên sâu chuẩn y khoa, chiếu ánh sáng sinh học làm lành da nhanh chóng.', 'https://images.unsplash.com/photo-1512290900673-7002ff2e4318?auto=format&fit=crop&w=600&q=80', 1),
+(N'Trẻ Hóa Da Công Nghệ High-Tech Nâng Cơ', 2500000.00, 90, N'Liệu trình nâng cơ HIFU, xóa nhăn và tái tạo collagen cho làn da tuổi trung niên.', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80', 1),
+(N'Niềng Răng Thẩm Mỹ Khám Tư Vấn & X-Quang', 500000.00, 45, N'Chụp phim X-quang Panorama tư vấn phác đồ niềng răng trong suốt và mắc cài sứ.', 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80', 1),
+(N'Phục Hình Răng Sứ Thẩm Mỹ Cao Cấp', 3200000.00, 60, N'Bọc răng sứ toàn phần Cercon HT chính hãng độ bền cao, bảo hành 10 năm.', 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80', 1);
 
 -- 3. Chèn DoctorProfiles (Hồ sơ Bác sĩ)
 INSERT INTO DoctorProfiles (user_id, specialty, experience_years, room_number, bio) VALUES
-(2, N'Nha Khoa Thẩm Mỹ & Phục Hình', 10, 'Room 101', N'Trưởng khoa Nha Khoa với 10 năm kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ nụ cười.'),
-(3, N'Da Liễu & Thẩm Mỹ Skin Care Spa', 8, 'Room 202', N'Chuyên gia da liễu hàng đầu, chuyên điều trị các vấn đề về da và trẻ hóa chuyên sâu.');
+(2, N'Nha Khoa Thẩm Mỹ & Phục Hình', 12, 'Room 101', N'Trưởng khoa Nha Khoa với hơn 12 năm kinh nghiệm trong lĩnh vực phục hình nụ cười, cấy ghép Implant và nha khoa thẩm mỹ cao cấp.'),
+(3, N'Da Liễu & Thẩm Mỹ Skin Care Spa', 9, 'Room 202', N'Bác sĩ Chuyên khoa Da Liễu hàng đầu, tu nghiệp tại Hàn Quốc, chuyên điều trị mụn y khoa và liệu trình trẻ hóa da chuyên sâu.'),
+(4, N'Chỉnh Nha & Răng Hàm Mặt', 7, 'Room 103', N'Chuyên gia nắn chỉnh răng và khớp cắn, điều trị thành công hơn 1.000 ca niềng răng mắc cài và khay trong suốt Invisalign.');
 
--- 4. Chèn DoctorSchedules (Khung giờ làm việc cho Hôm nay, Ngày mai và Ngày kia)
+-- 4. Chèn DoctorSchedules (Khung giờ làm việc linh hoạt cho Hôm nay, Ngày mai và Các ngày kế tiếp)
 INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES
 -- Hôm nay (GETDATE())
 (1, CAST(GETDATE() AS DATE), '08:00', '09:00', 0),
@@ -276,46 +282,69 @@ INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_avai
 (1, CAST(GETDATE() AS DATE), '10:00', '11:00', 1),
 (1, CAST(GETDATE() AS DATE), '11:00', '12:00', 1),
 (1, CAST(GETDATE() AS DATE), '14:00', '15:00', 1),
+(1, CAST(GETDATE() AS DATE), '15:00', '16:00', 1),
+(1, CAST(GETDATE() AS DATE), '16:00', '17:00', 1),
+
+(2, CAST(GETDATE() AS DATE), '08:00', '09:00', 1),
+(2, CAST(GETDATE() AS DATE), '09:00', '10:00', 1),
+(2, CAST(GETDATE() AS DATE), '10:00', '11:00', 1),
 (2, CAST(GETDATE() AS DATE), '14:00', '15:00', 0),
 (2, CAST(GETDATE() AS DATE), '15:00', '16:00', 1),
 (2, CAST(GETDATE() AS DATE), '16:00', '17:00', 1),
+
+(3, CAST(GETDATE() AS DATE), '08:00', '09:00', 1),
+(3, CAST(GETDATE() AS DATE), '09:00', '10:00', 1),
+(3, CAST(GETDATE() AS DATE), '14:00', '15:00', 1),
+(3, CAST(GETDATE() AS DATE), '15:00', '16:00', 1),
 
 -- Ngày mai (GETDATE() + 1)
 (1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '08:00', '09:00', 1),
 (1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '09:00', '10:00', 1),
 (1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
+(1, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '15:00', '16:00', 1),
+
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '10:00', '11:00', 1),
 (2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
 (2, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '15:00', '16:00', 1),
+
+(3, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '08:00', '09:00', 1),
+(3, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '10:00', '11:00', 1),
+(3, CAST(DATEADD(DAY, 1, GETDATE()) AS DATE), '14:00', '15:00', 1),
 
 -- Ngày kia (GETDATE() + 2)
 (1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '08:00', '09:00', 1),
 (1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '09:00', '10:00', 1),
 (1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '10:00', '11:00', 1),
-(1, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
 (2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1),
-(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '15:00', '16:00', 1);
+(2, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '15:00', '16:00', 1),
+(3, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '09:00', '10:00', 1),
+(3, CAST(DATEADD(DAY, 2, GETDATE()) AS DATE), '14:00', '15:00', 1);
 
--- 5. Chèn Appointments (Lịch hẹn mẫu)
+-- 5. Chèn Appointments (Lịch hẹn mẫu đa dạng trạng thái)
 INSERT INTO Appointments (patient_id, doctor_id, service_id, schedule_id, appointment_date, start_time, total_price, status, payment_status, payment_method, payment_content, transaction_code, notes) VALUES
-(5, 1, 1, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLINIC1', 'FT2408110001', N'Khách hàng muốn tẩy trắng trước ngày cưới.'),
-(6, 2, 3, 6, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLINIC2', 'FT2408110002', N'Da nhạy cảm, dễ dị ứng.');
+(7, 1, 4, 1, CAST(GETDATE() AS DATE), '08:00', 1500000.00, 'COMPLETED', 'PAID', 'SEPAY_QR', 'CLN1', 'FT2608180001', N'Khách hàng muốn tẩy trắng răng chuẩn bị đám cưới.'),
+(8, 2, 6, 11, CAST(GETDATE() AS DATE), '14:00', 850000.00, 'CONFIRMED', 'PAID', 'SEPAY_QR', 'CLN2', 'FT2608180002', N'Da nhạy cảm, dễ đỏ khi tiếp xúc cồn.'),
+(9, 1, 5, 2, CAST(GETDATE() AS DATE), '09:00', 300000.00, 'PENDING', 'UNPAID', 'CASH', 'CLN3', NULL, N'Khám định kỳ 6 tháng một lần.'),
+(10, 3, 9, 17, CAST(GETDATE() AS DATE), '14:00', 500000.00, 'PENDING', 'UNPAID', 'SEPAY_QR', 'CLN4', NULL, N'Khách hẹn tư vấn niềng răng trong suốt.');
 
--- 6. Chèn MedicalRecords (Hồ sơ bệnh án mẫu)
+-- 6. Chèn MedicalRecords (Hồ sơ bệnh án & Đánh giá mẫu)
 INSERT INTO MedicalRecords (appointment_id, patient_id, doctor_id, diagnosis, prescription_or_result, rating, review_comment) VALUES
-(1, 5, 1, N'Răng ố vàng nhẹ do uống cà phê.', N'Tẩy trắng thành công Laser Whitening. Dùng kem đánh răng chống ê buốt 3 ngày.', 5, N'Bác sĩ Minh rất mát tay, răng trắng sáng đẹp lắm!');
+(1, 7, 1, N'Men răng ố vàng độ 3 do uống cà phê và trà đậm màu.', N'Tẩy trắng thành công bằng Laser Whitening 45 phút, độ sáng tăng 3 tone (VITA Shade A1). Dặn dò: Kiêng thực phẩm sẫm màu trong 48h, sử dụng kem đánh răng Sensodyne chống ê buốt.', 5, N'Bác sĩ Minh khám và làm rất êm ái, tư vấn chu đáo, phòng khám cực kỳ sạch sẽ và hiện đại!');
 GO
 
 -- 7. Chèn ClinicSettings (Cấu hình Hệ thống & Ngân hàng VietQR SePay)
 INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES
-('CLINIC_NAME', N'Phòng Khám & Spa Nha Khoa Quốc Tế PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
-('CLINIC_HOTLINE', '0901234567', N'Số điện thoại tổng đài tư vấn'),
-('CLINIC_EMAIL', 'contact@prj301clinic.com', N'Email liên hệ hỗ trợ'),
-('CLINIC_ADDRESS', N'123 Đường Nguyễn Văn Cừ, Phường 4, Quận 5, TP.HCM', N'Địa chỉ chi nhánh chính'),
-('OPENING_HOURS', N'08:00 - 20:00 (Từ Thứ 2 đến Chủ Nhật)', N'Khung giờ mở cửa hoạt động chung'),
+('CLINIC_NAME', N'Phòng Khám & Spa PRJ301', N'Tên phòng khám hiển thị trên Header/Footer'),
+('CLINIC_HOTLINE', '0901234567', N'Số điện thoại tổng đài tư vấn và đặt hẹn'),
+('CLINIC_EMAIL', 'contact@prj301clinic.com', N'Email hỗ trợ bệnh nhân và tiếp nhận phản hồi'),
+('CLINIC_ADDRESS', N'123 Đường Nguyễn Văn Cừ, Phường 4, Quận 5, TP. Hồ Chí Minh', N'Địa chỉ cơ sở chính'),
+('OPENING_HOURS', N'08:00 - 20:00 (Từ Thứ 2 đến Thứ 7, Chủ Nhật nghỉ)', N'Khung giờ mở cửa hoạt động chung'),
 ('CLINIC_SLOT_DURATION', '60', N'Thời lượng mỗi khung giờ khám (Phút) - Động'),
 ('CLINIC_TIME_SLOTS', '08:00,09:00,10:00,11:00,14:00,15:00,16:00,17:00', N'Danh sách các khung giờ khám khả dụng trong ngày - Động'),
-('SEPAY_BANK_NAME', 'Sacombank', N'Tên ngân hàng tài khoản SePay'),
-('SEPAY_BANK_ACC', '070148520060', N'Số tài khoản nhận chuyển khoản SePay'),
+('SEPAY_BANK_NAME', 'Sacombank', N'Tên ngân hàng nhận chuyển khoản VietQR SePay'),
+('SEPAY_BANK_ACC', '070148520060', N'Số tài khoản nhận chuyển khoản VietQR SePay'),
 ('SEPAY_ACCOUNT_HOLDER', N'NGUYEN THANH DUY', N'Tên chủ tài khoản nhận tiền');
 GO
 
@@ -448,4 +477,34 @@ GO
 UPDATE Appointments 
 SET payment_content = 'CLN' + CAST(id AS VARCHAR) 
 WHERE payment_content IS NULL OR payment_content = '';
+GO
+
+-- =========================================================================
+-- 7. BẢNG TRUNG TÂM THÔNG BÁO HỆ THỐNG ĐA VAI TRÒ (NOTIFICATIONS)
+-- =========================================================================
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notifications' AND xtype='U')
+BEGIN
+    CREATE TABLE Notifications (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
+        title NVARCHAR(255) NOT NULL,
+        message NVARCHAR(1000) NOT NULL,
+        type VARCHAR(50) DEFAULT 'INFO', -- 'APPOINTMENT', 'SCHEDULE', 'PAYMENT', 'MEDICAL', 'SYSTEM'
+        is_read BIT DEFAULT 0,
+        link VARCHAR(255) NULL,
+        created_at DATETIME DEFAULT GETDATE()
+    );
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Notification_User')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Notification_User ON Notifications(user_id);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Notification_Unread')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Notification_Unread ON Notifications(user_id, is_read);
+END
 GO

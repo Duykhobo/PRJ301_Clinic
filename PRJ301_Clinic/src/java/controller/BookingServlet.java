@@ -3,7 +3,10 @@ package controller;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,18 +15,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import constant.RoleConstant;
 import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.DoctorScheduleDAO;
 import exception.SlotAlreadyBookedException;
-import model.Appointment;
-import model.DoctorProfile;
-import model.DoctorSchedule;
-import model.Service;
-import model.User;
+import model.*;
 import service.BookingService;
 import service.ClinicService;
 import util.EmailUtil;
+import util.ValidationUtil;
 
 /**
  * BookingServlet - Điều hướng & Xử lý Đặt Lịch Hẹn Khám Bệnh Nhân (/booking).
@@ -69,6 +70,10 @@ public class BookingServlet extends HttpServlet {
             handleCheckPaymentStatus(request, response);
             return;
         }
+        if ("pay-cash".equals(action)) {
+            handlePayCash(request, response);
+            return;
+        }
 
         List<Service> services = clinicService.getActiveServices();
         List<DoctorProfile> doctors = clinicService.getAllDoctors();
@@ -91,16 +96,32 @@ public class BookingServlet extends HttpServlet {
         }
         User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
+        String serviceIdStr = request.getParameter("serviceId") != null ? request.getParameter("serviceId").trim() : "";
+        String doctorIdStr = request.getParameter("doctorId") != null ? request.getParameter("doctorId").trim() : "";
+        String scheduleIdStr = request.getParameter("scheduleId") != null ? request.getParameter("scheduleId").trim() : "";
+        String appointmentDateStr = request.getParameter("appointmentDate") != null ? request.getParameter("appointmentDate").trim() : "";
+        String notes = request.getParameter("notes") != null ? request.getParameter("notes").trim() : "";
+
+        request.setAttribute("selectedServiceId", serviceIdStr);
+        request.setAttribute("selectedDoctorId", doctorIdStr);
+        request.setAttribute("selectedAppointmentDate", appointmentDateStr);
+        request.setAttribute("selectedScheduleId", scheduleIdStr);
+        request.setAttribute("notes", notes);
+
+        Map<String, String> errors = new HashMap<>();
+        ValidationUtil.validateField(errors, "serviceId", !serviceIdStr.isEmpty(), "Vui lòng chọn dịch vụ khám/spa!");
+        ValidationUtil.validateField(errors, "doctorId", !doctorIdStr.isEmpty(), "Vui lòng chọn bác sĩ phụ trách!");
+        ValidationUtil.validateField(errors, "appointmentDate", !appointmentDateStr.isEmpty(), "Vui lòng chọn ngày khám hợp lệ!");
+        ValidationUtil.validateField(errors, "scheduleId", !scheduleIdStr.isEmpty(), "Vui lòng chọn khung giờ khám còn trống!");
+
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ, Ngày và Khung giờ khám!");
+            doGet(request, response);
+            return;
+        }
+
         try {
-            String serviceIdStr = request.getParameter("serviceId");
-            String doctorIdStr = request.getParameter("doctorId");
-            String scheduleIdStr = request.getParameter("scheduleId");
-            String appointmentDateStr = request.getParameter("appointmentDate");
-            String notes = request.getParameter("notes");
-
-            // ✅ REFACTOR CLEAN CODE: Gọi 1 dòng ValidationUtil duy nhất!
-            util.ValidationUtil.validateBookingParams(doctorIdStr, serviceIdStr, scheduleIdStr, appointmentDateStr);
-
             int serviceId = Integer.parseInt(serviceIdStr);
             int doctorId = Integer.parseInt(doctorIdStr);
             int scheduleId = Integer.parseInt(scheduleIdStr);
@@ -130,18 +151,6 @@ public class BookingServlet extends HttpServlet {
             app.setPaymentMethod(SystemConstant.METHOD_SEPAY_QR);
             app.setNotes(notes);
 
-            // =========================================================================
-            // TODO: BÀI TẬP CỘT MỐC 4 - TRIỂN KHAI CONTROLLER LAYER (BOOKING SERVLET)
-            //
-            // 1. Parse các parameter: serviceId, doctorId, scheduleId, appointmentDate,
-            // notes
-            // 2. Validate dữ liệu đầu vào. Nếu thiếu -> nạp message lỗi và return
-            // 3. Khởi tạo đối tượng Appointment và set thông tin
-            // 4. Gọi bookingService.createBookingAtomic(app)
-            // 5. Nếu thành công -> gửi mail async và chuyển hướng tới trang thanh toán
-            // 6. Bắt lỗi SlotAlreadyBookedException -> set message lỗi và trả về view
-            // =========================================================================
-
             boolean success = bookingService.createBookingAtomic(app);
 
             if (success) {
@@ -152,11 +161,15 @@ public class BookingServlet extends HttpServlet {
 
                 response.sendRedirect(request.getContextPath() + "/booking?action=payment&id=" + app.getId());
             } else {
+                errors.put("scheduleId", "Khung giờ này vừa được đặt bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
+                request.setAttribute("errors", errors);
                 request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
                         "Khung giờ này vừa được đăng ký thành công bởi bệnh nhân khác. Vui lòng chọn ca rảnh khác!");
                 doGet(request, response);
             }
         } catch (SlotAlreadyBookedException e) {
+            errors.put("scheduleId", e.getMessage());
+            request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
@@ -191,9 +204,11 @@ public class BookingServlet extends HttpServlet {
                     String[] parts = dateStr.split("/");
                     if (parts.length == 3) {
                         if (parts[0].length() == 4) { // yyyy/mm/dd
-                            dateStr = parts[0] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-" + String.format("%02d", Integer.parseInt(parts[2]));
+                            dateStr = parts[0] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-"
+                                    + String.format("%02d", Integer.parseInt(parts[2]));
                         } else { // dd/mm/yyyy
-                            dateStr = parts[2] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-" + String.format("%02d", Integer.parseInt(parts[0]));
+                            dateStr = parts[2] + "-" + String.format("%02d", Integer.parseInt(parts[1])) + "-"
+                                    + String.format("%02d", Integer.parseInt(parts[0]));
                         }
                     }
                 }
@@ -202,7 +217,7 @@ public class BookingServlet extends HttpServlet {
 
             List<DoctorSchedule> slots = (date != null && doctorId > 0)
                     ? clinicService.getSchedules(doctorId, date)
-                    : new java.util.ArrayList<>();
+                    : new ArrayList<>();
 
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < slots.size(); i++) {
@@ -234,5 +249,43 @@ public class BookingServlet extends HttpServlet {
         } catch (Exception ignored) {
         }
         response.getWriter().write("{\"id\":0,\"paymentStatus\":\"UNPAID\",\"status\":\"PENDING\"}");
+    }
+
+    private void handlePayCash(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        User loginUser = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
+        if (loginUser == null) {
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN);
+            return;
+        }
+
+        try {
+            int appointmentId = Integer.parseInt(request.getParameter("id"));
+            Appointment app = bookingService.getAppointmentById(appointmentId);
+
+            if (app != null) {
+                boolean isOwner = (app.getPatientId() == loginUser.getId());
+                boolean isStaff = RoleConstant.ADMIN.equalsIgnoreCase(loginUser.getRole())
+                        || RoleConstant.RECEPTIONIST.equalsIgnoreCase(loginUser.getRole());
+
+                if (isOwner || isStaff) {
+                    if (!SystemConstant.PAYMENT_PAID.equalsIgnoreCase(app.getPaymentStatus())) {
+                        boolean updated = bookingService.switchToCashPayment(appointmentId);
+                        if (updated) {
+                            request.getSession().setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR,
+                                    "Đã chuyển phương thức sang Thanh toán Tiền mặt khi đến khám thành công!");
+                        }
+                    } else {
+                        request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
+                                "Hóa đơn này đã được thanh toán, không thể chuyển phương thức!");
+                    }
+                } else {
+                    request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
+                            "Bạn không có quyền thay đổi phương thức thanh toán của lịch hẹn này!");
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
     }
 }

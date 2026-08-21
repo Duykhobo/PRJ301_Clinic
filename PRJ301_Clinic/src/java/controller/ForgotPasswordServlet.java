@@ -2,6 +2,8 @@ package controller;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,7 +21,7 @@ import util.ValidationUtil;
 
 /**
  * ForgotPasswordServlet - Xử lý Quên Mật Khẩu qua Email (/forgot-password).
- * Kiểm tra sự tồn tại của Email trong CSDL, cập nhật mật khẩu tạm thời và gửi Mail SMTP.
+ * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "ForgotPasswordServlet", urlPatterns = { "/forgot-password" })
 public class ForgotPasswordServlet extends HttpServlet {
@@ -43,61 +45,47 @@ public class ForgotPasswordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String email = request.getParameter("email");
+        String email = request.getParameter("email") != null ? request.getParameter("email").trim() : "";
         request.setAttribute("email", email);
 
-        // 1. Validation kiểm tra định dạng Email hợp lệ
-        if (email == null || email.trim().isEmpty() || !ValidationUtil.isValidEmail(email.trim())) {
+        Map<String, String> errors = new HashMap<>();
+        ValidationUtil.validateField(errors, "email", ValidationUtil.isValidEmail(email), MessageConstant.ERR_INVALID_EMAIL);
+
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_EMAIL);
             request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
             return;
         }
 
-        String cleanEmail = email.trim();
-
-        // 2. Kiểm tra sự tồn tại của Email trong CSDL
-        User user = userService.findByEmail(cleanEmail);
+        User user = userService.findByEmail(email);
         if (user == null) {
-            // THÔNG BÁO LỖI: Không tìm thấy Email trong hệ thống
+            errors.put("email", MessageConstant.ERR_EMAIL_NOT_FOUND);
+            request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_EMAIL_NOT_FOUND);
             request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
             return;
         }
 
-        // 3. Tạo mật khẩu tạm thời mới
         String tempPassword = generateTempPassword();
-
-        // 4. Cập nhật mật khẩu băm mới vào CSDL
         boolean updated = userService.resetPasswordByEmail(user.getId(), tempPassword);
         if (!updated) {
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
-                    "Lỗi hệ thống khi cập nhật mật khẩu mới. Vui lòng thử lại sau!");
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Lỗi hệ thống khi cập nhật mật khẩu mới. Vui lòng thử lại sau!");
             request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
             return;
         }
 
-        // 5. Gửi Email thông báo Mật khẩu tạm qua máy chủ Mail SMTP Real
         boolean emailSent = EmailUtil.sendPasswordResetSync(user.getEmail(), user.getFullname(), tempPassword);
-
-        if (!emailSent) {
-            // THÔNG BÁO LỖI: Gửi email thất bại (Lỗi kết nối SMTP Mail Server)
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_SEND_EMAIL_FAILED);
-        } else {
-            // THÔNG BÁO THÀNH CÔNG: Đã gửi email thành công
-            request.setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR, MessageConstant.MSG_SEND_EMAIL_SUCCESS);
-        }
+        request.setAttribute(emailSent ? SystemConstant.SUCCESS_MESSAGE_ATTR : SystemConstant.ERROR_MESSAGE_ATTR,
+                             emailSent ? MessageConstant.MSG_SEND_EMAIL_SUCCESS : MessageConstant.ERR_SEND_EMAIL_FAILED);
 
         request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
     }
 
-    /**
-     * Helper tạo chuỗi mật khẩu ngẫu nhiên 8 ký tự.
-     */
     private String generateTempPassword() {
         StringBuilder sb = new StringBuilder("Clinic#");
         for (int i = 0; i < 6; i++) {
-            int index = RANDOM.nextInt(ALPHA_NUMERIC.length());
-            sb.append(ALPHA_NUMERIC.charAt(index));
+            sb.append(ALPHA_NUMERIC.charAt(RANDOM.nextInt(ALPHA_NUMERIC.length())));
         }
         return sb.toString();
     }

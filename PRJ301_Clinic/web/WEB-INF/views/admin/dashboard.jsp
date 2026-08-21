@@ -105,7 +105,7 @@
                     </div>
 
                     <%-- DATE RANGE FILTER --%>
-                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" class="filter-bar">
+                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" class="filter-bar" novalidate="true">
                         <input type="hidden" name="pageUser" value="${currentPageUser}">
                         <input type="hidden" name="pageService" value="${currentPageService}">
                         <input type="hidden" name="tab" value="${activeTab}">
@@ -233,7 +233,7 @@
                                             </td>
                                             <td><c:out value="${u.phone}"/></td>
                                             <td>
-                                                <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="d-inline-flex align-items-center gap-1 ajax-form" onsubmit="return false;">
+                                                <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="d-inline-flex align-items-center gap-1 ajax-form" onsubmit="return false;" novalidate="true">
                                                     <input type="hidden" name="action" value="update-user-role">
                                                     <input type="hidden" name="userId" value="${u.id}">
                                                     <select name="role" class="form-select form-select-sm bg-dark text-white border-secondary" style="font-size:.78rem; width:auto;" onchange="submitRoleAjax(this, ${u.id})">
@@ -375,7 +375,7 @@
                             </div>
                         </div>
                         <div class="p-4">
-                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" id="settingsForm">
+                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" id="settingsForm" novalidate="true">
                                 <input type="hidden" name="action" value="update-settings">
                                 <input type="hidden" name="ajax" value="true">
                                 <div class="row g-4">
@@ -476,7 +476,7 @@
                     <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-plus-circle me-2"></i>Thêm Dịch Vụ Khám Mới</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST">
+                <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" novalidate="true">
                     <input type="hidden" name="action" value="add-service">
                     <input type="hidden" name="pageUser" value="${currentPageUser}">
                     <input type="hidden" name="pageService" value="${currentPageService}">

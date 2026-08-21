@@ -25,14 +25,6 @@ public class BookingService {
      * Đặt Lịch Hẹn Nguyên Tử (Chống trùng slot giờ khám).
      */
     public boolean createBookingAtomic(Appointment app) {
-        // =========================================================================
-        // TODO: BÀI TẬP CỘT MỐC 3 - TRIỂN KHAI SERVICE LAYER LOGIC
-        // =========================================================================
-        // 1. Kiểm tra tính hợp lệ của đối tượng Appointment (Vd: patientId > 0,
-        // doctorId > 0, scheduleId > 0)
-        // 2. Gọi appointmentDAO.createBookingAtomic(app)
-        // 3. Trả về kết quả
-        // =========================================================================
         if (app == null)
             throw new IllegalArgumentException("Thông tin lịch hẹn không được để rỗng");
         if (app.getPatientId() <= 0 || app.getDoctorId() <= 0 || app.getScheduleId() <= 0)
@@ -59,5 +51,12 @@ public class BookingService {
      */
     public boolean updatePaymentSuccess(int appointmentId, String transactionCode) {
         return appointmentDAO.updatePaymentSuccess(appointmentId, transactionCode);
+    }
+
+    /**
+     * Chuyển đổi phương thức thanh toán sang Tiền mặt khi đến khám (Cash Fallback).
+     */
+    public boolean switchToCashPayment(int appointmentId) {
+        return appointmentDAO.updatePayment(appointmentId, "UNPAID", "CASH");
     }
 }

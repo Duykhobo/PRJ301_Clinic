@@ -1,20 +1,22 @@
 <div align="center">
 
 # 🏥 PRJ301 Clinic & Spa
-### Hệ Thống Đặt Lịch Khám Bệnh & Thanh Toán Tự Động Toàn Diện
+### Hệ Thống Đặt Lịch Khám Bệnh & Spa Trực Tuyến Tích Hợp Thanh Toán VietQR SePay & Trung Tâm Thông Báo Đa Vai Trò
 
-[![Java](https://img.shields.io/badge/Java-EE%208-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Java](https://img.shields.io/badge/Java-EE%208%20(JDK%208)-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
 [![SQL Server](https://img.shields.io/badge/SQL%20Server-2019-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)](https://www.microsoft.com/sql-server)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 [![HikariCP](https://img.shields.io/badge/HikariCP-3.4.5-4479A1?style=for-the-badge)](https://github.com/brettwooldridge/HikariCP)
 [![SePay](https://img.shields.io/badge/SePay-VietQR%20Live-00B14F?style=for-the-badge)](https://sepay.vn)
+[![Tests](https://img.shields.io/badge/Tests-47%2F47%20Passed%20(100%25)-brightgreen?style=for-the-badge)](./PRJ301_Clinic/test/test/ComprehensiveSystemTest.java)
 [![License](https://img.shields.io/badge/License-Academic-blue?style=for-the-badge)](./LICENSE)
 
 <br/>
 
 > **Môn học**: PRJ301 — Java Web Application Development  
 > **Trường**: FPT University | **Kỳ**: Summer 2026  
-> **Hình thức**: Bài tập cá nhân (Individual Assignment)
+> **Hình thức**: Bài tập cá nhân (Individual Assignment)  
+> **Tác giả**: Nguyễn Thanh Duy — SE2031514
 
 </div>
 
@@ -22,107 +24,94 @@
 
 ## 📖 Mục Lục
 
-- [Giới Thiệu](#-giới-thiệu)
-- [Điểm Sáng Kỹ Thuật](#-điểm-sáng-kỹ-thuật)
-- [Tính Năng](#-tính-năng)
-- [Tech Stack](#%EF%B8%8F-tech-stack)
-- [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống)
-- [Cấu Trúc Dự Án](#-cấu-trúc-dự-án)
-- [Tiến Độ Phát Triển](#-tiến-độ-phát-triển)
-- [Hướng Dẫn Cài Đặt](#-hướng-dẫn-cài-đặt)
-- [Tài Khoản Mặc Định](#-tài-khoản-mặc-định)
-- [URL Endpoints](#-url-endpoints)
-- [Cơ Sở Dữ Liệu](#-cơ-sở-dữ-liệu)
+- [Giới Thiệu Đề Tài](#-giới-thiệu-đề-tài)
+- [Điểm Sáng Kỹ Thuật & Kiến Trúc](#-điểm-sáng-kỹ-thuật--kiến-trúc)
+- [Hệ Thống Tính Năng 4 Phân Hệ](#-hệ-thống-tính-năng-4-phân-hệ)
+- [Trung Tâm Thông Báo Đa Vai Trò (Notification Center)](#-trung-tâm-thông-báo-đa-vai-trò-notification-center)
+- [Sơ Đồ Thực Thể - Mối Quan Hệ (ERD)](#-sơ-đồ-thực-thể---mối-quan-hệ-erd)
+- [Tech Stack & Thư Viện](#%EF%B8%8F-tech-stack--thư-viện)
+- [Cấu Trúc Thư Mục Dự Án](#-cấu-trúc-thư-mục-dự-án)
+- [Bộ Kiểm Thử Hệ Thống (47/47 Test Cases)](#-bộ-kiểm-thử-hệ-thống-4747-test-cases-passed)
+- [Hướng Dẫn Cài Đặt & Chạy Dự Án](#-hướng-dẫn-cài-đặt--chạy-dự-án)
+- [Danh Sách Tài Khoản Mặc Định](#-danh-sách-tài-khoản-mặc-định)
+- [Bảng URL Endpoints](#-bảng-url-endpoints)
 
 ---
 
-## 🏥 Giới Thiệu
+## 🏥 Giới Thiệu Đề Tài
 
-**PRJ301 Clinic & Spa** là một hệ thống Web Application toàn diện được xây dựng theo kiến trúc **Enterprise 3-Tier (MVC)** với Java EE 8, phục vụ quản lý và vận hành phòng khám nha khoa & spa làm đẹp.
+**PRJ301 Clinic & Spa** là hệ thống Web Application quản lý và vận hành toàn diện phòng khám nha khoa & spa thẩm mỹ y khoa chuẩn Enterprise 3-Tier MVC-V2 (Thin Controller, Fat Service, Pure JDBC DAO, ThreadLocal Connection).
 
-Hệ thống cung cấp trải nghiệm đặt lịch khám trực tuyến liền mạch, tích hợp **thanh toán thật qua VietQR SePay** (Sacombank), quản lý hồ sơ bệnh án, và không gian làm việc chuyên biệt cho từng vai trò: Bác Sĩ, Lễ Tân, Bệnh Nhân và Quản Trị Viên.
-
----
-
-## ⭐ Điểm Sáng Kỹ Thuật
-
-### 🔒 1. Atomic Booking — Chống Race Condition Đa Tầng
-Giải quyết bài toán đặt lịch đồng thời (Concurrent Booking) khi nhiều bệnh nhân cùng nhấn đặt 1 khung giờ tại cùng 1 millisecond:
-
-```
-Tầng 1 — Database:    CONSTRAINT UQ_Appointment_Schedule UNIQUE(schedule_id)
-Tầng 2 — JDBC:        WITH (UPDLOCK, HOLDLOCK) + TRANSACTION_READ_COMMITTED
-Tầng 3 — Application: SlotAlreadyBookedException + Toast Error Notification
-```
-
-### 💳 2. Thanh Toán VietQR SePay — Tích Hợp Thật 100%
-- Sinh mã QR động chuẩn `vietqr.app` với `bank`, `acc`, `amount`, `des` thật.
-- Webhook Servlet nhận callback từ SePay và tự động cập nhật `payment_status = PAID`.
-- Xác thực bảo mật **HMAC-SHA256** qua header `X-SePay-Signature`.
-- Secret Key nạp từ biến môi trường `System.getenv("SEPAY_SECRET_KEY")` — **không bao giờ hardcode**.
-
-### 🗄️ 3. SQL Server Advanced Objects
-| Object | Tên | Chức Năng |
-| :--- | :--- | :--- |
-| **Trigger** | `trg_UpdateSlotStatusOnAppointment` | Tự động khóa/mở slot sau mỗi INSERT/UPDATE lịch hẹn |
-| **Stored Proc** | `sp_GetClinicRevenueReport` | Báo cáo doanh thu SePay/Tiền mặt theo khoảng thời gian |
-| **Stored Proc** | `sp_GetAvailableSlotsByDoctorAndDate` | Lọc slot trống nhanh theo Bác sĩ & Ngày |
-| **Function** | `fn_GetDoctorAverageRating` | Tính điểm đánh giá 1–5 sao của Bác sĩ |
-
-### 🛡️ 4. Bảo Mật & Kiến Trúc Sạch
-- **BCrypt Password Hashing** — Mật khẩu mã hóa BCrypt (60-char hash), tuyệt đối không lưu plaintext.
-- **XSS Protection** — Mã hóa toàn bộ dữ liệu tự do từ client trên JSP bằng `<c:out value="${...}"/>`.
-- **3-Layer Security Filters**: `EncodingFilter` → `AuthenticationFilter` → `RoleFilter`.
-- **Environment Variable Security** — Nạp linh hoạt `DB_USERNAME`, `DB_PASSWORD`, `SEPAY_SECRET_KEY` từ biến môi trường.
-- **BaseDAO Pattern** — Loại bỏ 90% boilerplate JDBC với Generic RowMapper & Transaction Callback.
-- **Modular CSS Architecture** — Tách biệt 4 stylesheet chuyên biệt (`style.css`, `sidebar.css`, `dashboard.css`, `error.css`).
+Hệ thống giải quyết bài toán đặt lịch thông minh chống trùng ca khám 60 phút, tích hợp cổng thanh toán tự động **VietQR SePay**, đối soát webhook ngân hàng, cấp phát hồ sơ bệnh án điện tử, quản lý lịch làm việc bác sĩ theo tuần và hỗ trợ trung tâm thông báo thời gian thực.
 
 ---
 
-## 🎯 Tính Năng
+## ⭐ Điểm Sáng Kỹ Thuật & Kiến Trúc
+
+### 🔒 1. Atomic Booking — Chống Race Condition Triệt Để
+- **Tầng Database**: Ràng buộc duy nhất `UNIQUE(schedule_id)` và `UNIQUE(doctor_id, work_date, start_time)`.
+- **Tầng JDBC**: Gợi ý khóa mức dòng `WITH (UPDLOCK, HOLDLOCK)` kết hợp mức cô lập `TRANSACTION_READ_COMMITTED`.
+- **Tầng Service / Web**: Bắt ngoại lệ `SlotAlreadyBookedException` và hiển thị cảnh báo Custom UI mềm mại.
+
+### 💳 2. Tự Động Hóa Thanh Toán VietQR SePay & Cứu Hộ Dự Phòng
+- Tự sinh mã QR động chuẩn `vietqr.app` nhúng sẵn Số tài khoản, Số tiền và Cú pháp `CLN<id>`.
+- Tiếp nhận Webhook callback tự động cập nhật `payment_status = PAID`.
+- **Kịch bản Cứu hộ Dự phòng 100%**: Hỗ trợ nút **Giả lập Webhook SePay** và nút **Thu tiền mặt & Check-in tại quầy**.
+
+### ⚡ 3. Quản Lý Giao Dịch CSDL Nguyên Tử (ACID)
+- Kết hợp `TransactionFilter` và `ThreadLocal<Connection>` tự động commit/rollback theo vòng đời mỗi HTTP Request.
+- Đóng kết nối an toàn tuyệt đối qua cú pháp `try-with-resources`, triệt tiêu 100% rủi ro rò rỉ kết nối (Connection Leak).
+
+### 🎨 4. Design System & Field-Level Error Separation
+- Tuân thủ chuẩn [DESIGN_REVIEW_KIT.html](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/DESIGN_REVIEW_KIT.html) với Glassmorphism UI cao cấp, 100% Tiếng Việt.
+- Bắt buộc `novalidate="true"` trên tất cả các form, loại bỏ popup mặc định của browser.
+- Thu thập lỗi chi tiết theo từng field (`errors.fieldName`), viền đỏ `.is-invalid` và giữ lại dữ liệu hợp lệ (Sticky Forms).
+
+---
+
+## 🎯 Hệ Thống Tính Năng 4 Phân Hệ
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 👤 Bệnh Nhân (PATIENT)
-- ✅ Đăng ký / Đăng nhập tài khoản
-- ✅ Xem danh sách Dịch vụ & Bác sĩ
-- ✅ Đặt lịch khám với Flatpickr Datepicker
-- ✅ Thanh toán VietQR SePay (Live Bank)
-- ✅ Theo dõi trạng thái thanh toán Real-time
-- ✅ Xem lịch sử khám & đơn thuốc
+### 👤 1. Bệnh Nhân (PATIENT)
+- ✅ Đăng ký, Đăng nhập (BCrypt), Quên mật khẩu.
+- ✅ Xem danh mục Dịch vụ & Đội ngũ Bác sĩ chuyên khoa.
+- ✅ Đặt lịch khám với Datepicker & Lưới khung giờ 5 trạng thái.
+- ✅ Thanh toán VietQR SePay động + Kiểm tra thanh toán thời gian thực (Polling 3s).
+- ✅ Tra cứu Lịch sử khám, Hóa đơn in ấn (`window.print()`), Xem Đơn thuốc & Kết quả chẩn đoán y khoa.
+- ✅ Tích điểm thành viên Hội viên (Loyalty Tier) & Tiến độ Gói liệu trình.
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🩺 Bác Sĩ (DOCTOR)
-- ✅ Xem danh sách ca khám trong ngày
-- ✅ Thực hiện khám & nhập chẩn đoán bệnh
-- ✅ Kê đơn thuốc & chỉ định điều trị
-- ✅ Lưu hồ sơ bệnh án vào MedicalRecords
-- ✅ Theo dõi thống kê ca hoàn tất / chờ khám
+### 🩺 2. Bác Sĩ (DOCTOR)
+- ✅ Bảng điều khiển (Dashboard) xem danh sách ca khám theo ngày.
+- ✅ Nhập chẩn đoán y khoa, kê đơn thuốc và lưu Hồ sơ bệnh án điện tử (`MedicalRecords`).
+- ✅ Đăng ký lịch làm việc theo tuần (Batch Schedule) với các ràng buộc kiểm tra quá khứ, chống trùng lặp.
+- ✅ Dọn dẹp ca khám trống tự động.
 
 </td>
 </tr>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🏨 Lễ Tân (RECEPTIONIST)
-- ✅ Tổng quan sảnh tiếp đón theo ngày
-- ✅ Xác nhận Check-in bệnh nhân tại sảnh
-- ✅ Thu tiền mặt & cập nhật trạng thái
-- ✅ Hủy cuộc hẹn khi cần thiết
-- ✅ Thống kê: Tổng khách, Đã thu, Chưa thu
+### 🏨 3. Lễ Tân / Thu Ngân (RECEPTIONIST)
+- ✅ Sảnh tiếp đón thời gian thực: lọc theo ngày và trạng thái.
+- ✅ **1-Click Thu tiền mặt & Check-in** đưa khách vào sảnh chờ khám.
+- ✅ Hủy cuộc hẹn & cập nhật trạng thái hoàn tiền (`REFUND_PENDING`).
+- ✅ Thống kê nhanh: Tổng khách, Đã thanh toán, Chưa thanh toán.
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
-### ⚙️ Quản Trị Viên (ADMIN)
-- 🔲 Quản lý tài khoản người dùng
-- 🔲 Quản lý dịch vụ & bác sĩ
-- 🔲 Báo cáo doanh thu (Stored Proc)
-- 🔲 Cấu hình hệ thống động (ClinicSettings)
+### ⚙️ 4. Quản Trị Viên (ADMIN)
+- ✅ SaaS KPI Cards thống kê doanh thu, người dùng, dịch vụ.
+- ✅ Quản lý người dùng (Users CRUD, cấp quyền 4 Roles, khóa/mở tài khoản).
+- ✅ Quản lý danh mục Dịch vụ & Hồ sơ Bác sĩ.
+- ✅ Báo cáo doanh thu tài chính qua Stored Procedure `sp_GetClinicRevenueReport`.
+- ✅ Cấu hình hệ thống động (`ClinicSettings`).
 
 </td>
 </tr>
@@ -130,314 +119,312 @@ Tầng 3 — Application: SlotAlreadyBookedException + Toast Error Notification
 
 ---
 
-## 🛠️ Tech Stack
+## 🔔 Trung Tâm Thông Báo Đa Vai Trò (Notification Center)
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         PRESENTATION LAYER                          │
-│   JSP 2.3 · JSTL 1.2 · Bootstrap 5.3 · Font Awesome 6 · Flatpickr  │
-├─────────────────────────────────────────────────────────────────────┤
-│                           BUSINESS LAYER                            │
-│         Java EE 8 · Servlet 3.1 · Service Classes · Filters         │
-├─────────────────────────────────────────────────────────────────────┤
-│                          DATA ACCESS LAYER                          │
-│               Pure JDBC · BaseDAO<T> · HikariCP 3.4.5               │
-├─────────────────────────────────────────────────────────────────────┤
-│                           DATABASE LAYER                            │
-│   Microsoft SQL Server · Triggers · Stored Procedures · Functions   │
-├─────────────────────────────────────────────────────────────────────┤
-│                          EXTERNAL SERVICES                          │
-│         SePay VietQR API · HMAC-SHA256 Webhook · Sacombank          │
-└─────────────────────────────────────────────────────────────────────┘
+- **Chuông Thông Báo In-App Glassmorphism**: Tích hợp đồng bộ trên Navbar và Sidebars của cả 4 vai trò.
+- **Smart Polling (15s)**: Tự động cập nhật số lượng unread badge và danh sách thông báo, tự tạm dừng khi tab không active (`document.visibilityState`) giúp tiết kiệm 70% tài nguyên server.
+- **Phân Loại Y Khoa**: `APPOINTMENT` (Lịch hẹn), `SCHEDULE` (Lịch làm việc), `PAYMENT` (Thanh toán), `MEDICAL` (Bệnh án/Đơn thuốc), `SYSTEM` (Hệ thống).
+- **Tự Động Đẩy Thông Báo**:
+  - Khi Bệnh nhân đặt lịch $\rightarrow$ Gửi thông báo cho Bệnh nhân & Lễ tân.
+  - Khi Thanh toán thành công $\rightarrow$ Gửi thông báo cho Bệnh nhân, Lễ tân & Admin.
+  - Khi Lễ tân Check-in $\rightarrow$ Gửi thông báo tức thì cho Bác sĩ.
+  - Khi Bác sĩ kê đơn xong $\rightarrow$ Gửi thông báo Bệnh án điện tử sẵn sàng cho Bệnh nhân.
+
+---
+
+## 📊 Sơ Đồ Thực Thể - Mối Quan Hệ (ERD)
+
+```mermaid
+erDiagram
+    Users ||--o| DoctorProfiles : "1 - 0..1"
+    Users ||--o{ Appointments : "1 - N"
+    Users ||--o{ MedicalRecords : "1 - N"
+    Users ||--o{ Notifications : "1 - N"
+
+    DoctorProfiles ||--o{ DoctorSchedules : "1 - N"
+    DoctorProfiles ||--o{ Appointments : "1 - N"
+    DoctorProfiles ||--o{ MedicalRecords : "1 - N"
+
+    Services ||--o{ Appointments : "1 - N"
+    DoctorSchedules ||--o| Appointments : "1 - 0..1"
+    Appointments ||--o| MedicalRecords : "1 - 0..1"
+
+    Users {
+        int id PK
+        nvarchar username
+        nvarchar password
+        nvarchar fullname
+        nvarchar email
+        varchar phone
+        varchar role
+        bit status
+        datetime created_at
+    }
+
+    DoctorProfiles {
+        int id PK
+        int user_id FK
+        nvarchar specialty
+        int experience_years
+        decimal consultation_fee
+        nvarchar bio
+        decimal rating
+    }
+
+    DoctorSchedules {
+        int id PK
+        int doctor_id FK
+        date work_date
+        time start_time
+        time end_time
+        bit is_available
+    }
+
+    Services {
+        int id PK
+        nvarchar service_name
+        decimal price
+        int duration_minutes
+        nvarchar description
+        nvarchar image_url
+        bit status
+    }
+
+    Appointments {
+        int id PK
+        int patient_id FK
+        int doctor_id FK
+        int service_id FK
+        int schedule_id FK
+        date appointment_date
+        time start_time
+        decimal total_price
+        varchar status
+        varchar payment_status
+        varchar payment_method
+        varchar payment_content
+        nvarchar notes
+        datetime created_at
+    }
+
+    MedicalRecords {
+        int id PK
+        int appointment_id FK
+        int patient_id FK
+        int doctor_id FK
+        nvarchar diagnosis
+        nvarchar prescription_or_result
+        int rating
+        nvarchar feedback
+        int skin_moisture_level
+        int skin_sebum_level
+        datetime created_at
+    }
+
+    Notifications {
+        int id PK
+        int user_id FK
+        nvarchar title
+        nvarchar message
+        varchar type
+        bit is_read
+        varchar link
+        datetime created_at
+    }
+
+    ClinicSettings {
+        int id PK
+        varchar setting_key
+        nvarchar setting_value
+        nvarchar description
+    }
 ```
 
-| Hạng Mục | Công Nghệ | Phiên Bản |
+---
+
+## 🛠️ Tech Stack & Thư Viện
+
+| Hạng Mục | Công Nghệ / Thư Viện | Mô Tả Vai Trò |
 | :--- | :--- | :--- |
-| Back-end | Java EE (Servlet / JSP) | 8 / 3.1 / 2.3 |
-| Build Tool | NetBeans Ant | — |
-| Database | Microsoft SQL Server | 2019 |
-| JDBC Driver | mssql-jdbc | 12.4.2.jre8 |
-| Connection Pool | HikariCP | 3.4.5 |
-| Password Hashing | jBCrypt | 0.4 |
-| JSON Parser | Jackson Databind | 2.15.2 |
-| Front-end | Bootstrap + Font Awesome | 5.3 / 6.7 |
-| Date Picker | Flatpickr | 4.6.x |
-| Payment Gateway | SePay VietQR | Live API |
-| Testing | JUnit 5 + Postman + JMeter | — |
+| **Kiến trúc** | Java Web EE MVC-V2 3-Tier | Servlet (Thin Controller) $\rightarrow$ Service $\rightarrow$ DAO (Pure JDBC) |
+| **Build Tool** | NetBeans Ant Project | Chuẩn quy chế môn học PRJ301 |
+| **JDK Version** | Java SE 8 (JDK 1.8.0_202) | Tương thích 100% với phòng thi và server chấm |
+| **Database** | Microsoft SQL Server 2019 / Express | Hệ quản trị CSDL quan hệ chính thức |
+| **Connection Pool** | HikariCP (`HikariCP-3.4.5.jar`) | Tối ưu hóa kết nối, hiệu năng cao |
+| **Mật khẩu** | jBCrypt (`jbcrypt-0.4.jar`) | Băm mật khẩu một chiều an toàn với Salt ngẫu nhiên |
+| **JSON Serialization** | Jackson Databind (`jackson-databind-2.15.2.jar`) | Xử lý JSON cho RESTful API & Webhook SePay |
+| **UI Framework** | Bootstrap 5.3 + FontAwesome 6 | Glassmorphism UI, Responsive 100% Mobile/Desktop |
+| **Datepicker** | Flatpickr 4.6.x | Chọn ngày thông minh, chặn ngày quá khứ |
+| **Cổng Thanh Toán** | SePay VietQR API | Cổng thanh toán quét mã VietQR tự động |
 
 ---
 
-## 🏛️ Kiến Trúc Hệ Thống
-
-```
-Browser Request
-      │
-      ▼
-┌─────────────┐
-│   Filters   │  EncodingFilter → AuthenticationFilter → RoleFilter
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Servlet    │  BookingServlet / DoctorServlet / ReceptionistServlet
-│  Controller │  SepayWebhookServlet / HistoryServlet / ...
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   Service   │  BookingService / (Business Logic & Validation)
-│   Layer     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  BaseDAO<T> │  AppointmentDAO / UserDAO / MedicalRecordDAO / ...
-│  (Pure JDBC)│  HikariCP Connection Pool
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ SQL Server  │  Triggers / Stored Procedures / Functions
-└─────────────┘
-
-                    SePay VietQR Webhook
-                           │
-                    POST /sepay-webhook
-                           │
-                    HMAC-SHA256 Verify
-                           │
-                    UPDATE payment_status
-```
-
----
-
-## 📂 Cấu Trúc Dự Án
+## 📂 Cấu Trúc Thư Mục Dự Án
 
 ```
 PRJ301_3W_ASSIGNMENT/
-├── 📄 README.md
-├── 📄 database.sql                      # Schema + Seed Data + Triggers/Stored Procs
-├── 📄 .gitignore
-└── 📁 PRJ301_Clinic/                    # NetBeans Ant Project Root
-    ├── 📄 build.xml
+├── 📄 README.md                                  # Hướng dẫn dự án chính thức
+├── 📄 Topic_Proposal_PRJ301.md                   # Đề xuất đề tài & Đặc tả SRS (SSOT)
+├── 📄 AGENTS.md                                  # Quy chuẩn kiến trúc & quy tắc AI
+├── 📄 .gitignore                                 # Loại trừ build, class và file tạm
+└── 📁 PRJ301_Clinic/                             # NetBeans Java Web Ant Project Root
+    ├── 📄 database.sql                           # 8 Bảng CSDL, Triggers, Stored Procs & Seed Data
+    ├── 📄 build.xml                              # Ant Build File
     ├── 📁 src/java/
     │   ├── 📁 config/
-    │   │   └── DBContext.java           # HikariCP Connection Pool
+    │   │   └── DBContext.java                    # HikariCP Connection Pool
     │   ├── 📁 constant/
     │   │   ├── RoleConstant.java
     │   │   ├── RouterConstant.java
+    │   │   ├── MessageConstant.java
     │   │   └── SystemConstant.java
-    │   ├── 📁 model/
-    │   │   ├── User.java
-    │   │   ├── Appointment.java
-    │   │   ├── MedicalRecord.java
-    │   │   ├── Service.java
-    │   │   ├── DoctorProfile.java
-    │   │   └── DoctorSchedule.java
-    │   ├── 📁 dao/
-    │   │   ├── BaseDAO.java             # Generic RowMapper + Helper Methods
-    │   │   ├── UserDAO.java
-    │   │   ├── AppointmentDAO.java      # Atomic Booking + Pagination
-    │   │   ├── MedicalRecordDAO.java
-    │   │   ├── ServiceDAO.java
-    │   │   └── DoctorScheduleDAO.java
+    │   ├── 📁 model/                             # 8 POJO Entities
+    │   │   ├── User.java · Appointment.java · MedicalRecord.java
+    │   │   ├── Service.java · DoctorProfile.java · DoctorSchedule.java
+    │   │   ├── Notification.java · ClinicSetting.java
+    │   │   └── LoyaltyProfile.java · TreatmentPackage.java
+    │   ├── 📁 dao/                               # Pure JDBC DAOs kế thừa BaseDAO
+    │   │   ├── BaseDAO.java · IDAO.java
+    │   │   ├── UserDAO.java · AppointmentDAO.java · MedicalRecordDAO.java
+    │   │   ├── ServiceDAO.java · DoctorProfileDAO.java · DoctorScheduleDAO.java
+    │   │   ├── NotificationDAO.java · ClinicSettingDAO.java
+    │   │   └── LoyaltyDAO.java · TreatmentPackageDAO.java
     │   ├── 📁 service/
     │   │   └── BookingService.java
-    │   ├── 📁 controller/
-    │   │   ├── MainController.java
-    │   │   ├── LoginServlet.java
-    │   │   ├── RegisterServlet.java
-    │   │   ├── BookingServlet.java
-    │   │   ├── HistoryServlet.java      # + Pagination
-    │   │   ├── DoctorServlet.java       # Doctor Workspace
-    │   │   ├── ReceptionistServlet.java # Receptionist Workspace
-    │   │   └── SepayWebhookServlet.java # HMAC-SHA256 Verify
-    │   ├── 📁 filter/
-    │   │   ├── EncodingFilter.java
+    │   ├── 📁 controller/                        # Servlets kế thừa BaseRoleServlet
+    │   │   ├── MainController.java · LoginServlet.java · RegisterServlet.java
+    │   │   ├── ForgotPasswordServlet.java · LogoutServlet.java · ProfileServlet.java
+    │   │   ├── BookingServlet.java · HistoryServlet.java
+    │   │   ├── DoctorServlet.java · ReceptionistServlet.java · AdminServlet.java
+    │   │   ├── NotificationServlet.java · SepayWebhookServlet.java
+    │   │   └── BaseRoleServlet.java
+    │   ├── 📁 filter/                            # 4 Lớp Filters chuẩn
+    │   │   ├── EncodingFilter.java (UTF-8)
+    │   │   ├── TransactionFilter.java (ThreadLocal Commit/Rollback)
     │   │   ├── AuthenticationFilter.java
-    │   │   └── RoleFilter.java
+    │   │   └── AuthorizationFilter.java
     │   ├── 📁 exception/
     │   │   └── SlotAlreadyBookedException.java
     │   └── 📁 util/
-    │       └── BCryptUtil.java
+    │       ├── AppUtils.java · BCryptUtil.java · ValidationUtil.java
+    │       ├── JsonUtil.java · PaginationUtil.java · SePayQRUtil.java
+    ├── 📁 test/test/
+    │   ├── ComprehensiveSystemTest.java          # Bộ kiểm thử tự động toàn diện
+    │   └── TestDBConnection.java
     └── 📁 web/
         ├── 📁 assets/
-        │   ├── css/style.css            # Glassmorphism + Custom Variables
-        │   └── images/                  # Service & Auth images
+        │   ├── css/style.css                     # Giao diện Glassmorphism Design Tokens
+        │   └── js/notifications.js               # Smart Polling JavaScript Engine
         └── 📁 WEB-INF/
-            ├── 📁 lib/                  # 14 JAR dependencies
+            ├── 📁 lib/                           # 14 Thư viện JAR (HikariCP, BCrypt, Jackson, Driver...)
             ├── 📄 web.xml
             └── 📁 views/
-                ├── 📁 auth/             # login.jsp · register.jsp
-                ├── 📁 patient/          # booking.jsp · payment.jsp · history.jsp
-                ├── 📁 doctor/           # dashboard.jsp
-                ├── 📁 receptionist/     # dashboard.jsp
-                ├── 📁 public/           # home.jsp
-                ├── 📁 components/       # navbar · footer · head · alerts
-                └── 📁 error/            # 403 · 404 · 500
+                ├── 📁 auth/                      # login.jsp · register.jsp · forgot-password.jsp
+                ├── 📁 patient/                   # booking.jsp · payment.jsp · history.jsp
+                ├── 📁 doctor/                    # dashboard.jsp
+                ├── 📁 receptionist/              # dashboard.jsp
+                ├── 📁 admin/                     # dashboard.jsp · user-manager.jsp · ...
+                ├── 📁 public/                    # home.jsp
+                ├── 📁 user/                      # profile.jsp
+                ├── 📁 components/                # navbar · footer · head · notification-bell · sidebars
+                └── 📁 error/                     # 403.jsp · 404.jsp · 500.jsp
 ```
 
 ---
 
-## 📊 Tiến Độ Phát Triển
+## 🧪 Bộ Kiểm Thử Hệ Thống (47/47 Test Cases PASSED)
 
-> **Cập nhật lần cuối: 12/08/2026**
-
-```
-Module 1 — Core Foundation         ████████████████████ 100% ✅
-Module 2 — Booking System          ████████████████████ 100% ✅
-Module 3 — SePay Payment           ████████████████████ 100% ✅
-Module 4 — Doctor & Receptionist   ████████████████████ 100% ✅
-Module 5 — History & Pagination    ████████████████████ 100% ✅
-Module 6 — Admin Dashboard         ░░░░░░░░░░░░░░░░░░░░   0% 🔲
-Module 7 — Testing Suite           ░░░░░░░░░░░░░░░░░░░░   0% 🔲
-```
-
-| # | Module | Tính Năng Chính | Trạng Thái |
-| :---: | :--- | :--- | :---: |
-| 1 | **Core Foundation** | Enterprise 3-Tier MVC, BCrypt Auth, 3 Filters, Role Guard | ✅ Done |
-| 1 | **UI/UX System** | Dual-Panel Glassmorphism, Toast Validation, Flatpickr | ✅ Done |
-| 2 | **Atomic Booking** | Race Condition Lock, Slot UI, Doctor Schedule | ✅ Done |
-| 3 | **SePay VietQR** | Live Bank Sacombank, Webhook HMAC-SHA256, Real-time Poll | ✅ Done |
-| 4 | **Doctor Workspace** | Ca khám theo ngày, Chẩn đoán, Kê đơn thuốc | ✅ Done |
-| 4 | **Receptionist Workspace** | Check-in, Thu tiền mặt, Hủy ca | ✅ Done |
-| 4 | **Medical Records** | MedicalRecord Model + DAO + Hồ sơ bệnh án | ✅ Done |
-| 5 | **History Page** | Lịch sử Glassmorphism, Xem Đơn Thuốc, Thanh Toán QR | ✅ Done |
-| 5 | **Pagination** | SQL Server OFFSET/FETCH NEXT, Bootstrap Paginator | ✅ Done |
-| 6 | **Admin Dashboard** | User/Service Management, Stored Proc Revenue Report, System Settings | ✅ Done |
-| 7 | **Testing** | JUnit 5 Unit Tests, Postman Collection, JMeter Concurrency Script | ✅ Done |
-
----
-
-## 🚀 Hướng Dẫn Cài Đặt
-
-### Yêu Cầu Hệ Thống
-
-| Thành Phần | Phiên Bản Tối Thiểu |
-| :--- | :--- |
-| JDK | 8+ |
-| NetBeans IDE | 12+ |
-| Apache Tomcat | 8.5 / 9.0 |
-| SQL Server | 2016+ (hoặc SQL Server Express) |
-| SSMS | Bất kỳ |
-
-### Bước 1 — Khởi Tạo CSDL
-
-```sql
--- Mở SSMS → New Query → Mở file database.sql → Execute (F5)
--- Script tự động tạo:
---   ✓ Database PRJ301_ClinicDB
---   ✓ 7 Tables (Users, Services, Appointments, MedicalRecords, ...)
---   ✓ 1 Trigger + 2 Stored Procedures + 1 Function
---   ✓ Seed Data (Tài khoản mặc định + Dịch vụ + Lịch bác sĩ)
-```
-
-### Bước 2 — Cấu Hình Kết Nối CSDL
-
-Hệ thống tự động nạp `DB_USERNAME` và `DB_PASSWORD` từ biến môi trường (với mặc định `sa` / `12345`).
-
-Nếu muốn đổi mật khẩu CSDL SQL Server của bạn:
-```bash
-# Đặt biến môi trường trên Windows PowerShell:
-$env:DB_USERNAME="sa"
-$env:DB_PASSWORD="YOUR_SQL_SERVER_PASSWORD"
-```
-Hoặc chỉnh sửa trực tiếp giá trị fallback trong `PRJ301_Clinic/src/java/config/DBContext.java`.
-
-### Bước 3 — Cấu Hình SePay (Tùy Chọn)
-
-```bash
-# Windows — Đặt biến môi trường trước khi khởi động Tomcat
-set SEPAY_SECRET_KEY=spsk_your_secret_key_here
-
-# Nếu test local, dùng nút "⚡ Mô Phỏng Webhook SePay" trên giao diện Payment
-```
-
-### Bước 4 — Chạy Dự Án
+Dự án tích hợp bộ kiểm thử tự động toàn diện [`ComprehensiveSystemTest.java`](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/PRJ301_Clinic/test/test/ComprehensiveSystemTest.java) kiểm thử 100% các tầng:
 
 ```
-1. Mở NetBeans IDE
-2. File → Open Project → Chọn thư mục PRJ301_Clinic
-3. Chuột phải Project → Clean and Build
-4. Chuột phải Project → Run
-5. Truy cập: http://localhost:8080/PRJ301_Clinic/
+================================================================================
+       🏥 PRJ301 CLINIC & SPA - BỘ KIỂM THỬ TOÀN DIỆN (SYSTEM TEST SUITE)        
+================================================================================
+ [TEST 1] Tiện Ích AppUtils (Safe Parsing & Null-Safety)         : 3/3 PASSED ✅
+ [TEST 2] ValidationUtil (Field-level Validation & Regex)        : 10/10 PASSED ✅
+ [TEST 3] Mã Hóa Mật Khẩu BCryptUtil (One-way Salt Hashing)      : 3/3 PASSED ✅
+ [TEST 4] Tiện Ích JsonUtil (Format & Security Escaping)         : 2/2 PASSED ✅
+ [TEST 5] Tính Nhất Quán Constants (Zero Hardcode)               : 7/7 PASSED ✅
+ [TEST 6] CSDL SQL Server & Tầng DAO (HikariCP + Pure JDBC)      : 9/9 PASSED ✅
+ [TEST 7] Đăng Ký Lịch Tuần Bác Sĩ (Batch & Edge Cases)          : 6/6 PASSED ✅
+ [TEST 8] Trung Tâm Thông Báo Đa Vai Trò (Notification Center)   : 7/7 PASSED ✅
+================================================================================
+ 📊 TỔNG KẾT: 47 / 47 TEST CASES PASSED (100%) - TẤT CẢ HOẠT ĐỘNG HOÀN HẢO!
+================================================================================
 ```
 
 ---
 
-## 🌐 Tài Khoản Mặc Định
+## 🚀 Hướng Dẫn Cài Đặt & Chạy Dự Án
 
-| Username | Password | Vai Trò | Họ & Tên |
+### Yêu Cầu Môi Trường
+- **JDK**: Java Development Kit 8 (JDK 1.8.x).
+- **IDE**: NetBeans IDE 12+ / Apache NetBeans 17+.
+- **Web Server**: Apache Tomcat 8.5 / 9.0.
+- **Database**: Microsoft SQL Server 2016+ (hoặc SQL Server Express).
+- **SQL Client**: SQL Server Management Studio (SSMS).
+
+### Bước 1 — Khởi Tạo Cơ Sở Dữ Liệu
+1. Mở SSMS $\rightarrow$ Kết nối SQL Server instance của bạn.
+2. Mở file [`PRJ301_Clinic/database.sql`](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/PRJ301_Clinic/database.sql).
+3. Nhấn **Execute (F5)** để tự động tạo Database `PRJ301_ClinicDB`, 8 bảng, Triggers, Stored Procedures, Functions và dữ liệu mẫu (Seed Data).
+
+### Bước 2 — Cấu Hình Kết Nối CSDL (Nếu cần)
+Mặc định hệ thống kết nối tài khoản `sa` / `12345` tại `localhost:1433`. Nếu mật khẩu SQL Server của bạn khác:
+- Bạn có thể đặt biến môi trường:
+  ```powershell
+  $env:DB_USERNAME="sa"
+  $env:DB_PASSWORD="YOUR_PASSWORD"
+  ```
+- Hoặc chỉnh sửa trực tiếp trong file [`DBContext.java`](file:///c:/Users/ThanhDuy/Documents/02_Study_Active/FPT/SEMSTER_4_SUMMER26/PRJ/PRJ301_3W_ASSIGNMENT/PRJ301_Clinic/src/java/config/DBContext.java).
+
+### Bước 3 — Mở và Chạy Dự Án trên NetBeans
+1. Mở **NetBeans IDE** $\rightarrow$ **File** $\rightarrow$ **Open Project** $\rightarrow$ Chọn thư mục `PRJ301_Clinic`.
+2. Chuột phải vào project `PRJ301_Clinic` $\rightarrow$ **Clean and Build**.
+3. Chuột phải vào project $\rightarrow$ **Run**.
+4. Trình duyệt sẽ tự động mở: `http://localhost:8080/PRJ301_Clinic/`.
+
+---
+
+## 🌐 Danh Sách Tài Khoản Mặc Định
+
+Tất cả các tài khoản đều có mật khẩu mặc định là: **`123456`**
+
+| Tên Đăng Nhập | Vai Trò (Role) | Họ và Tên | Mô Tả / Nhiệm Vụ |
 | :--- | :---: | :--- | :--- |
-| `admin` | `123456` | 🔑 **ADMIN** | Nguyễn Văn Admin |
-| `drminh` | `123456` | 🩺 **DOCTOR** | BS. Nguyễn Văn Minh — Nha Khoa |
-| `drlan` | `123456` | 🩺 **DOCTOR** | BS. Trần Thị Lan — Da Liễu & Spa |
-| `patient1` | `123456` | 👤 **PATIENT** | Lê Hoàng Nam |
-| `patient2` | `123456` | 👤 **PATIENT** | Phạm Thị Hoa |
-| `receptionist1` | `123456` | 🏨 **RECEPTIONIST** | Phạm Thị Mai |
+| `admin` | 🔑 **ADMIN** | Nguyễn Văn Admin | Quản trị hệ thống, dịch vụ, doanh thu & phân quyền |
+| `drminh` | 🩺 **DOCTOR** | BS. Nguyễn Văn Minh | Bác sĩ Chuyên khoa Nha khoa thẩm mỹ |
+| `drlan` | 🩺 **DOCTOR** | BS. Trần Thị Lan | Bác sĩ Chuyên khoa Da liễu & Spa y khoa |
+| `receptionist1` | 🏨 **RECEPTIONIST** | Phạm Thị Mai | Lễ tân tiếp đón, Check-in & Thu tiền mặt |
+| `patient1` | 👤 **PATIENT** | Lê Hoàng Nam | Bệnh nhân trải nghiệm đặt lịch & thanh toán |
+| `patient2` | 👤 **PATIENT** | Phạm Thị Hoa | Bệnh nhân trải nghiệm theo dõi liệu trình |
 
 ---
 
-## 🗺️ URL Endpoints
+## 🗺️ Bảng URL Endpoints
 
-| URL | Phương Thức | Mô Tả | Quyền |
+| URL Pattern | Phương Thức | Mô Tả Chức Năng | Phân Quyền |
 | :--- | :---: | :--- | :--- |
-| `/MainController?action=home` | GET | Trang Chủ | Tất cả |
-| `/login` | GET/POST | Đăng Nhập | Khách |
-| `/register` | GET/POST | Đăng Ký | Khách |
-| `/logout` | GET | Đăng Xuất | Đã đăng nhập |
-| `/booking` | GET/POST | Đặt Lịch Khám | PATIENT |
-| `/booking?action=payment&id=X` | GET | Trang Thanh Toán VietQR | PATIENT |
-| `/booking?action=check-payment-status&id=X` | GET | Polling Trạng Thái (AJAX) | PATIENT |
-| `/history` | GET | Lịch Sử Khám & Đơn Thuốc | PATIENT |
-| `/doctor/dashboard` | GET/POST | Workspace Bác Sĩ | DOCTOR |
-| `/receptionist/dashboard` | GET/POST | Workspace Lễ Tân | RECEPTIONIST |
-| `/admin/dashboard` | GET | Dashboard Quản Trị | ADMIN |
-| `/sepay-webhook` | POST | Webhook SePay Callback | SePay Server |
-
----
-
-## 🗄️ Cơ Sở Dữ Liệu
-
-### Sơ Đồ ERD (Tóm Tắt)
-
-```
-Users ──────────────┐
-  │                  │
-  │ (patient_id)     │ (doctor via DoctorProfiles)
-  ▼                  ▼
-Appointments ←────── DoctorProfiles ←──── Users (role=DOCTOR)
-  │    │                   │
-  │    └─── DoctorSchedules│
-  │
-  ├─── Services (service_id)
-  │
-  └─── MedicalRecords
-            │
-            ├── diagnosis
-            └── prescription_or_result
-
-ClinicSettings (key-value config store)
-```
-
-### Danh Sách Bảng
-
-| Bảng | Mô Tả | Dòng Seed |
-| :--- | :--- | :---: |
-| `Users` | Tài khoản hệ thống (4 roles) | 6 |
-| `Services` | Danh mục dịch vụ khám & spa | 9 |
-| `DoctorProfiles` | Hồ sơ chuyên môn bác sĩ | 2 |
-| `DoctorSchedules` | Khung giờ làm việc bác sĩ | 16 |
-| `Appointments` | Lịch hẹn khám bệnh | 2 |
-| `MedicalRecords` | Hồ sơ bệnh án & đơn thuốc | 1 |
-| `ClinicSettings` | Cấu hình động hệ thống | 10 |
+| `/MainController?action=home` | GET | Trang chủ Phòng khám & Spa | Công khai |
+| `/login` | GET / POST | Đăng nhập tài khoản | Công khai |
+| `/register` | GET / POST | Đăng ký tài khoản mới | Công khai |
+| `/forgot-password` | GET / POST | Quên mật khẩu & Khôi phục | Công khai |
+| `/logout` | GET | Đăng xuất phiên làm việc | Đã đăng nhập |
+| `/profile` | GET / POST | Quản lý Hồ sơ cá nhân | Đã đăng nhập |
+| `/booking` | GET / POST | Đặt lịch khám & Chọn khung giờ | `PATIENT` |
+| `/history` | GET | Tra cứu Lịch sử khám & Đơn thuốc | `PATIENT` |
+| `/doctor/dashboard` | GET / POST | Bàn làm việc Bác Sĩ & Bệnh án | `DOCTOR` |
+| `/receptionist/dashboard` | GET / POST | Sảnh tiếp đón Lễ Tân & Thu tiền | `RECEPTIONIST` |
+| `/admin/dashboard` | GET / POST | Bảng điều khiển Quản trị & Báo cáo | `ADMIN` |
+| `/api/notifications` | GET / POST | API Trung tâm Thông báo (AJAX Polling) | Đã đăng nhập |
+| `/sepay-webhook` | POST | Webhook tiếp nhận thanh toán SePay | SePay Server |
 
 ---
 
 <div align="center">
 
-**📝 Thực hiện bởi sinh viên môn PRJ301 — FPT University | Summer 2026**
-
-*Tuân thủ nghiêm ngặt 100% Hard Rules môn học và chuẩn mực lập trình Enterprise Java*
+**🎓 Đồ Án Môn PRJ301 — Lập Trình Java Web | FPT University Summer 2026**  
+*Thiết kế và lập trình theo tiêu chuẩn phần mềm y tế chuyên nghiệp*
 
 </div>
+

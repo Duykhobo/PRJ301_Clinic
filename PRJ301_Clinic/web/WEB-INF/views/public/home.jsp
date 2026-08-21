@@ -22,28 +22,28 @@
         <div class="glass-card animate-fade-in mx-auto p-4 p-md-5 position-relative" style="max-width: 960px;">
             <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-3 fs-6 slot-btn-available shadow-sm">
                 <i class="fa-solid fa-notes-medical text-emerald"></i>
-                <span class="fw-semibold">Hệ Thống Đặt Lịch Khám & Chăm Sóc Sức Khỏe Thông Minh 2026</span>
+                <span class="fw-semibold" data-i18n="hero_badge">Hệ Thống Đặt Lịch Khám & Chăm Sóc Sức Khỏe Thông Minh 2026</span>
             </div>
             
-            <h1 class="display-4 fw-extrabold mb-4 text-white">Chăm Sóc Sức Khỏe & Thẩm Mỹ Nụ Cười Cùng Bác Sĩ Chuyên Khoa</h1>
+            <h1 class="display-4 fw-extrabold mb-4 text-white" data-i18n="hero_title">Chăm Sóc Sức Khỏe & Thẩm Mỹ Nụ Cười Cùng Bác Sĩ Chuyên Khoa</h1>
             
-            <p class="lead text-muted mb-4 mx-auto" style="max-width: 780px;">
+            <p class="lead text-muted mb-4 mx-auto" style="max-width: 780px;" data-i18n="hero_desc">
                 Trải nghiệm dịch vụ Nha khoa & Spa y khoa chuẩn quốc tế. Đặt lịch khám trực tuyến 24/7 chống trùng ca 60 phút, mã hóa bảo mật hồ sơ y tế và thanh toán VietQR SePay tự động.
             </p>
             
             <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-primary-gradient btn-lg px-4 py-3 fs-6 rounded-pill">
-                    <i class="fa-solid fa-calendar-check me-2"></i>Đặt Lịch Khám Ngay
+                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-primary-gradient btn-lg px-4 py-3 fs-6 rounded-pill" data-i18n="btn_book_now">
+                    <i class="fa-solid fa-calendar-check me-2"></i><span>Đặt Lịch Khám Ngay</span>
                 </a>
                 <c:choose>
                     <c:when test="${empty sessionScope.LOGIN_USER}">
-                        <a href="${pageContext.request.contextPath}/MainController?action=login-page" class="btn btn-outline-glass btn-lg px-4 py-3 fs-6 rounded-pill">
-                            <i class="fa-solid fa-user-shield me-2 text-cyan"></i>Đăng Nhập Tài Khoản
+                        <a href="${pageContext.request.contextPath}/MainController?action=login-page" class="btn btn-outline-glass btn-lg px-4 py-3 fs-6 rounded-pill" data-i18n="btn_login_account">
+                            <i class="fa-solid fa-user-shield me-2 text-cyan"></i><span>Đăng Nhập Tài Khoản</span>
                         </a>
                     </c:when>
                     <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/MainController?action=history" class="btn btn-outline-glass btn-lg px-4 py-3 fs-6 rounded-pill">
-                            <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i>Xem Lịch Sử Khám Bệnh
+                        <a href="${pageContext.request.contextPath}/MainController?action=history" class="btn btn-outline-glass btn-lg px-4 py-3 fs-6 rounded-pill" data-i18n="btn_view_history">
+                            <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i><span>Xem Lịch Sử Khám Bệnh</span>
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -53,15 +53,15 @@
             <div class="row g-3 pt-4 border-top border-secondary border-opacity-25 text-start">
                 <div class="col-4 col-md-4 text-center">
                     <div class="display-6 fw-bold text-cyan">10,000+</div>
-                    <div class="fs-7 text-muted">Bệnh Nhân Tin Chọn</div>
+                    <div class="fs-7 text-muted" data-i18n="kpi_patients">Bệnh Nhân Tin Chọn</div>
                 </div>
                 <div class="col-4 col-md-4 text-center border-start border-end border-secondary border-opacity-25">
                     <div class="display-6 fw-bold text-emerald">50+</div>
-                    <div class="fs-7 text-muted">Bác Sĩ Chứng Chỉ</div>
+                    <div class="fs-7 text-muted" data-i18n="kpi_specialists">Bác Sĩ Chứng Chỉ</div>
                 </div>
                 <div class="col-4 col-md-4 text-center">
                     <div class="display-6 fw-bold text-warning">99.8%</div>
-                    <div class="fs-7 text-muted">Tỷ Lệ Hài Lòng</div>
+                    <div class="fs-7 text-muted" data-i18n="kpi_satisfaction">Tỷ Lệ Hài Lòng</div>
                 </div>
             </div>
 
@@ -73,9 +73,9 @@
 <section id="services" class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <span class="badge bg-cyan bg-opacity-20 text-cyan rounded-pill px-3 py-2 mb-2">Chuyên Khoa Hàng Đầu</span>
-            <h2 class="fw-bold mb-2 text-white"><i class="fa-solid fa-teeth text-cyan me-2"></i>Dịch Vụ Khám & Spa Nổi Bật</h2>
-            <p class="text-muted">Các giải pháp chăm sóc răng miệng & liệu trình phục hồi da chuẩn y khoa</p>
+            <span class="badge bg-cyan bg-opacity-20 text-cyan rounded-pill px-3 py-2 mb-2" data-i18n="section_specialty_badge">Chuyên Khoa Hàng Đầu</span>
+            <h2 class="fw-bold mb-2 text-white" data-i18n="section_services_title"><i class="fa-solid fa-teeth text-cyan me-2"></i><span>Dịch Vụ Khám & Spa Nổi Bật</span></h2>
+            <p class="text-muted" data-i18n="section_services_desc">Các giải pháp chăm sóc răng miệng & liệu trình phục hồi da chuẩn y khoa</p>
         </div>
 
         <div class="row g-4 justify-content-center">
@@ -198,9 +198,9 @@
 <section id="doctors" class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <span class="badge bg-emerald bg-opacity-20 text-emerald rounded-pill px-3 py-2 mb-2">Đội Ngũ Chuyên Gia</span>
-            <h2 class="fw-bold mb-2 text-white"><i class="fa-solid fa-user-doctor text-emerald me-2"></i>Bác Sĩ Chuyên Khoa Tận Tâm</h2>
-            <p class="text-muted">Đội ngũ y bác sĩ chứng chỉ hành nghề, giàu kinh nghiệm phụ trách từng ca bệnh</p>
+            <span class="badge bg-emerald bg-opacity-20 text-emerald rounded-pill px-3 py-2 mb-2" data-i18n="section_doctors_badge">Đội Ngũ Chuyên Gia</span>
+            <h2 class="fw-bold mb-2 text-white" data-i18n="section_doctors_title"><i class="fa-solid fa-user-doctor text-emerald me-2"></i><span>Bác Sĩ Chuyên Khoa Tận Tâm</span></h2>
+            <p class="text-muted" data-i18n="section_doctors_desc">Đội ngũ y bác sĩ chứng chỉ hành nghề, giàu kinh nghiệm phụ trách từng ca bệnh</p>
         </div>
 
         <div class="row g-4 justify-content-center">
@@ -224,8 +224,8 @@
                                     <span class="text-white ms-1 fw-bold">5.0</span>
                                 </div>
                                 <p class="text-muted small mb-3">${d.bio}</p>
-                                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-sm btn-outline-glass w-100 rounded-pill">
-                                    <i class="fa-regular fa-calendar-check me-1 text-cyan"></i>Đặt Lịch Với Bác Sĩ
+                                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-sm btn-outline-glass w-100 rounded-pill" data-i18n="btn_book_doctor">
+                                    <i class="fa-regular fa-calendar-check me-1 text-cyan"></i><span>Đặt Lịch Với Bác Sĩ</span>
                                 </a>
                             </div>
                         </div>
@@ -269,7 +269,7 @@
             <div class="row g-4">
                 <div class="col-md-3">
                     <div class="p-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 bg-cyan bg-opacity-15 text-cyan" style="width: 54px; height: 54px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-sm" style="width: 58px; height: 58px; background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.4); color: #38bdf8;">
                             <i class="fa-solid fa-clock-rotate-left fs-4"></i>
                         </div>
                         <h6 class="fw-bold text-white mb-2">Chống Trùng Slot 100%</h6>
@@ -278,7 +278,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="p-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 bg-emerald bg-opacity-15 text-emerald" style="width: 54px; height: 54px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-sm" style="width: 58px; height: 58px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399;">
                             <i class="fa-solid fa-qrcode fs-4"></i>
                         </div>
                         <h6 class="fw-bold text-white mb-2">Thanh Toán VietQR SePay</h6>
@@ -287,8 +287,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="p-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 bg-warning bg-opacity-15 text-warning" style="width: 54px; height: 54px;">
-                            <i class="fa-solid fa-lock fs-4"></i>
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-sm" style="width: 58px; height: 58px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24;">
+                            <i class="fa-solid fa-shield-halved fs-4"></i>
                         </div>
                         <h6 class="fw-bold text-white mb-2">Mã Hóa BCrypt 100%</h6>
                         <p class="text-muted fs-7 mb-0">Bảo mật thông tin tài khoản và nhật ký khám y tế bệnh nhân chuẩn mã hóa quốc tế.</p>
@@ -296,8 +296,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="p-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 bg-danger bg-opacity-15 text-danger" style="width: 54px; height: 54px;">
-                            <i class="fa-solid fa-stethoscope fs-4"></i>
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-sm" style="width: 58px; height: 58px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171;">
+                            <i class="fa-solid fa-microscope fs-4"></i>
                         </div>
                         <h6 class="fw-bold text-white mb-2">Thiết Bị Y Khoa Tân Tiến</h6>
                         <p class="text-muted fs-7 mb-0">Hệ thống máy móc nha khoa & spa y tế nhập khẩu trực tiếp từ Châu Âu.</p>

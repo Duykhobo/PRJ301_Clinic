@@ -14,7 +14,9 @@ import javax.servlet.http.HttpSession;
 import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.AppointmentDAO;
+import dao.LoyaltyDAO;
 import dao.MedicalRecordDAO;
+import dao.TreatmentPackageDAO;
 import model.Appointment;
 import model.MedicalRecord;
 import model.User;
@@ -28,6 +30,8 @@ public class HistoryServlet extends HttpServlet {
 
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
     private final MedicalRecordDAO medicalRecordDAO = new MedicalRecordDAO();
+    private final TreatmentPackageDAO treatmentPackageDAO = new TreatmentPackageDAO();
+    private final LoyaltyDAO loyaltyDAO = new LoyaltyDAO();
 
     private static final int PAGE_SIZE = 5; // Số ca khám trên mỗi trang
 
@@ -72,6 +76,10 @@ public class HistoryServlet extends HttpServlet {
                 recordsMap.put(app.getId(), record);
             }
         }
+
+        // 4. Nạp Gói Liệu Trình thật & Hạng Hội Viên thật từ CSDL
+        request.setAttribute("activePackages", treatmentPackageDAO.findActivePackagesByPatient(user.getId()));
+        request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(user.getId()));
 
         request.setAttribute("historyList", historyList);
         request.setAttribute("recordsMap", recordsMap);

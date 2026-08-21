@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Đăng Ký Tài Khoản | PRJ301 Clinic</title>
+    <title>Đăng Ký Tài Khoản | Phòng Khám &amp; Spa PRJ301</title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -27,20 +27,20 @@
                             <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
                                 <i class="fa-solid fa-heart-pulse fs-6"></i>
                             </div>
-                            <span>PRJ301 <span class="text-cyan">Clinic & Spa</span></span>
+                            <span data-i18n="nav_brand">Phòng Khám &amp; Spa PRJ301</span>
                         </div>
-                        <h3 class="fw-bold display-6 mb-3">Đăng Ký Thành Viên Mới</h3>
-                        <p class="text-muted small">Tạo tài khoản bệnh nhân chỉ trong 30 giây để trải nghiệm dịch vụ nha khoa & spa y khoa cao cấp.</p>
+                        <h3 class="fw-bold display-6 mb-3" data-i18n="auth_reg_banner_title">Đăng Ký Thành Viên Mới</h3>
+                        <p class="text-muted small" data-i18n="auth_reg_banner_desc">Tạo tài khoản bệnh nhân chỉ trong 30 giây để trải nghiệm dịch vụ nha khoa &amp; spa y khoa cao cấp.</p>
                     </div>
 
                     <div class="d-flex flex-column gap-2 small">
                         <div class="d-flex align-items-center gap-2 text-cyan">
                             <i class="fa-solid fa-sparkles text-emerald"></i>
-                            <span>Đặt lịch khám online 24/7 không lo trùng ca</span>
+                            <span data-i18n="auth_reg_feat1">Đặt lịch khám online 24/7 không lo trùng ca</span>
                         </div>
                         <div class="d-flex align-items-center gap-2 text-cyan">
                             <i class="fa-solid fa-qrcode text-emerald"></i>
-                            <span>Thanh toán mã VietQR SePay tự động siêu tốc</span>
+                            <span data-i18n="auth_reg_feat2">Thanh toán mã VietQR SePay tự động siêu tốc</span>
                         </div>
                     </div>
                 </div>
@@ -48,97 +48,121 @@
 
             <%-- Cột Phải: Form Đăng Ký Glassmorphism --%>
             <div class="col-lg-7 p-4 p-md-5 d-flex flex-column justify-content-center">
-                <h3 class="fw-bold mb-2 text-white">Đăng Ký Tài Khoản Bệnh Nhân</h3>
-                <p class="text-muted small mb-4">Điền đầy đủ thông tin bên dưới để khởi tạo hồ sơ y tế</p>
+                <div class="mb-3">
+                    <span class="badge bg-emerald bg-opacity-20 text-emerald rounded-pill px-3 py-1.5 fs-8 fw-semibold" data-i18n="badge_new_member">
+                        <i class="fa-solid fa-sparkles me-1"></i>Thành Viên Mới 2026
+                    </span>
+                </div>
+
+                <h3 class="fw-bold mb-2 text-white" data-i18n="auth_register_title">Đăng Ký Tài Khoản Bệnh Nhân</h3>
+                <p class="text-muted small mb-4" data-i18n="auth_register_subtitle">Điền đầy đủ thông tin bên dưới để khởi tạo hồ sơ y tế</p>
 
                 <%-- Component Thông Báo Lỗi --%>
                 <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-                <form action="${pageContext.request.contextPath}/MainController" method="POST">
+                <form action="${pageContext.request.contextPath}/MainController" method="POST" novalidate="true">
                     <input type="hidden" name="action" value="register">
                     <input type="hidden" name="csrfToken" value="${csrfToken}">
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Tên Đăng Nhập (*)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_username">Tên Đăng Nhập (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.username ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-user text-cyan"></i>
                                 </span>
-                                <input type="text" name="username" class="form-control form-control-glass border-start-0 ps-0" value="${username}" required placeholder="vd: patient123">
+                                <input type="text" name="username" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.username ? 'is-invalid' : ''}" value="${username}" required placeholder="vd: patient123" data-i18n="placeholder_reg_username">
                             </div>
+                            <c:if test="${not empty errors.username}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.username}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Họ và Tên (*)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_fullname">Họ và Tên (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.fullname ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-id-card text-cyan"></i>
                                 </span>
-                                <input type="text" name="fullname" class="form-control form-control-glass border-start-0 ps-0" value="${fullname}" required placeholder="vd: Nguyễn Văn A">
+                                <input type="text" name="fullname" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.fullname ? 'is-invalid' : ''}" value="${fullname}" required placeholder="vd: Nguyễn Văn A" data-i18n="placeholder_reg_fullname">
                             </div>
+                            <c:if test="${not empty errors.fullname}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.fullname}</span></div>
+                            </c:if>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Số Điện Thoại (*)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_phone">Số Điện Thoại (*)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.phone ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-phone text-cyan"></i>
                                 </span>
-                                <input type="tel" name="phone" class="form-control form-control-glass border-start-0 ps-0" value="${phone}" required placeholder="vd: 0901234567">
+                                <input type="tel" name="phone" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.phone ? 'is-invalid' : ''}" value="${phone}" required placeholder="vd: 0901234567" data-i18n="placeholder_reg_phone">
                             </div>
+                            <c:if test="${not empty errors.phone}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.phone}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Email (Tùy chọn)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_email">Email (Tùy chọn)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.email ? 'is-invalid' : ''}" style="border-right: none;">
                                     <i class="fa-solid fa-envelope text-cyan"></i>
                                 </span>
-                                <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0" value="${email}" placeholder="vd: email@gmail.com">
+                                <input type="email" name="email" class="form-control form-control-glass border-start-0 ps-0 ${not empty errors.email ? 'is-invalid' : ''}" value="${email}" placeholder="vd: email@gmail.com" data-i18n="placeholder_reg_email">
                             </div>
+                            <c:if test="${not empty errors.email}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
+                            </c:if>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Mật Khẩu (*)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_password">Mật Khẩu (*)</label>
                             <div class="input-password-wrapper">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.password ? 'is-invalid' : ''}" style="border-right: none;">
                                         <i class="fa-solid fa-lock text-cyan"></i>
                                     </span>
-                                    <input type="password" id="regPassword" name="password" class="form-control form-control-glass border-start-0 ps-0 pe-5" required placeholder="Nhập mật khẩu">
+                                    <input type="password" id="regPassword" name="password" class="form-control form-control-glass border-start-0 ps-0 pe-5 ${not empty errors.password ? 'is-invalid' : ''}" required placeholder="Nhập mật khẩu" data-i18n="placeholder_password">
                                 </div>
                                 <button type="button" class="btn-password-toggle me-2" onclick="togglePassword('regPassword', this)" title="Hiện mật khẩu">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
+                            <c:if test="${not empty errors.password}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.password}</span></div>
+                            </c:if>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold">Xác Nhận Mật Khẩu (*)</label>
+                            <label class="form-label text-muted fw-semibold" data-i18n="label_confirm_password">Xác Nhận Mật Khẩu (*)</label>
                             <div class="input-password-wrapper">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass" style="border-right: none;">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted form-control-glass ${not empty errors.confirmPassword ? 'is-invalid' : ''}" style="border-right: none;">
                                         <i class="fa-solid fa-lock text-cyan"></i>
                                     </span>
-                                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control form-control-glass border-start-0 ps-0 pe-5" required placeholder="Nhập lại mật khẩu">
+                                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control form-control-glass border-start-0 ps-0 pe-5 ${not empty errors.confirmPassword ? 'is-invalid' : ''}" required placeholder="Nhập lại mật khẩu" data-i18n="placeholder_confirm_password">
                                 </div>
                                 <button type="button" class="btn-password-toggle me-2" onclick="togglePassword('regConfirmPassword', this)" title="Hiện mật khẩu">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
+                            <c:if test="${not empty errors.confirmPassword}">
+                                <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.confirmPassword}</span></div>
+                            </c:if>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary-gradient w-100 py-3 fs-6 mb-3 rounded-pill">
-                        <i class="fa-solid fa-user-plus me-2"></i>Đăng Ký Tài Khoản Ngay
+                        <i class="fa-solid fa-user-plus me-2"></i><span data-i18n="btn_submit_register">Đăng Ký Tài Khoản Ngay</span>
                     </button>
                 </form>
 
                 <div class="text-center mt-3">
-                    <span class="text-muted small">Đã có tài khoản?</span>
-                    <a href="${pageContext.request.contextPath}/MainController?action=login-page" class="text-cyan text-decoration-none fw-semibold ms-1">Đăng nhập ngay</a>
+                    <span class="text-muted small" data-i18n="link_has_account">Đã có tài khoản?</span>
+                    <a href="${pageContext.request.contextPath}/MainController?action=login-page" class="text-cyan text-decoration-none fw-semibold ms-1" data-i18n="link_login_now">Đăng nhập ngay</a>
                 </div>
             </div>
 
