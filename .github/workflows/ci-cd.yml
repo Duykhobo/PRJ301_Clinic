@@ -56,6 +56,17 @@ jobs:
           echo "==== ANT VERSION ===="
           ant -version
 
+      - name: 📦 4.1. Setup NetBeans CopyLibs Task
+        working-directory: ./PRJ301_Clinic
+        run: |
+          mkdir -p lib
+          if [ ! -s "lib/org-netbeans-modules-java-j2seproject-copylibstask.jar" ]; then
+            echo "CopyLibs JAR missing or empty, fetching standalone task JAR..."
+            curl -fsSL -o lib/org-netbeans-modules-java-j2seproject-copylibstask.jar https://repo1.maven.org/maven2/org/apache/netbeans/modules/org-netbeans-modules-java-j2seproject-copylibstask/RELEASE130/org-netbeans-modules-java-j2seproject-copylibstask-RELEASE130.jar || true
+          fi
+          echo "CopyLibs Task JAR status:"
+          ls -lh lib/org-netbeans-modules-java-j2seproject-copylibstask.jar || true
+
       - name: 🏗️ 5. Compile Java Web Project (Ant Compile)
         working-directory: ./PRJ301_Clinic
         run: |
