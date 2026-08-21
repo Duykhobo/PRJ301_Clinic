@@ -23,6 +23,7 @@ import util.ValidationUtil;
 public class ProfileServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
+    private final dao.LoyaltyDAO loyaltyDAO = new dao.LoyaltyDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -37,6 +38,9 @@ public class ProfileServlet extends HttpServlet {
         request.setAttribute("user", freshUser != null ? freshUser : loginUser);
         if (freshUser != null) {
             request.getSession().setAttribute(SystemConstant.SESSION_USER, freshUser);
+            if (constant.RoleConstant.PATIENT.equals(freshUser.getRole())) {
+                request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(freshUser.getId()));
+            }
         }
 
         request.getRequestDispatcher("/WEB-INF/views/user/profile.jsp").forward(request, response);

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Đặt Lịch Khám | PRJ301 Clinic</title>
+        <title>Đặt Lịch Khám | Phòng Khám &amp; Spa PRJ301</title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
     </head>
     <body class="d-flex flex-column min-vh-100">
@@ -51,9 +51,9 @@
                 <%-- Component Banner Thông Báo Lỗi & Toast Notification --%>
                 <jsp:include page="/WEB-INF/views/components/alerts.jsp" />
 
-                <form id="bookingForm" action="${pageContext.request.contextPath}/booking" method="POST" novalidate onsubmit="return validateBookingForm(event)">
+                <form id="bookingForm" action="${pageContext.request.contextPath}/booking" method="POST" novalidate="true" onsubmit="return validateBookingForm(event)">
                     <input type="hidden" name="csrfToken" value="${csrfToken}">
-                    <input type="hidden" id="selectedScheduleId" name="scheduleId">
+                    <input type="hidden" id="selectedScheduleId" name="scheduleId" value="${selectedScheduleId}">
 
                     <%-- Bước 1: Chọn Dịch vụ --%>
                     <div class="mb-3">
@@ -84,7 +84,7 @@
                             <select name="doctorId" id="doctorSelect" class="form-select form-control-glass border-start-0 ps-0 ${not empty errors.doctorId ? 'is-invalid' : ''}" onchange="updateStepProgress(); fetchSlots();">
                                 <option value="">-- Chọn bác sĩ chuyên khoa --</option>
                                 <c:forEach items="${doctors}" var="d">
-                                    <option value="${d.id}" ${selectedDoctorId == d.id ? 'selected' : ''}>${d.doctorName} (${d.specialty})</option>
+                                    <option value="${d.id}" ${selectedDoctorId == d.id ? 'selected' : ''}>BS. ${not empty d.doctorName ? d.doctorName : d.fullname} (${d.specialty})</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -120,7 +120,10 @@
 
                     <%-- Bước 4: Sơ Đồ Ma Trận Slot Giờ Trực Quan (Zero Hardcoding - Tự Động AJAX) --%>
                     <div class="mb-4">
-                        <label class="form-label text-muted fw-semibold d-block">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label text-muted fw-semibold mb-0">4. Chọn Ca Khám 60 Phút Khả Dụng (*)</label>
+                            <span class="small text-muted" id="slotInstructionText"><i class="fa-solid fa-circle-info me-1 text-cyan"></i>Chọn bác sĩ &amp; ngày để nạp ca khám</span>
+                        </div>
 
                         <%-- Thanh Chú Giải (Legend Badge Bar) --%>
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-3 fs-7">
@@ -149,7 +152,7 @@
                     <%-- Bước 5: Ghi chú --%>
                     <div class="mb-4">
                         <label class="form-label text-muted fw-semibold">5. Ghi Chú Tình Trạng Sức Khỏe (Tùy chọn)</label>
-                        <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập triệu chứng, tiền sử dị ứng thuốc hoặc yêu cầu thêm cho bác sĩ..."></textarea>
+                        <textarea name="notes" class="form-control form-control-glass" rows="3" placeholder="Nhập triệu chứng, tiền sử dị ứng thuốc hoặc yêu cầu thêm cho bác sĩ...">${param.notes}</textarea>
                     </div>
 
                     <button type="submit" id="submitBookingBtn" class="btn btn-primary-gradient w-100 py-3 fs-6 rounded-pill">
@@ -163,25 +166,8 @@
         <jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <%-- Inject context path cho booking.js (không dùng JSP EL trong file .js tĩnh) --%>
+        <%-- Inject context path cho booking.js --%>
         <script>window.BOOKING_CTX = '${pageContext.request.contextPath}';</script>
         <script src="${pageContext.request.contextPath}/assets/js/booking.js" charset="UTF-8"></script>
-
-    </body>
-</html>                      <a href="${pageContext.request.contextPath}/MainController?action=history"
-                               class="btn btn-outline-glass w-100 py-2.5 rounded-pill text-center">
-                                <i class="fa-solid fa-clock-rotate-left me-2"></i>Xem Nhật Ký Khám Bệnh
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <%-- Footer Component --%>
-        <jsp:include page="/WEB-INF/views/components/footer.jsp" />
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

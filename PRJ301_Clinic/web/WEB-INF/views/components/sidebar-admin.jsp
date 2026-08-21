@@ -11,7 +11,7 @@
   <div class="sb-brand">
     <div class="sb-brand-icon" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"><i class="fa-solid fa-user-shield"></i></div>
     <div>
-      <div class="sb-brand-text">PRJ301 <span style="color:#ef4444;">Clinic</span></div>
+      <div class="sb-brand-text">PRJ301 <span style="color:#ef4444;">Clinic &amp; Spa</span></div>
       <div class="sb-brand-sub">Admin Control Center</div>
     </div>
   </div>
@@ -96,12 +96,15 @@
         <div class="topbar-breadcrumb">PRJ301 Clinic &rsaquo; Control Center &rsaquo; Quản Trị Hệ Thống</div>
       </div>
     </div>
-    <div class="ws-topbar-right">
-      <div class="topbar-date">
+    <div class="ws-topbar-right d-flex align-items-center gap-2">
+      <%-- Notification Bell Component --%>
+      <jsp:include page="/WEB-INF/views/components/notification-bell.jsp" />
+
+      <div class="topbar-date d-none d-sm-flex">
         <i class="fa-solid fa-calendar-day"></i>
         <span id="topbarDate">--/--/----</span>
       </div>
-      <div class="topbar-clock">
+      <div class="topbar-clock d-none d-sm-flex">
         <i class="fa-solid fa-clock"></i>
         <span id="topbarClock">--:--:--</span>
       </div>

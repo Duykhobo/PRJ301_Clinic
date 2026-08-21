@@ -9,7 +9,7 @@
 
 | Nhóm Task Lớn (Epic) | Tên Nhánh Git (`feature/`) | Mức Ưu Tiên | Trạng Thái | Deadline Dự Kiến |
 | :--- | :--- | :---: | :---: | :---: |
-| **Epic 1: Tích hợp Thanh toán SePay QR & Webhook** | `feature/sepay-payment-integration` | 🔴 **P0** | 🔄 In Progress | **18/08 (Hôm nay)** |
+| **Epic 1: Tích hợp Thanh toán SePay QR & Webhook** | `feature/sepay-payment-integration` | 🔴 **P0** | ✅ **Completed** | **18/08 (Hôm nay)** |
 | **Epic 2: Đồng bộ Giao diện UI/UX Design Kit** | `feature/ui-design-kit-sync` | 🔴 **P0** | 🔄 In Progress | **19/08 (Ngày mai)** |
 | **Epic 3: Atomic Service & Chống Race Condition** | `feature/service-transaction-hardening` | 🟡 **P1** | ⏳ Todo | **20/08** |
 | **Epic 4: Bộ Kiểm thử JUnit 5, Postman & JMeter** | `feature/testing-qa-suite` | 🟡 **P1** | ⏳ Todo | **20/08** |
@@ -23,19 +23,20 @@
 *Mục tiêu: Đảm bảo luồng tạo QR $\rightarrow$ Polling $\rightarrow$ Webhook $\rightarrow$ Auto Confirm $\rightarrow$ Fallback chạy mượt 100%.*
 * **Lệnh chuyển nhánh**: `git checkout feature/sepay-payment-integration`
 
-- [ ] **Task 1.1**: Kiểm tra bộ sinh mã QR SePay tự động (`SePayQRUtil` / `BookingServlet`)
-  - [ ] Sinh ảnh VietQR với đúng số tiền và nội dung chuyển khoản tự khóa cú pháp `CLINIC<appointment_id>`.
-  - [ ] Hiển thị thông tin chuyển khoản rõ ràng trên `payment.jsp` (Số tài khoản, Tên chủ tài khoản, Ngân hàng MBBank).
-- [ ] **Task 1.2**: Hoàn thiện cơ chế Realtime Polling phía Client
-  - [ ] Tích hợp JS `setInterval()` 3s/lần gọi API `/api/check-payment-status?id=...`.
-  - [ ] Khi status chuyển thành `PAID` $\rightarrow$ Hiển thị Modal/Alert thành công và tự động chuyển hướng sang `history.jsp` hoặc trang Chi tiết hóa đơn.
-- [ ] **Task 1.3**: Hoàn thiện Webhook Handler (`SepayWebhookServlet.java`)
-  - [ ] Nhận payload JSON từ SePay, validate API Token / Secret.
-  - [ ] Trích xuất mã `CLINIC<id>`, cập nhật `payment_status = 'PAID'` và `status = 'CONFIRMED'`.
-  - [ ] Commit Transaction an toàn thông qua `TransactionFilter`.
-- [ ] **Task 1.4**: Kịch bản Cứu hộ / Demo Fallback (Bảo vệ đồ án an toàn 100%)
-  - [ ] Nút **[ 🔴 Giả lập Webhook SePay (Demo) ]**: Gửi request POST giả lập đối soát ngay lập tức.
-  - [ ] Nút **[ 💳 Chọn Thanh toán Tiền mặt khi đến ]**: Đổi `payment_method = 'CASH'`, chuyển trạng thái `PENDING` sang danh sách chờ xác nhận của Lễ tân/Admin.
+- [x] **Task 1.1**: Kiểm tra bộ sinh mã QR SePay tự động (`SePayQRUtil` / `BookingServlet`)
+  - [x] Sinh ảnh VietQR với đúng số tiền và nội dung chuyển khoản tự khóa cú pháp `CLINIC<appointment_id>`.
+  - [x] Hiển thị thông tin chuyển khoản rõ ràng trên `payment.jsp` (Số tài khoản, Tên chủ tài khoản, Ngân hàng).
+- [x] **Task 1.2**: Hoàn thiện cơ chế Realtime Polling phía Client
+  - [x] Tích hợp JS `setInterval()` 3s/lần gọi API `/booking?action=check-payment-status&id=...`.
+  - [x] Khi status chuyển thành `PAID` $\rightarrow$ Hiển thị Modal/Alert thành công và tự động chuyển hướng sang `history.jsp`.
+- [x] **Task 1.3**: Hoàn thiện Webhook Handler (`SepayWebhookServlet.java`)
+  - [x] Nhận payload JSON từ SePay, validate HMAC-SHA256 & API Token.
+  - [x] Trích xuất mã `CLINIC<id>`, cập nhật `payment_status = 'PAID'` và `status = 'CONFIRMED'`.
+  - [x] Gửi Email thông báo thanh toán thành công tự động (`EmailUtil.sendPaymentSuccessAsync`).
+  - [x] Commit Transaction an toàn thông qua `TransactionFilter`.
+- [x] **Task 1.4**: Kịch bản Cứu hộ / Demo Fallback (Bảo vệ đồ án an toàn 100%)
+  - [x] Nút **[ 🔴 Giả lập Webhook SePay (Demo) ]**: Gửi request GET/POST giả lập đối soát ngay lập tức (`/sepay-webhook?appointmentId=...`).
+  - [x] Nút **[ 💳 Chọn Thanh toán Tiền mặt khi đến ]**: Đổi `payment_method = 'CASH'`, chuyển trạng thái `PENDING` sang danh sách chờ xác nhận của Lễ tân/Admin.
 
 ---
 

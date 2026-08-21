@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -197,7 +198,7 @@ public class AdminServlet extends HttpServlet {
                 break;
             }
             case "update-settings": {
-                java.util.Map<String, String> keyMapping = new java.util.HashMap<>();
+                Map<String, String> keyMapping = new HashMap<>();
                 // Form field -> DB setting key mapping
                 keyMapping.put("CLINIC_NAME", "CLINIC_NAME");
                 keyMapping.put("clinic_name", "CLINIC_NAME");
@@ -216,7 +217,7 @@ public class AdminServlet extends HttpServlet {
                 keyMapping.put("SEPAY_ACCOUNT_HOLDER", "SEPAY_ACCOUNT_HOLDER");
                 keyMapping.put("bank_owner", "SEPAY_ACCOUNT_HOLDER");
 
-                for (java.util.Map.Entry<String, String> entry : keyMapping.entrySet()) {
+                for (Map.Entry<String, String> entry : keyMapping.entrySet()) {
                     String paramName = entry.getKey();
                     String dbKey = entry.getValue();
                     String val = request.getParameter(paramName);

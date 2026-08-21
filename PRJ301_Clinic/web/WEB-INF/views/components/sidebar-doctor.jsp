@@ -16,7 +16,7 @@
               <div class="sb-brand">
                 <div class="sb-brand-icon"><i class="fa-solid fa-notes-medical"></i></div>
                 <div>
-                  <div class="sb-brand-text">PRJ301 <span style="color:#60a5fa;">Clinic</span></div>
+                  <div class="sb-brand-text">PRJ301 <span style="color:#60a5fa;">Clinic &amp; Spa</span></div>
                   <div class="sb-brand-sub">Doctor Workspace</div>
                 </div>
               </div>
@@ -104,12 +104,15 @@
                         </div>
                       </div>
                   </div>
-                  <div class="ws-topbar-right">
-                    <div class="topbar-date">
+                  <div class="ws-topbar-right d-flex align-items-center gap-2">
+                    <%-- Notification Bell Component --%>
+                    <jsp:include page="/WEB-INF/views/components/notification-bell.jsp" />
+
+                    <div class="topbar-date d-none d-sm-flex">
                       <i class="fa-solid fa-calendar-day"></i>
                       <span id="topbarDate">--/--/----</span>
                     </div>
-                    <div class="topbar-clock">
+                    <div class="topbar-clock d-none d-sm-flex">
                       <i class="fa-solid fa-clock"></i>
                       <span id="topbarClock">--:--:--</span>
                     </div>

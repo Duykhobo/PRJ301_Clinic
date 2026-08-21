@@ -16,7 +16,7 @@ Trong thời đại công nghệ số, việc đăng ký và quản lý lịch h
 
 - **Đối với Khách hàng / Bệnh nhân**: Tìm kiếm dịch vụ, lựa chọn bác sĩ theo chuyên khoa, đặt lịch hẹn theo khung giờ rảnh 60 phút, quét mã QR thanh toán SePay tự động (tự động khóa số tiền & nội dung chuyển khoản) và tra cứu hồ sơ kết quả/bệnh án trực tuyến.
 - **Đối với Bác sĩ / Kỹ thuật viên (Mô hình Hybrid)**: Tự đăng ký khung giờ rảnh cá nhân hoặc nhận lịch phân công từ Admin, theo dõi danh sách lịch hẹn trong ngày/tuần, cập nhật chẩn đoán, kê đơn/kết quả dịch vụ và xem đánh giá từ khách hàng.
-- **Đối với Quản trị viên (Admin)**: Toàn quyền quản trị 7 bảng (bao gồm quản lý Cấu hình hệ thống `ClinicSettings`), chủ động phân lịch cho bác sĩ, kiểm duyệt lịch hẹn, quản lý giá cả dịch vụ và xem thống kê báo cáo doanh thu.
+- **Đối với Quản trị viên (Admin)**: Toàn quyền quản trị 8 bảng (bao gồm quản lý Cấu hình hệ thống `ClinicSettings` và `Notifications`), chủ động phân lịch cho bác sĩ, kiểm duyệt lịch hẹn, quản lý giá cả dịch vụ và xem thống kê báo cáo doanh thu.
 
 ---
 
@@ -59,13 +59,13 @@ graph LR
 
 | Hạng mục                    | Yêu cầu Đề bài (PRJ301)             | Giải pháp Thực hiện trong Dự án                                                                                                                               |
 | ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Số lượng Models**  | Tối thiểu 4 – 6 models                | **Đầy đủ 7 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100%                                                                             |
+| **Số lượng Models**  | Tối thiểu 4 – 6 models                | **Đầy đủ 8 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100%                                                                             |
 | **Kiến trúc**         | MVC-V2 3-Tier chuẩn Doanh Nghiệp       | Tách biệt 3 Tầng độc lập:**Thin Controller (Servlet)** $\rightarrow$ **Fat Service (Business Logic)** $\rightarrow$ **DAO (Pure JDBC)** |
 | **ORM / Database**      | JDBC thuần (Không dùng JPA/Hibernate) | Dùng`PreparedStatement`, `try-with-resources`, **Microsoft SQL Server**                                                                                  |
 | **Transaction & Pool**  | HikariCP hoặc DBCP                      | Quản lý Connection tối ưu bằng**HikariCP** kết hợp **ThreadLocal** & **TransactionFilter** tự động Commit/Rollback.                     |
 | **Mã hóa mật khẩu** | BCrypt hoặc SHA-256                     | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`)                                                                                              |
 | **Bảo mật & Filter**  | Authentication, Authorization, Encoding  | 4 Filters:`EncodingFilter` (UTF-8), `TransactionFilter` (Quản lý Data), `AuthenticationFilter`, `AuthorizationFilter`                                     |
-| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động                                                                                                |
+| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động + Chuông Thông Báo 🔔 thời gian thực                                                             |
 
 ### 3. Ma trận Phân loại Tính năng theo Độ ưu tiên (Priority Level Matrix)
 
@@ -81,7 +81,7 @@ graph TD
     P1 --> P1_2["JDBC thuần HikariCP & SQL Server"]
     P1 --> P1_3["Mã hóa BCrypt & 4 Filters (có TransactionFilter)"]
     P1 --> P1_4["Phân quyền 4 Roles: Admin, Doctor, Patient, Receptionist"]
-    P1 --> P1_5["CRUD 100% trên 7 Bảng CSDL"]
+    P1 --> P1_5["CRUD 100% trên 8 Bảng CSDL"]
     P1 --> P1_6["Chống Race Condition: WITH UPDLOCK & UNIQUE schedule_id"]
 
     P2 --> P2_1["Tự động thanh toán SePay VietQR & Tự sinh mã CLINIC_ID"]
@@ -89,10 +89,10 @@ graph TD
     P2 --> P2_3["Bảng ClinicSettings Cấu hình Động Hệ thống"]
     P2 --> P2_4["Bảo mật Dữ liệu Y tế Medical Privacy Scoping DAO"]
 
-    P3 --> P3_1["Cơ chế ThreadLocal Connection & Atomic Service Layer"]
+    P3 --> P3_1["Trung Tâm Thông Báo Đa Vai Trò (Notification Center)"]
     P3 --> P3_2["Trigger tự động khóa/mở slot DoctorSchedules"]
     P3 --> P3_3["Stored Procedures Thống kê Doanh thu & Slot Khả dụng"]
-    P3 --> P3_4["Bộ kiểm thử JUnit 5, Postman, JMeter, JaCoCo"]
+    P3 --> P3_4["Bộ kiểm thử Tự Động Toàn Diện 47/47 Test Cases (100%)"]
 
 ```
 
@@ -103,7 +103,7 @@ graph TD
 - JDBC thuần `PreparedStatement` & **HikariCP** SQL Server.
 - **BCrypt** password hashing & **4 Filters** (`Encoding`, `Transaction`, `Auth`, `Role`).
 - Phân quyền **4 vai trò** (`ADMIN`, `DOCTOR`, `PATIENT`, `RECEPTIONIST`).
-- **CRUD 100% trên 7 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`).
+- **CRUD 100% trên 8 Bảng** (`Users`, `Services`, `DoctorProfiles`, `DoctorSchedules`, `Appointments`, `MedicalRecords`, `ClinicSettings`, `Notifications`).
 - Chống Race Condition: `WITH (UPDLOCK)` & `UNIQUE(schedule_id)`. | **BẮT BUỘC 100%** _(Tiêu chí qua môn & Pass Hard Rules)_ | Đảm bảo đúng 100% quy định Hard Rule của đề bài môn PRJ301 | | 🟡 **MỨC 2: QUAN TRỌNG** _(High Priority / Real-world)_ | - Thanh toán tự động **SePay VietQR Động**.
 - Tự động sinh mã `payment_content = "CLINIC" + id`.
 - Đối soát **Webhook SePay** tự động & Manual Verify cho Admin.
@@ -148,27 +148,116 @@ graph TD
 
 ## III. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (DATABASE SCHEMA & ERD)
 
-Hệ thống bao gồm **7 bảng (Models)** trong Microsoft SQL Server với đầy đủ quan hệ khóa ngoại và ràng buộc toàn vẹn:
+Hệ thống bao gồm **8 bảng (Models)** trong Microsoft SQL Server với đầy đủ quan hệ khóa ngoại, chỉ mục hiệu năng cao (Non-Clustered Indexes) và ràng buộc toàn vẹn:
 
 ```mermaid
 erDiagram
-    Users ||--o| DoctorProfiles : "1 - 1 (Role DOCTOR)"
-    Users ||--o{ Appointments : "1 - N (Patient Bookings)"
-    DoctorProfiles ||--o{ DoctorSchedules : "1 - N (Work Slots)"
-    DoctorProfiles ||--o{ Appointments : "1 - N (Assigned Doctor)"
-    Services ||--o{ Appointments : "1 - N (Booked Service)"
-    DoctorSchedules ||--o| Appointments : "1 - 1 (Slot Usage)"
-    Appointments ||--o| MedicalRecords : "1 - 1 (Clinical Result)"
+    Users ||--o| DoctorProfiles : "1 User có thể là 1 DoctorProfile (1 - 0..1)"
+    Users ||--o{ Appointments : "1 Bệnh nhân đặt nhiều Cuộc hẹn (1 - N)"
+    Users ||--o{ MedicalRecords : "1 Bệnh nhân có nhiều Bệnh án (1 - N)"
+    Users ||--o{ Notifications : "1 Người dùng nhận nhiều Thông báo (1 - N)"
 
-    %% Bảng cấu hình độc lập, không cần nối dây trực tiếp vào Users để tránh sai thực thể
+    DoctorProfiles ||--o{ DoctorSchedules : "1 Bác sĩ quản lý nhiều Khung giờ khám (1 - N)"
+    DoctorProfiles ||--o{ Appointments : "1 Bác sĩ phụ trách nhiều Cuộc hẹn (1 - N)"
+    DoctorProfiles ||--o{ MedicalRecords : "1 Bác sĩ tạo nhiều Bệnh án (1 - N)"
+
+    Services ||--o{ Appointments : "1 Dịch vụ áp dụng cho nhiều Cuộc hẹn (1 - N)"
+    DoctorSchedules ||--o| Appointments : "1 Khung giờ gán cho tối đa 1 Cuộc hẹn (1 - 0..1)"
+
+    Appointments ||--o| MedicalRecords : "1 Cuộc hẹn hoàn tất tạo 1 Bệnh án (1 - 0..1)"
+
+    Users {
+        int id PK
+        nvarchar username
+        nvarchar password
+        nvarchar fullname
+        nvarchar email
+        varchar phone
+        varchar role
+        bit status
+        datetime created_at
+    }
+
+    DoctorProfiles {
+        int id PK
+        int user_id FK
+        nvarchar specialty
+        int experience_years
+        decimal consultation_fee
+        nvarchar bio
+        decimal rating
+    }
+
+    DoctorSchedules {
+        int id PK
+        int doctor_id FK
+        date work_date
+        time start_time
+        time end_time
+        bit is_available
+    }
+
+    Services {
+        int id PK
+        nvarchar service_name
+        decimal price
+        int duration_minutes
+        nvarchar description
+        nvarchar image_url
+        bit status
+    }
+
+    Appointments {
+        int id PK
+        int patient_id FK
+        int doctor_id FK
+        int service_id FK
+        int schedule_id FK
+        date appointment_date
+        time start_time
+        decimal total_price
+        varchar status
+        varchar payment_status
+        varchar payment_method
+        varchar payment_content
+        nvarchar notes
+        datetime created_at
+    }
+
+    MedicalRecords {
+        int id PK
+        int appointment_id FK
+        int patient_id FK
+        int doctor_id FK
+        nvarchar diagnosis
+        nvarchar prescription_or_result
+        int rating
+        nvarchar feedback
+        int skin_moisture_level
+        int skin_sebum_level
+        datetime created_at
+    }
+
+    Notifications {
+        int id PK
+        int user_id FK
+        nvarchar title
+        nvarchar message
+        varchar type
+        bit is_read
+        varchar link
+        datetime created_at
+    }
+
     ClinicSettings {
-        int setting_id PK
-        string key
-        string value
+        int id PK
+        varchar setting_key
+        nvarchar setting_value
+        nvarchar description
     }
 ```
 
-### 1. Chi tiết Thiết kế 7 Bảng CSDL (7 Models):
+### 1. Chi tiết Thiết kế 8 Bảng CSDL (8 Models):
 
 #### 1.1. `Users` (Quản lý Người dùng & Tài khoản)
 
@@ -222,7 +311,7 @@ erDiagram
 - `start_time` (TIME, Not Null) - _Historical Snapshot_
 - `total_price` (DECIMAL(18,2), Not Null) - _Historical Price Snapshot_ (Bảo toàn lịch sử giao dịch khi dịch vụ thay đổi giá)
 - `status` (VARCHAR(20), Default: 'PENDING', Check: `PENDING`, `CONFIRMED`, `COMPLETED`, `CANCELLED`)
-- `payment_status` (VARCHAR(20), Default: 'UNPAID', Check: `UNPAID`, `PAID`)
+- `payment_status` (VARCHAR(20), Default: 'UNPAID', Check: `UNPAID`, `PAID`, `REFUND_PENDING`, `REFUNDED`)
 - `payment_method` (VARCHAR(20), Default: 'CASH', Check: `CASH`, `SEPAY_QR`)
 - `payment_content` (VARCHAR(100)) - _Nội dung chuyển khoản yêu cầu bởi SePay Webhook_ (Cú pháp: `CLINIC<id>`)
 - `transaction_code` (VARCHAR(50)) - Mã giao dịch ngân hàng trả về từ SePay Webhook
@@ -239,10 +328,9 @@ erDiagram
 - `prescription_or_result` (NVARCHAR(MAX)) - Đơn thuốc / Kết quả (Dữ liệu y tế bảo mật)
 - `rating` (INT, Check: 1 to 5) - Đánh giá 1-5 sao (Hiển thị công khai)
 - `review_comment` (NVARCHAR(MAX)) - Nhận xét dịch vụ (Hiển thị công khai)
+- `skin_moisture_level` (INT) - Chỉ số độ ẩm da (%)
+- `skin_sebum_level` (INT) - Chỉ số tiết bã nhờn (%)
 - `created_at` (DATETIME, Default: GETDATE())
-- _Bảo mật Dữ liệu Y tế (Medical Privacy Scoping)_: Tầng DAO phân tách 2 hàm query riêng biệt:
-- `getMedicalRecordDetail()`: Trả về đầy đủ cho Bác sĩ & Bệnh nhân sở hữu ca khám.
-- `getPublicReviews()`: Chỉ `SELECT rating, review_comment, fullname, created_at` để hiển thị trên trang chủ/dịch vụ, tuyệt đối không lấy `diagnosis` và `prescription_or_result`.
 
 #### 1.7. `ClinicSettings` (Cấu hình Hệ thống & Thông tin Phòng khám)
 
@@ -251,6 +339,19 @@ erDiagram
 - `setting_value` (NVARCHAR(MAX), Not Null) - Giá trị cấu hình
 - `description` (NVARCHAR(255))
 - `updated_at` (DATETIME, Default: GETDATE())
+
+#### 1.8. `Notifications` (Trung Tâm Thông Báo Hệ Thống Đa Vai Trò)
+
+- `id` (INT, Primary Key, IDENTITY(1,1))
+- `user_id` (INT, Foreign Key -> `Users.id` ON DELETE CASCADE) - Người nhận
+- `title` (NVARCHAR(255), Not Null) - Tiêu đề thông báo
+- `message` (NVARCHAR(1000), Not Null) - Nội dung chi tiết
+- `type` (VARCHAR(50), Default: 'INFO') - Phân loại: `APPOINTMENT`, `SCHEDULE`, `PAYMENT`, `MEDICAL`, `SYSTEM`
+- `is_read` (BIT, Default: 0) - Trạng thái đã đọc (1: Đã đọc, 0: Chưa đọc)
+- `link` (VARCHAR(255)) - Đường dẫn điều hướng nhanh
+- `created_at` (DATETIME, Default: GETDATE()) - Thời gian gửi
+- _Tối ưu hiệu năng_: Đánh 2 chỉ mục **Non-Clustered Indexes** (`IX_Notification_User`, `IX_Notification_Unread`) tối ưu tốc độ polling thời gian thực.
+
 
 ---
 

@@ -31,11 +31,28 @@ public class EncodingFilter implements Filter {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        // 2. Nạp cấu hình động ClinicSettings cho TOÀN BỘ CÁC TRANG WEB
+        // 2. Nạp cấu hình động ClinicSettings & Ngôn Ngữ cho TOÀN BỘ CÁC TRANG WEB
         try {
             Map<String, String> settingsMap = clinicSettingDAO.getSettingsMap();
             request.setAttribute("clinicSettings", settingsMap);
             request.setAttribute("settingsMap", settingsMap);
+
+            if (request instanceof javax.servlet.http.HttpServletRequest) {
+                javax.servlet.http.HttpServletRequest httpRequest = (javax.servlet.http.HttpServletRequest) request;
+                javax.servlet.http.HttpSession session = httpRequest.getSession(false);
+                String lang = (session != null && session.getAttribute("LANG") != null)
+                        ? (String) session.getAttribute("LANG")
+                        : "vi";
+                request.setAttribute("CURRENT_LANG", lang);
+
+                if (session != null && session.getAttribute(constant.SystemConstant.SESSION_USER) != null) {
+                    model.User u = (model.User) session.getAttribute(constant.SystemConstant.SESSION_USER);
+                    if (constant.RoleConstant.PATIENT.equals(u.getRole())) {
+                        dao.LoyaltyDAO loyaltyDAO = new dao.LoyaltyDAO();
+                        request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(u.getId()));
+                    }
+                }
+            }
         } catch (Exception ignored) {}
 
         // 3. Chuyển tiếp Request cho Filter/Servlet tiếp theo

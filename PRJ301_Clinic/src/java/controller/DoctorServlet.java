@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import dao.AppointmentDAO;
 import dao.DoctorProfileDAO;
 import dao.DoctorScheduleDAO;
 import dao.MedicalRecordDAO;
+import dao.NotificationDAO;
 import model.*;
 import util.PaginationUtil;
 
@@ -156,7 +158,10 @@ public class DoctorServlet extends BaseRoleServlet {
         String msg = "";
         boolean success = false;
 
-        if ("generate-schedule".equals(action)) {
+        if ("get-slots".equals(action)) {
+            success = true;
+            msg = "Lấy danh sách ca khám thành công";
+        } else if ("generate-schedule".equals(action)) {
             if (doctorProfile != null && workDate != null) {
                 doctorScheduleDAO.ensureSchedulesExist(doctorProfile.getId(), workDate);
                 msg = "Đồng bộ tự động các ca khám thành công cho ngày " + dateParam;
@@ -204,6 +209,107 @@ public class DoctorServlet extends BaseRoleServlet {
                             : "Không thể xóa ca khám này (ca đã có bệnh nhân đặt lịch)!";
                 } catch (Exception e) {
                     msg = "Lỗi xóa ca khám: " + e.getMessage();
+                }
+            }
+        } else if ("register-weekly-schedule".equals(action)) {
+            if (doctorProfile != null) {
+                try {
+                    String startDateStr = request.getParameter("startDate");
+                    String endDateStr = request.getParameter("endDate");
+                    String[] daysArr = request.getParameterValues("daysOfWeek");
+                    String[] slotsArr = request.getParameterValues("timeSlots");
+
+                    if (startDateStr == null || endDateStr == null) {
+                        throw new IllegalArgumentException("Vui lòng chọn ngày bắt đầu và kết thúc!");
+                    }
+
+                    LocalDate startDate = LocalDate.parse(startDateStr.trim());
+                    LocalDate endDate = LocalDate.parse(endDateStr.trim());
+
+                    List<Integer> daysOfWeek = new ArrayList<>();
+                    if (daysArr != null) {
+                        for (String d : daysArr) {
+                            for (String part : d.split(",")) {
+                                if (!part.trim().isEmpty()) {
+                                    daysOfWeek.add(Integer.parseInt(part.trim()));
+                                }
+                            }
+                        }
+                    }
+
+                    List<String> timeSlots = new ArrayList<>();
+                    if (slotsArr != null) {
+                        for (String s : slotsArr) {
+                            for (String part : s.split(",")) {
+                                if (!part.trim().isEmpty()) {
+                                    timeSlots.add(part.trim());
+                                }
+                            }
+                        }
+                    }
+
+                    int createdCount = doctorScheduleDAO.registerWeeklyScheduleBatch(doctorProfile.getId(), startDate, endDate, daysOfWeek, timeSlots);
+                    success = true;
+                    msg = "Đã đăng ký thành công " + createdCount + " ca khám mới cho khoảng ngày " + startDateStr + " đến " + endDateStr + "!";
+                    NotificationDAO.pushNotification(loginUser.getId(), "Đăng ký lịch làm việc thành công",
+                            "Hệ thống đã lưu thành công " + createdCount + " ca làm việc mới cho khoảng ngày " + startDateStr + " đến " + endDateStr + ".",
+                            "SCHEDULE", "doctor/dashboard?tab=schedules");
+                    if (isAjaxReq) {
+                        writeJson(response, String.format("{\"success\":true,\"message\":\"%s\",\"count\":%d}", msg.replace("\"", "\\\""), createdCount));
+                        return;
+                    }
+                } catch (IllegalArgumentException e) {
+                    msg = e.getMessage();
+                    if (isAjaxReq) {
+                        writeJson(response, String.format("{\"success\":false,\"message\":\"%s\"}", msg.replace("\"", "\\\"")));
+                        return;
+                    }
+                } catch (Exception e) {
+                    msg = "Lỗi khi đăng ký lịch theo tuần: " + e.getMessage();
+                    if (isAjaxReq) {
+                        writeJson(response, String.format("{\"success\":false,\"message\":\"%s\"}", msg.replace("\"", "\\\"")));
+                        return;
+                    }
+                }
+            }
+        } else if ("clear-weekly-schedule".equals(action)) {
+            if (doctorProfile != null) {
+                try {
+                    String startDateStr = request.getParameter("startDate");
+                    String endDateStr = request.getParameter("endDate");
+                    String[] daysArr = request.getParameterValues("daysOfWeek");
+
+                    if (startDateStr == null || endDateStr == null) {
+                        throw new IllegalArgumentException("Vui lòng chọn ngày bắt đầu và kết thúc!");
+                    }
+
+                    LocalDate startDate = LocalDate.parse(startDateStr.trim());
+                    LocalDate endDate = LocalDate.parse(endDateStr.trim());
+
+                    List<Integer> daysOfWeek = new ArrayList<>();
+                    if (daysArr != null) {
+                        for (String d : daysArr) {
+                            for (String part : d.split(",")) {
+                                if (!part.trim().isEmpty()) {
+                                    daysOfWeek.add(Integer.parseInt(part.trim()));
+                                }
+                            }
+                        }
+                    }
+
+                    int clearedCount = doctorScheduleDAO.clearAvailableWeeklySchedules(doctorProfile.getId(), startDate, endDate, daysOfWeek);
+                    success = true;
+                    msg = "Đã dọn dẹp thành công " + clearedCount + " ca khám trống chưa có người đặt!";
+                    if (isAjaxReq) {
+                        writeJson(response, String.format("{\"success\":true,\"message\":\"%s\",\"count\":%d}", msg.replace("\"", "\\\""), clearedCount));
+                        return;
+                    }
+                } catch (Exception e) {
+                    msg = "Lỗi khi dọn dẹp ca khám: " + e.getMessage();
+                    if (isAjaxReq) {
+                        writeJson(response, String.format("{\"success\":false,\"message\":\"%s\"}", msg.replace("\"", "\\\"")));
+                        return;
+                    }
                 }
             }
         }
@@ -266,6 +372,9 @@ public class DoctorServlet extends BaseRoleServlet {
                 boolean saved = medicalRecordDAO.saveOrUpdateRecord(record);
                 if (saved) {
                     appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_COMPLETED);
+                    NotificationDAO.pushNotification(app.getPatientId(), "Bệnh án & Toa thuốc đã sẵn sàng",
+                            "Bác sĩ đã hoàn tất ca khám #" + appointmentId + " và cập nhật bệnh án điện tử của bạn.",
+                            "MEDICAL", "history");
                     setSuccess(request,
                             "Lưu đơn thuốc và chẩn đoán y khoa cho ca khám #" + appointmentId + " thành công!");
                 } else {

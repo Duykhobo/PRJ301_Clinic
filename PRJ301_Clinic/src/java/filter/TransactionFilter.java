@@ -35,15 +35,21 @@ public class TransactionFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         String method = req.getMethod();
         if ("POST".equalsIgnoreCase(method)) {
+            Connection conn = null;
             try {
-                Connection conn = DBContext.getConnection();
-                conn.setAutoCommit(false);
+                conn = DBContext.getConnection();
+                if (conn != null && !conn.isClosed()) {
+                    conn.setAutoCommit(false);
+                }
                 chain.doFilter(request, response);
-                conn.commit();
+                conn = DBContext.getConnection();
+                if (conn != null && !conn.isClosed()) {
+                    conn.commit();
+                }
             } catch (Exception e) {
                 try {
-                    Connection conn = DBContext.getConnection();
-                    if (conn != null) {
+                    conn = DBContext.getConnection();
+                    if (conn != null && !conn.isClosed()) {
                         conn.rollback();
                     }
                 } catch (SQLException ignored) {
