@@ -68,8 +68,10 @@
             <div class="stat-card green">
                 <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div>
-                    <div class="stat-value">${paidCount}</div>
-                    <div class="stat-label">Đã thanh toán</div>
+                    <div class="stat-value" style="font-size: 1.15rem;">
+                        <fmt:formatNumber value="${todayRevenuePaid}" pattern="#,##0" maxFractionDigits="0"/> <span style="font-size: 0.75rem; font-weight: normal;">VNĐ</span>
+                    </div>
+                    <div class="stat-label">Đã thu (${paidCount} ca)</div>
                 </div>
             </div>
         </div>
@@ -195,13 +197,22 @@
                                                 <span class="badge-completed"><i class="fa-solid fa-circle-check me-1"></i>Hoàn Tất</span>
                                             </c:when>
                                             <c:when test="${app.status == 'CONFIRMED'}">
-                                                <span class="badge-confirmed"><i class="fa-solid fa-user-check me-1"></i>Đã Check-in</span>
+                                                <span class="badge-confirmed"><i class="fa-solid fa-user-check me-1"></i>Đã Tiếp Nhận</span>
                                             </c:when>
                                             <c:when test="${app.status == 'CANCELLED'}">
                                                 <span class="badge-cancelled"><i class="fa-solid fa-ban me-1"></i>Đã Hủy</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge-pending"><i class="fa-solid fa-spinner fa-spin me-1"></i>Chờ Đón</span>
+                                                <c:choose>
+                                                    <c:when test="${app.paymentStatus == 'PAID'}">
+                                                        <span class="badge-pending" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                                            <i class="fa-solid fa-clock me-1"></i>Chờ Đón (Đã TT)
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge-pending"><i class="fa-solid fa-spinner fa-spin me-1"></i>Chờ Đón</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -226,15 +237,20 @@
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
                                                         <button type="button" class="btn-collect rounded-pill" title="Thu tiền mặt tại quầy và check-in vào sảnh" onclick="confirmCollectCash(this.form, '<c:out value="${app.patientName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ')">
-                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền &amp; Check-in
+                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Tiền Mặt
                                                         </button>
                                                     </form>
+                                                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 shadow-sm fw-bold"
+                                                        title="Mở mã VietQR SePay để khách quét chuyển khoản tại quầy"
+                                                        onclick="openCounterQRModal(${app.id}, '<c:out value="${app.patientName}"/>', '<c:out value="${app.serviceName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/>', '${app.totalPrice}', '${not empty app.paymentContent ? app.paymentContent : ('CLN'.concat(app.id))}')">
+                                                        <i class="fa-solid fa-qrcode me-1"></i>Quét QR
+                                                    </button>
                                                     <form action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" class="d-inline" novalidate="true">
                                                         <input type="hidden" name="action" value="confirm-checkin">
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
                                                         <button type="button" class="btn-checkin rounded-pill" title="Chỉ tiếp nhận vào sảnh, thu tiền sau" onclick="confirmCheckin(this.form, '<c:out value="${app.patientName}"/>')">
-                                                            <i class="fa-solid fa-user-check me-1"></i>Chỉ Check-in
+                                                            <i class="fa-solid fa-user-check me-1"></i>Check-in
                                                         </button>
                                                     </form>
                                                 </c:when>
@@ -246,7 +262,7 @@
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
                                                         <button type="button" class="btn-checkin rounded-pill" title="Tiếp nhận bệnh nhân vào sảnh chờ khám" onclick="confirmCheckin(this.form, '<c:out value="${app.patientName}"/>')">
-                                                            <i class="fa-solid fa-user-check me-1"></i>Check-in
+                                                            <i class="fa-solid fa-user-check me-1"></i>Tiếp Nhận Check-in
                                                         </button>
                                                     </form>
                                                 </c:when>
@@ -258,9 +274,14 @@
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
                                                         <button type="button" class="btn-collect rounded-pill" title="Thu tiền mặt" onclick="confirmCollectCash(this.form, '<c:out value="${app.patientName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ')">
-                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền Mặt
+                                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i>Tiền Mặt
                                                         </button>
                                                     </form>
+                                                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 shadow-sm fw-bold"
+                                                        title="Mở mã VietQR SePay để khách quét chuyển khoản tại quầy"
+                                                        onclick="openCounterQRModal(${app.id}, '<c:out value="${app.patientName}"/>', '<c:out value="${app.serviceName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/>', '${app.totalPrice}', '${not empty app.paymentContent ? app.paymentContent : ('CLN'.concat(app.id))}')">
+                                                        <i class="fa-solid fa-qrcode me-1"></i>Quét QR
+                                                    </button>
                                                 </c:when>
                                             </c:choose>
 
@@ -419,11 +440,72 @@
                 </div>
             </form>
         </div>
+        <%-- MODAL QUÉT MÃ VIETQR TẠI QUẦY (COUNTER QR PAYMENT MODAL) --%>
+        <div class="modal fade" id="counterQRModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content glass-card border border-info border-opacity-40 text-white" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(16px);">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                        <h5 class="modal-title fw-bold text-cyan d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-cyan"></i> Thanh Toán VietQR Tại Quầy
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="p-3 mb-3 rounded-4 shadow-sm mx-auto" style="background:#fff; max-width: 260px;">
+                            <img id="counterQRImage" src="" alt="Mã VietQR Chuyển Khoản" class="img-fluid rounded-3 w-100 shadow-sm">
+                        </div>
+
+                        <div class="p-3 rounded-3 text-start mb-3" style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Mã Ca Khám:</span>
+                                <strong class="text-cyan" id="qrModalAppId">#--</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Bệnh Nhân:</span>
+                                <strong class="text-white" id="qrModalPatientName">--</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Dịch Vụ:</span>
+                                <strong class="text-white" id="qrModalServiceName">--</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Số Tiền:</span>
+                                <strong class="text-warning fs-5" id="qrModalAmount">0 VNĐ</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Nội Dung Chuyển Khoản:</span>
+                                <strong class="badge bg-dark border border-secondary text-cyan px-2 py-1" id="qrModalContent">CLN--</strong>
+                            </div>
+                        </div>
+
+                        <form id="counterQRConfirmForm" action="${pageContext.request.contextPath}/receptionist/dashboard" method="POST" novalidate="true">
+                            <input type="hidden" name="action" value="confirm-qr-payment">
+                            <input type="hidden" name="appointmentId" id="qrConfirmAppId" value="">
+                            <input type="hidden" name="date" value="${selectedDate}">
+                            
+                            <button type="submit" class="btn rounded-pill w-100 py-2.5 fw-bold shadow text-white"
+                                style="background:linear-gradient(135deg,#0ea5e9,#10b981); border:none;">
+                                <i class="fa-solid fa-bolt me-1"></i>Xác Nhận Đã Nhận Tiền &amp; Tiếp Nhận Vào Sảnh
+                            </button>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<%-- Inject context path cho receptionist.js — file .js tĩnh không xử lý JSP EL --%>
-<script>window.RECEPTIONIST_CTX = '${pageContext.request.contextPath}';</script>
+<%-- Inject context path & SePay config cho receptionist.js --%>
+<script>
+    window.RECEPTIONIST_CTX = '${pageContext.request.contextPath}';
+    window.SEPAY_BANK_NAME = '${not empty clinicSettings["SEPAY_BANK_NAME"] ? clinicSettings["SEPAY_BANK_NAME"] : "Sacombank"}';
+    window.SEPAY_BANK_ACC = '${not empty clinicSettings["SEPAY_BANK_ACC"] ? clinicSettings["SEPAY_BANK_ACC"] : "070148520060"}';
+    window.SEPAY_HOLDER = '${not empty clinicSettings["SEPAY_ACCOUNT_HOLDER"] ? clinicSettings["SEPAY_ACCOUNT_HOLDER"] : "NGUYEN%20THANH%20DUY"}';
+</script>
 <script src="${pageContext.request.contextPath}/assets/js/receptionist.js" charset="UTF-8"></script>
 
 </body>

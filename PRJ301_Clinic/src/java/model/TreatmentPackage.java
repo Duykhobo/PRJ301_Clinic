@@ -9,6 +9,9 @@ public class TreatmentPackage {
 
     private int id;
     private int patientId;
+    private int serviceId;
+    private String patientName;
+    private String patientPhone;
     private String packageName;
     private String serviceName;
     private int totalSessions;
@@ -48,6 +51,30 @@ public class TreatmentPackage {
 
     public void setPatientId(int patientId) {
         this.patientId = patientId;
+    }
+
+    public int getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(int serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getPatientPhone() {
+        return patientPhone;
+    }
+
+    public void setPatientPhone(String patientPhone) {
+        this.patientPhone = patientPhone;
     }
 
     public String getPackageName() {

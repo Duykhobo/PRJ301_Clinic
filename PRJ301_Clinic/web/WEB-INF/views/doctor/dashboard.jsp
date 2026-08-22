@@ -54,6 +54,93 @@
         </div>
 
         <c:choose>
+            <c:when test="${param.tab == 'packages'}">
+                <%-- DOCTOR TREATMENT PACKAGES MANAGEMENT PANEL --%>
+                <div class="panel mb-4 animate-fade-in">
+                    <div class="panel-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="panel-title text-warning">
+                            <i class="fa-solid fa-wand-magic-sparkles text-warning me-2"></i>Quản Lý Gói Liệu Trình Trọn Gói Spa &amp; Thẩm Mỹ (${allPackages.size()} Gói)
+                        </div>
+                        <button type="button" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createPackageModal">
+                            <i class="fa-solid fa-plus me-1"></i>Tạo Gói Liệu Trình Mới
+                        </button>
+                    </div>
+                    <div class="table-responsive p-3">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-warning border-bottom border-secondary border-opacity-25">
+                                    <th>Mã Gói</th>
+                                    <th>Bệnh Nhân</th>
+                                    <th>Tên Gói Liệu Trình</th>
+                                    <th>Dịch Vụ Áp Dụng</th>
+                                    <th>Tiến Độ Buổi</th>
+                                    <th>Trạng Thái</th>
+                                    <th class="text-end">Thao Tác Bác Sĩ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${not empty allPackages}">
+                                        <c:forEach var="pkg" items="${allPackages}">
+                                            <tr>
+                                                <td class="fw-bold text-white">#${pkg.id}</td>
+                                                <td>
+                                                    <div class="fw-bold text-white"><c:out value="${pkg.patientName}"/></div>
+                                                    <div class="small text-muted"><i class="fa-solid fa-phone me-1"></i><c:out value="${pkg.patientPhone}"/></div>
+                                                </td>
+                                                <td class="text-warning fw-bold"><c:out value="${pkg.packageName}"/></td>
+                                                <td><span class="badge bg-dark border border-secondary text-cyan px-2.5 py-1 rounded-pill"><c:out value="${pkg.serviceName}"/></span></td>
+                                                <td style="min-width: 180px;">
+                                                    <div class="d-flex justify-content-between small text-white-50 mb-1">
+                                                        <span><strong>${pkg.completedSessions}</strong> / ${pkg.totalSessions} buổi</span>
+                                                        <strong class="text-cyan">${pkg.progressPercent}%</strong>
+                                                    </div>
+                                                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                                        <div class="progress-bar bg-warning progress-bar-striped" role="progressbar" style="width: ${pkg.progressPercent}%;"></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${pkg.status == 'COMPLETED' || pkg.completedSessions >= pkg.totalSessions}">
+                                                            <span class="badge bg-success bg-opacity-25 border border-success border-opacity-40 text-emerald px-2.5 py-1 rounded-pill fw-bold">
+                                                                <i class="fa-solid fa-circle-check me-1"></i>Hoàn Thành
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-warning bg-opacity-25 border border-warning border-opacity-40 text-warning px-2.5 py-1 rounded-pill fw-bold">
+                                                                <i class="fa-solid fa-spinner fa-spin-pulse me-1"></i>Đang Điều Trị
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td class="text-end">
+                                                    <c:if test="${pkg.status != 'COMPLETED' && pkg.completedSessions < pkg.totalSessions}">
+                                                        <form action="${pageContext.request.contextPath}/doctor/dashboard" method="POST" class="d-inline" novalidate="true">
+                                                            <input type="hidden" name="action" value="increment-package-session">
+                                                            <input type="hidden" name="packageId" value="${pkg.id}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold">
+                                                                <i class="fa-solid fa-plus me-1"></i>+1 Buổi Khám
+                                                            </button>
+                                                        </form>
+                                                    </c:if>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">
+                                                <i class="fa-solid fa-wand-magic-sparkles fs-3 mb-2 d-block text-secondary"></i>
+                                                Chưa có gói liệu trình nào được đăng ký.
+                                            </td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:when>
             <c:when test="${param.tab == 'schedules'}">
                 <%-- DOCTOR SCHEDULE MANAGEMENT PANEL (100% PURE AJAX ZERO-RELOAD) --%>
                 <div class="panel mb-4 animate-fade-in">
@@ -237,13 +324,13 @@
                                                 </c:when>
                                                 <c:when test="${app.status == 'COMPLETED'}">
                                                     <button type="button" class="btn-examine rounded-pill" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);"
-                                                        onclick="openMedicalModal(${app.id}, '${app.patientName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}')">
+                                                        onclick="openMedicalModal(${app.id}, '${app.patientName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}', ${not empty recordsMap[app.id].skinMoistureLevel ? recordsMap[app.id].skinMoistureLevel : 'null'}, ${not empty recordsMap[app.id].skinSebumLevel ? recordsMap[app.id].skinSebumLevel : 'null'})">
                                                         <i class="fa-solid fa-file-medical me-1"></i>Xem Bệnh Án
                                                     </button>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <button type="button" class="btn-examine rounded-pill"
-                                                        onclick="openMedicalModal(${app.id}, '${app.patientName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}')">
+                                                        onclick="openMedicalModal(${app.id}, '${app.patientName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}', ${not empty recordsMap[app.id].skinMoistureLevel ? recordsMap[app.id].skinMoistureLevel : 'null'}, ${not empty recordsMap[app.id].skinSebumLevel ? recordsMap[app.id].skinSebumLevel : 'null'})">
                                                         <i class="fa-solid fa-notes-medical me-1"></i>Khám & Kê Đơn
                                                     </button>
                                                 </c:otherwise>
@@ -327,7 +414,7 @@
                                                 <span><i class="fa-solid fa-droplet me-1"></i>Độ Ẩm Da:</span>
                                                 <span id="moistureVal" class="text-white">55%</span>
                                             </div>
-                                            <input type="range" class="form-range" id="moistureSlider" min="10" max="100" value="55" oninput="document.getElementById('moistureVal').innerText = this.value + '%'">
+                                            <input type="range" class="form-range" name="skinMoistureLevel" id="moistureSlider" min="10" max="100" value="55" oninput="document.getElementById('moistureVal').innerText = this.value + '%'">
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-4">
@@ -336,7 +423,7 @@
                                                 <span><i class="fa-solid fa-fire-flame-simple me-1"></i>Độ Tiết Dầu:</span>
                                                 <span id="oilVal" class="text-white">60%</span>
                                             </div>
-                                            <input type="range" class="form-range" id="oilSlider" min="10" max="100" value="60" oninput="document.getElementById('oilVal').innerText = this.value + '%'">
+                                            <input type="range" class="form-range" name="skinSebumLevel" id="oilSlider" min="10" max="100" value="60" oninput="document.getElementById('oilVal').innerText = this.value + '%'">
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-4">
@@ -366,6 +453,21 @@
                                     <i class="fa-solid fa-pills me-1"></i>Chỉ Định, Phác Đồ Trị Liệu &amp; Đơn Thuốc / Mỹ Phẩm:
                                 </label>
                                 <textarea name="prescription" id="modalPrescription" class="form-control form-control-glass text-warning" rows="4" placeholder="Nhập phác đồ điều trị, đơn thuốc và lời dặn chăm sóc tại nhà..." required></textarea>
+                            </div>
+
+                            <div class="mb-4 p-3 rounded-3" style="background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.35);">
+                                <label class="form-label fw-bold text-warning mb-2 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Quản Lý Gói Liệu Trình Trọn Gói (Spa Treatment Package):
+                                </label>
+                                <select name="treatmentPackageOption" class="form-select bg-dark text-white border-warning border-opacity-50">
+                                    <option value="none">Khám lẻ thông thường (Không liên kết gói)</option>
+                                    <option value="advance_1" selected>☑ Ghi nhận hoàn tất 1 buổi của Gói Liệu Trình hiện tại</option>
+                                    <option value="create_5">✨ Khởi tạo Gói Liệu Trình Mới (5 Buổi) cho Bệnh nhân</option>
+                                    <option value="create_10">✨ Khởi tạo Gói Liệu Trình Mới (10 Buổi) cho Bệnh nhân</option>
+                                </select>
+                                <div class="form-text text-muted small mt-1">
+                                    <i class="fa-solid fa-circle-info text-cyan me-1"></i>Hệ thống sẽ tự động tăng số buổi và gửi Email cập nhật tiến độ cho khách hàng.
+                                </div>
                             </div>
 
                             <div class="mb-2 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(52, 211, 153, 0.35);">
@@ -570,6 +672,64 @@
                                     <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Áp Dụng Lịch Toàn Tuần
                                 </button>
                             </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <%-- MODAL KHỞI TẠO GÓI LIỆU TRÌNH MỚI (CREATE TREATMENT PACKAGE MODAL) --%>
+        <div class="modal fade" id="createPackageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content glass-card border border-warning border-opacity-40 text-white" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                        <h5 class="modal-title fw-bold text-warning d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Khởi Tạo Gói Liệu Trình Trọn Gói
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/doctor/dashboard" method="POST" novalidate="true">
+                        <input type="hidden" name="action" value="create-treatment-package">
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label text-cyan fw-bold small"><i class="fa-solid fa-user me-1"></i>1. Chọn Bệnh Nhân:</label>
+                                <select name="patientId" class="form-select bg-dark text-white border-secondary" required>
+                                    <c:forEach var="p" items="${patientsList}">
+                                        <option value="${p.id}"><c:out value="${p.fullname}"/> - SĐT: <c:out value="${p.phone}"/></option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-warning fw-bold small"><i class="fa-solid fa-notes-medical me-1"></i>2. Chọn Dịch Vụ Liệu Trình:</label>
+                                <select name="serviceId" class="form-select bg-dark text-white border-secondary" required>
+                                    <c:forEach var="s" items="${servicesList}">
+                                        <option value="${s.id}"><c:out value="${s.serviceName}"/></option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-white fw-bold small"><i class="fa-solid fa-tag me-1"></i>3. Tên Gói (Tùy chọn):</label>
+                                <input type="text" name="packageName" class="form-control bg-dark text-white border-secondary" placeholder="VD: Liệu Trình Trị Mụn 5 Buổi">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-emerald fw-bold small"><i class="fa-solid fa-list-ol me-1"></i>4. Quy Mô Số Buổi Khám/Chăm Sóc:</label>
+                                <select name="totalSessions" class="form-select bg-dark text-white border-emerald">
+                                    <option value="5" selected>Gói 5 Buổi (Tiêu Chuẩn)</option>
+                                    <option value="10">Gói 10 Buổi (Chuyên Sâu)</option>
+                                    <option value="3">Gói 3 Buổi (Trải Nghiệm)</option>
+                                    <option value="15">Gói 15 Buổi (VIP)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                            <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">
+                                <i class="fa-solid fa-plus me-1"></i>Tạo Gói Liệu Trình
+                            </button>
                         </div>
                     </form>
                 </div>

@@ -150,6 +150,14 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
+     * Lấy danh sách Người dùng theo Vai trò (PATIENT, DOCTOR, RECEPTIONIST, ADMIN).
+     */
+    public List<User> findByRole(String role) {
+        String sql = "SELECT * FROM Users WHERE role = ? AND status = 1 ORDER BY fullname ASC";
+        return queryList(sql, this::mapResultSetToUser, role);
+    }
+
+    /**
      * Đảo trạng thái tài khoản (Active <-> Banned).
      */
     public boolean toggleStatus(int userId) {
@@ -285,17 +293,21 @@ public class UserDAO extends BaseDAO<User> {
         String sql = "INSERT INTO Users (username, password, email, fullname, phone, role, status)"
                 + " VALUES(?, ?, ?, ?, ?, ?, 1)";
 
-        String username = (user.getUsername() != null && !user.getUsername().isEmpty())
-                ? user.getUsername()
-                : "walkin_" + user.getPhone();
+        String safePhone = (user.getPhone() != null && !user.getPhone().trim().isEmpty()) ? user.getPhone().trim() : ("09" + (System.currentTimeMillis() % 100000000));
+        String username = (user.getUsername() != null && !user.getUsername().trim().isEmpty())
+                ? user.getUsername().trim()
+                : ("walkin_" + safePhone + "_" + (System.currentTimeMillis() % 10000));
+        String email = (user.getEmail() != null && !user.getEmail().trim().isEmpty())
+                ? user.getEmail().trim()
+                : ("walkin_" + safePhone + "_" + (System.currentTimeMillis() % 10000) + "@clinic.vn");
         String rawPass = (user.getPassword() != null && !user.getPassword().isEmpty())
                 ? user.getPassword()
                 : "WALKIN_" + System.currentTimeMillis();
         String hashedPassword = BCryptUtil.hashPassword(rawPass);
 
         try {
-            return executeInsertAndGetGeneratedKey(sql, username, hashedPassword, user.getEmail(), user.getFullname(),
-                    user.getPhone(), user.getRole() != null ? user.getRole() : "PATIENT");
+            return executeInsertAndGetGeneratedKey(sql, username, hashedPassword, email, user.getFullname(),
+                    safePhone, user.getRole() != null ? user.getRole() : "PATIENT");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);
             return -1;

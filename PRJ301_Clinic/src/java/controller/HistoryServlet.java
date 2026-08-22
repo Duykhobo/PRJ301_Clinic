@@ -91,6 +91,52 @@ public class HistoryServlet extends BaseRoleServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_HISTORY);
+            return;
+        }
+
+        User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
+        String action = request.getParameter("action");
+
+        if ("submit-review".equals(action)) {
+            try {
+                int appointmentId = Integer.parseInt(request.getParameter("appointmentId"));
+                int rating = Integer.parseInt(request.getParameter("rating"));
+                String reviewComment = request.getParameter("reviewComment");
+
+                if (rating < 1) rating = 1;
+                if (rating > 5) rating = 5;
+
+                boolean saved = medicalRecordDAO.saveReview(appointmentId, rating, reviewComment != null ? reviewComment.trim() : "");
+                if (saved) {
+                    setSuccess(request, "Cảm ơn bạn đã gửi đánh giá " + rating + " sao và phản hồi dịch vụ!");
+                } else {
+                    setError(request, "Không thể lưu đánh giá. Vui lòng thử lại!");
+                }
+            } catch (Exception e) {
+                setError(request, "Lỗi khi gửi đánh giá: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
+            return;
+        } else if ("cancel-appointment".equals(action)) {
+            try {
+                int appointmentId = Integer.parseInt(request.getParameter("appointmentId"));
+                Appointment app = appointmentDAO.findById(appointmentId);
+                if (app != null && app.getPatientId() == user.getId() && !SystemConstant.STATUS_COMPLETED.equalsIgnoreCase(app.getStatus())) {
+                    appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_CANCELLED);
+                    setSuccess(request, "Đã hủy cuộc hẹn #" + appointmentId + " thành công!");
+                } else {
+                    setError(request, "Không thể hủy cuộc hẹn này!");
+                }
+            } catch (Exception e) {
+                setError(request, "Lỗi khi hủy lịch hẹn: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
+            return;
+        }
+
         doGet(request, response);
     }
 }

@@ -64,7 +64,7 @@ function filterPatientHistory() {
     }
 }
 
-function viewPatientPrescription(appId, doctor, service, diagnosis, prescription) {
+function viewPatientPrescription(appId, doctor, service, diagnosis, prescription, moistureVal, oilVal) {
     const elAppId = document.getElementById('pModalAppId');
     const elDoc = document.getElementById('pModalDoctor');
     const elServ = document.getElementById('pModalService');
@@ -79,9 +79,9 @@ function viewPatientPrescription(appId, doctor, service, diagnosis, prescription
     if (elDiag) elDiag.innerText = diagnosis || 'Ch\u01b0a c\u00f3 ch\u1ea9n \u0111o\u00e1n chi ti\u1ebft.';
     if (elPresc) elPresc.innerText = prescription || 'Ch\u01b0a c\u00f3 \u0111\u01a1n thu\u1ed1c ch\u1ec9 \u0111\u1ecbnh.';
 
-    // Tự động tính chỉ số da sinh động
-    const moisture = Math.floor(Math.random() * 25) + 50;
-    const oil = Math.floor(Math.random() * 25) + 40;
+    // Chỉ số da từ Bác sĩ hoặc mặc định
+    const moisture = (moistureVal !== null && moistureVal !== undefined) ? moistureVal : (Math.floor(Math.random() * 25) + 50);
+    const oil = (oilVal !== null && oilVal !== undefined) ? oilVal : (Math.floor(Math.random() * 25) + 40);
     if (elMoist) elMoist.innerText = moisture + '%';
     if (elOil) elOil.innerText = oil + '%';
 
@@ -89,6 +89,60 @@ function viewPatientPrescription(appId, doctor, service, diagnosis, prescription
     if (modalEl && typeof bootstrap !== 'undefined') {
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
+    }
+}
+
+function openReviewModal(appId, doctor, service, currentRating, currentComment) {
+    const elAppId = document.getElementById('revModalAppId');
+    const elAppLabel = document.getElementById('revModalAppLabel');
+    const elDoc = document.getElementById('revModalDoctor');
+    const elServ = document.getElementById('revModalService');
+    const elComment = document.getElementById('revCommentInput');
+
+    if (elAppId) elAppId.value = appId;
+    if (elAppLabel) elAppLabel.innerText = '#' + appId;
+    if (elDoc) elDoc.innerText = doctor;
+    if (elServ) elServ.innerText = service;
+    if (elComment) elComment.value = currentComment || '';
+
+    setRatingStars(currentRating || 5);
+
+    const modalEl = document.getElementById('patientReviewModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+function setRatingStars(stars) {
+    const input = document.getElementById('revRatingInput');
+    if (input) input.value = stars;
+
+    const group = document.getElementById('starRatingGroup');
+    if (group) {
+        const iconList = group.querySelectorAll('i.fa-star');
+        iconList.forEach((star, index) => {
+            if (index < stars) {
+                star.classList.remove('fa-regular');
+                star.classList.add('fa-solid', 'text-warning');
+                star.classList.remove('text-secondary');
+            } else {
+                star.classList.remove('fa-solid', 'text-warning');
+                star.classList.add('fa-regular', 'text-secondary');
+            }
+        });
+    }
+
+    const label = document.getElementById('ratingTextLabel');
+    if (label) {
+        const descMap = {
+            1: 'R\u1ea5t kh\u00f4ng h\u00e0i l\u00f2ng (1/5 sao)',
+            2: 'Ch\u01b0a h\u00e0i l\u00f2ng (2/5 sao)',
+            3: 'B\u00ecnh th\u01b0\u1eddng (3/5 sao)',
+            4: 'H\u00e0i l\u00f2ng (4/5 sao)',
+            5: 'Tuy\u1ec7t v\u1eddi (5/5 sao)'
+        };
+        label.innerText = descMap[stars] || (stars + '/5 sao');
     }
 }
 

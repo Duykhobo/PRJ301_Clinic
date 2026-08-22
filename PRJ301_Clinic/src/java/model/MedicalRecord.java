@@ -14,6 +14,8 @@ public class MedicalRecord {
     private int doctorId;
     private String diagnosis;
     private String prescriptionOrResult;
+    private Integer skinMoistureLevel;
+    private Integer skinSebumLevel;
     private Integer rating;
     private String reviewComment;
     private Timestamp createdAt;
@@ -80,6 +82,22 @@ public class MedicalRecord {
 
     public void setPrescriptionOrResult(String prescriptionOrResult) {
         this.prescriptionOrResult = prescriptionOrResult;
+    }
+
+    public Integer getSkinMoistureLevel() {
+        return skinMoistureLevel;
+    }
+
+    public void setSkinMoistureLevel(Integer skinMoistureLevel) {
+        this.skinMoistureLevel = skinMoistureLevel;
+    }
+
+    public Integer getSkinSebumLevel() {
+        return skinSebumLevel;
+    }
+
+    public void setSkinSebumLevel(Integer skinSebumLevel) {
+        this.skinSebumLevel = skinSebumLevel;
     }
 
     public Integer getRating() {

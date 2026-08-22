@@ -44,6 +44,12 @@
                       </a>
                     </li>
                     <li>
+                      <a href="${pageContext.request.contextPath}/doctor/dashboard?tab=packages" class="${param.tab == 'packages' ? 'active' : ''}">
+                        <span class="sb-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                        Gói Liệu Trình Trọn Gói
+                      </a>
+                    </li>
+                    <li>
                       <a href="${pageContext.request.contextPath}/doctor/dashboard?tab=schedules" class="${param.tab == 'schedules' ? 'active' : ''}">
                         <span class="sb-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
                         Quản Lý Lịch Làm Việc
@@ -94,13 +100,16 @@
                             <c:when test="${param.tab == 'schedules'}">
                               <i class="fa-solid fa-clock-rotate-left me-2" style="color:#60a5fa;"></i>Quản Lý Lịch Làm Việc Y Tế
                             </c:when>
+                            <c:when test="${param.tab == 'packages'}">
+                              <i class="fa-solid fa-wand-magic-sparkles me-2" style="color:#fbbf24;"></i>Quản Lý Gói Liệu Trình Trọn Gói
+                            </c:when>
                             <c:otherwise>
                               <i class="fa-solid fa-clipboard-list me-2" style="color:#60a5fa;"></i>Danh Sách Ca Khám Bệnh
                             </c:otherwise>
                           </c:choose>
                         </div>
                         <div class="topbar-breadcrumb">
-                          PRJ301 Clinic &rsaquo; Doctor Workspace &rsaquo; ${param.tab == 'schedules' ? 'Quản Lý Lịch Làm Việc' : 'Danh Sách Ca Khám'}
+                          PRJ301 Clinic &rsaquo; Doctor Workspace &rsaquo; ${param.tab == 'schedules' ? 'Quản Lý Lịch Làm Việc' : (param.tab == 'packages' ? 'Gói Liệu Trình Trọn Gói' : 'Danh Sách Ca Khám')}
                         </div>
                       </div>
                   </div>

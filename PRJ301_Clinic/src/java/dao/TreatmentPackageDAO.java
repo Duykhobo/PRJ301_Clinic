@@ -14,17 +14,122 @@ import config.DBContext;
 import model.TreatmentPackage;
 
 /**
- * TreatmentPackageDAO - Truy vấn và tổng hợp các Gói Liệu Trình Spa / Da liễu thực tế của bệnh nhân từ CSDL.
+ * TreatmentPackageDAO - Quản lý Gói Liệu Trình Spa / Điều Trị Da Liễu từ bảng TreatmentPackages.
  */
 public class TreatmentPackageDAO extends BaseDAO<TreatmentPackage> {
 
     private static final Logger LOGGER = Logger.getLogger(TreatmentPackageDAO.class.getName());
 
+    protected TreatmentPackage mapResultSetToPackage(ResultSet rs) throws SQLException {
+        TreatmentPackage pkg = new TreatmentPackage();
+        pkg.setId(rs.getInt("id"));
+        pkg.setPatientId(rs.getInt("patient_id"));
+        pkg.setServiceId(rs.getInt("service_id"));
+        pkg.setPackageName(rs.getString("package_name"));
+        pkg.setServiceName(rs.getString("service_name"));
+        try {
+            pkg.setPatientName(rs.getString("patient_name"));
+            pkg.setPatientPhone(rs.getString("patient_phone"));
+        } catch (Exception ignored) {
+        }
+        pkg.setTotalSessions(rs.getInt("total_sessions"));
+        pkg.setCompletedSessions(rs.getInt("completed_sessions"));
+        try {
+            pkg.setPrice(rs.getBigDecimal("price"));
+        } catch (Exception ignored) {
+        }
+        pkg.setStatus(rs.getString("status"));
+        return pkg;
+    }
+
     /**
-     * Lấy danh sách Gói Liệu Trình của Bệnh nhân tổng hợp từ các ca khám/chăm sóc thật trong CSDL.
-     * Nếu bệnh nhân chưa có ca khám nào, trả về danh sách rỗng (Không render khung giả).
+     * Lấy danh sách Gói Liệu Trình của một Bệnh nhân từ bảng TreatmentPackages (ưu tiên) hoặc tổng hợp từ Appointments.
      */
     public List<TreatmentPackage> findActivePackagesByPatient(int patientId) {
+        String sql = "SELECT tp.id, tp.patient_id, tp.service_id, tp.package_name, tp.total_sessions, tp.completed_sessions, tp.status, "
+                   + "       s.service_name, s.price, u.fullname AS patient_name, u.phone AS patient_phone "
+                   + "FROM TreatmentPackages tp "
+                   + "JOIN Services s ON tp.service_id = s.id "
+                   + "JOIN Users u ON tp.patient_id = u.id "
+                   + "WHERE tp.patient_id = ? "
+                   + "ORDER BY tp.id DESC";
+
+        List<TreatmentPackage> list = queryList(sql, this::mapResultSetToPackage, patientId);
+        if (list != null && !list.isEmpty()) {
+            return list;
+        }
+
+        // Fallback tự động tổng hợp từ lịch sử Appointments nếu chưa có bản ghi trong bảng TreatmentPackages
+        return findAggregatedPackagesByPatient(patientId);
+    }
+
+    /**
+     * Lấy tất cả Gói Liệu Trình của toàn bộ bệnh nhân (Dành cho Bác sĩ & Admin theo dõi).
+     */
+    public List<TreatmentPackage> findAllPackages() {
+        String sql = "SELECT tp.id, tp.patient_id, tp.service_id, tp.package_name, tp.total_sessions, tp.completed_sessions, tp.status, "
+                   + "       s.service_name, s.price, u.fullname AS patient_name, u.phone AS patient_phone "
+                   + "FROM TreatmentPackages tp "
+                   + "JOIN Services s ON tp.service_id = s.id "
+                   + "JOIN Users u ON tp.patient_id = u.id "
+                   + "ORDER BY CASE WHEN tp.status = 'ACTIVE' THEN 0 ELSE 1 END, tp.id DESC";
+
+        return queryList(sql, this::mapResultSetToPackage);
+    }
+
+    /**
+     * Tạo mới một Gói Liệu Trình (5 hoặc 10 buổi) cho Bệnh nhân.
+     */
+    public boolean createPackage(int patientId, int serviceId, String packageName, int totalSessions) {
+        String sql = "INSERT INTO TreatmentPackages (patient_id, service_id, package_name, total_sessions, completed_sessions, status) "
+                   + "VALUES (?, ?, ?, ?, 0, 'ACTIVE')";
+        return executeUpdate(sql, patientId, serviceId, packageName, totalSessions > 0 ? totalSessions : 5);
+    }
+
+    /**
+     * Bác sĩ ghi nhận hoàn thành +1 buổi cho gói liệu trình.
+     */
+    public boolean incrementCompletedSession(int packageId) {
+        String selectSql = "SELECT * FROM TreatmentPackages WHERE id = ?";
+        TreatmentPackage pkg = queryOne(selectSql, rs -> {
+            TreatmentPackage p = new TreatmentPackage();
+            p.setId(rs.getInt("id"));
+            p.setTotalSessions(rs.getInt("total_sessions"));
+            p.setCompletedSessions(rs.getInt("completed_sessions"));
+            return p;
+        }, packageId);
+
+        if (pkg != null) {
+            int newCompleted = pkg.getCompletedSessions() + 1;
+            String newStatus = newCompleted >= pkg.getTotalSessions() ? "COMPLETED" : "ACTIVE";
+            String updateSql = "UPDATE TreatmentPackages SET completed_sessions = ?, status = ?, updated_at = GETDATE() WHERE id = ?";
+            return executeUpdate(updateSql, newCompleted, newStatus, packageId);
+        }
+        return false;
+    }
+
+    /**
+     * Helper tìm hoặc tạo gói liệu trình khi Bác sĩ khám ca thuộc gói.
+     */
+    public boolean advanceOrCreatePackageForAppointment(int patientId, int serviceId, String serviceName, int totalSessions) {
+        String findSql = "SELECT TOP 1 id FROM TreatmentPackages WHERE patient_id = ? AND service_id = ? AND status = 'ACTIVE' ORDER BY id DESC";
+        Integer existingPkgId = queryOne(findSql, rs -> rs.getInt("id"), patientId, serviceId);
+
+        if (existingPkgId != null && existingPkgId > 0) {
+            return incrementCompletedSession(existingPkgId);
+        } else {
+            String pkgName = "Liệu Trình " + (serviceName != null ? serviceName : "Trị Liệu") + " (" + totalSessions + " Buổi)";
+            String insertSql = "INSERT INTO TreatmentPackages (patient_id, service_id, package_name, total_sessions, completed_sessions, status) "
+                             + "VALUES (?, ?, ?, ?, 1, ?)";
+            String status = totalSessions <= 1 ? "COMPLETED" : "ACTIVE";
+            return executeUpdate(insertSql, patientId, serviceId, pkgName, totalSessions, status);
+        }
+    }
+
+    /**
+     * Fallback tổng hợp từ lịch hẹn Appointments.
+     */
+    private List<TreatmentPackage> findAggregatedPackagesByPatient(int patientId) {
         List<TreatmentPackage> list = new ArrayList<>();
         String sql = "SELECT s.id AS service_id, s.service_name, "
                    + "       COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) AS completed_count, "
@@ -67,9 +172,8 @@ public class TreatmentPackageDAO extends BaseDAO<TreatmentPackage> {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi truy vấn TreatmentPackage cho patientId: " + patientId, e);
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn aggregated TreatmentPackage cho patientId: " + patientId, e);
         }
-
         return list;
     }
 }

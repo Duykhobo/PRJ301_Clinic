@@ -21,6 +21,7 @@ import dao.DoctorProfileDAO;
 import dao.DoctorScheduleDAO;
 import dao.MedicalRecordDAO;
 import dao.NotificationDAO;
+import dao.ServiceDAO;
 import dao.TreatmentPackageDAO;
 import dao.UserDAO;
 import model.*;
@@ -36,6 +37,7 @@ public class DoctorServlet extends BaseRoleServlet {
     private DoctorScheduleDAO doctorScheduleDAO;
     private UserDAO userDAO;
     private TreatmentPackageDAO treatmentPackageDAO;
+    private ServiceDAO serviceDAO;
 
     @Override
     public void init() throws ServletException {
@@ -45,6 +47,7 @@ public class DoctorServlet extends BaseRoleServlet {
         this.doctorScheduleDAO = new DoctorScheduleDAO();
         this.userDAO = new UserDAO();
         this.treatmentPackageDAO = new TreatmentPackageDAO();
+        this.serviceDAO = new ServiceDAO();
     }
 
     @Override
@@ -140,6 +143,11 @@ public class DoctorServlet extends BaseRoleServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
 
+        // Nạp danh sách Gói Liệu Trình, Dịch Vụ và Bệnh Nhân cho Bác Sĩ
+        request.setAttribute("allPackages", treatmentPackageDAO.findAllPackages());
+        request.setAttribute("servicesList", serviceDAO.findAllActive());
+        request.setAttribute("patientsList", userDAO.findByRole(RoleConstant.PATIENT));
+
         request.getRequestDispatcher(RouterConstant.DOCTOR_DASHBOARD_JSP).forward(request, response);
     }
 
@@ -169,6 +177,37 @@ public class DoctorServlet extends BaseRoleServlet {
 
         if ("save-diagnosis".equals(action)) {
             handleSaveDiagnosis(request, response, loginUser);
+            return;
+        } else if ("create-treatment-package".equals(action)) {
+            try {
+                int patientId = Integer.parseInt(request.getParameter("patientId"));
+                int serviceId = Integer.parseInt(request.getParameter("serviceId"));
+                int totalSessions = Integer.parseInt(request.getParameter("totalSessions"));
+                String pkgName = request.getParameter("packageName");
+                if (pkgName == null || pkgName.trim().isEmpty()) {
+                    Service s = serviceDAO.findById(serviceId);
+                    pkgName = "Liệu Trình " + (s != null ? s.getServiceName() : "Trị Liệu Da") + " (" + totalSessions + " Buổi)";
+                }
+                treatmentPackageDAO.createPackage(patientId, serviceId, pkgName.trim(), totalSessions);
+                setSuccess(request, "Khởi tạo thành công gói liệu trình [" + pkgName + "] cho bệnh nhân!");
+            } catch (Exception e) {
+                setError(request, "Lỗi khi tạo gói liệu trình: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + RouterConstant.DASHBOARD_DOCTOR + "?tab=packages");
+            return;
+        } else if ("increment-package-session".equals(action)) {
+            try {
+                int packageId = Integer.parseInt(request.getParameter("packageId"));
+                boolean ok = treatmentPackageDAO.incrementCompletedSession(packageId);
+                if (ok) {
+                    setSuccess(request, "Đã ghi nhận hoàn thành +1 buổi cho gói liệu trình #" + packageId + "!");
+                } else {
+                    setError(request, "Không thể cập nhật buổi cho gói liệu trình này!");
+                }
+            } catch (Exception e) {
+                setError(request, "Lỗi cập nhật buổi liệu trình: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + RouterConstant.DASHBOARD_DOCTOR + "?tab=packages");
             return;
         }
 
@@ -377,6 +416,8 @@ public class DoctorServlet extends BaseRoleServlet {
             String diagnosis = request.getParameter("diagnosis");
             String prescription = request.getParameter("prescription");
             String revisitDateStr = request.getParameter("revisitDate");
+            String moistureStr = request.getParameter("skinMoistureLevel");
+            String sebumStr = request.getParameter("skinSebumLevel");
 
             Appointment app = appointmentDAO.findById(appointmentId);
             if (app != null) {
@@ -386,6 +427,15 @@ public class DoctorServlet extends BaseRoleServlet {
                 record.setDoctorId(app.getDoctorId());
                 record.setDiagnosis(diagnosis != null ? diagnosis.trim() : "");
                 record.setPrescriptionOrResult(prescription != null ? prescription.trim() : "");
+                try {
+                    if (moistureStr != null && !moistureStr.trim().isEmpty()) {
+                        record.setSkinMoistureLevel(Integer.parseInt(moistureStr.trim()));
+                    }
+                    if (sebumStr != null && !sebumStr.trim().isEmpty()) {
+                        record.setSkinSebumLevel(Integer.parseInt(sebumStr.trim()));
+                    }
+                } catch (Exception ignored) {
+                }
 
                 boolean saved = medicalRecordDAO.saveOrUpdateRecord(record);
                 if (saved) {
@@ -420,7 +470,17 @@ public class DoctorServlet extends BaseRoleServlet {
                         }
                     }
 
-                    // 3. Xử lý Cập nhật Tiến độ Gói Liệu Trình Spa (Nếu bệnh nhân đang theo liệu trình)
+                    // 3. Xử lý Gói Liệu Trình Spa & Trọn Gói Theo Tùy Chọn Của Bác Sĩ
+                    String pkgOption = request.getParameter("treatmentPackageOption");
+                    if ("advance_1".equals(pkgOption)) {
+                        treatmentPackageDAO.advanceOrCreatePackageForAppointment(app.getPatientId(), app.getServiceId(), serviceName, 5);
+                    } else if ("create_5".equals(pkgOption)) {
+                        treatmentPackageDAO.createPackage(app.getPatientId(), app.getServiceId(), "Liệu Trình " + serviceName + " (5 Buổi)", 5);
+                    } else if ("create_10".equals(pkgOption)) {
+                        treatmentPackageDAO.createPackage(app.getPatientId(), app.getServiceId(), "Liệu Trình " + serviceName + " (10 Buổi)", 10);
+                    }
+
+                    // Gửi Email tiến độ gói liệu trình nếu có
                     List<TreatmentPackage> packages = treatmentPackageDAO.findActivePackagesByPatient(app.getPatientId());
                     if (packages != null && !packages.isEmpty()) {
                         for (TreatmentPackage pkg : packages) {

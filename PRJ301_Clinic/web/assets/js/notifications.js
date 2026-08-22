@@ -19,8 +19,49 @@ class NotificationCenter {
             return;
         }
 
+        this.bellBtn = document.getElementById('notificationBellDropdown');
+        this.dropdownMenu = document.getElementById('notificationDropdownMenu') || (this.bellBtn ? this.bellBtn.nextElementSibling : null);
+
         // Lấy thông báo lần đầu ngay khi mở trang
         this.fetchNotifications();
+
+        // Click vào chuông thông báo -> toggle menu hiển thị ngay lập tức
+        if (this.bellBtn) {
+            this.bellBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.fetchNotifications();
+
+                if (this.dropdownMenu) {
+                    const isShown = this.dropdownMenu.classList.contains('show');
+                    document.querySelectorAll('.noti-dropdown-menu.show').forEach(el => el.classList.remove('show'));
+                    if (!isShown) {
+                        this.dropdownMenu.classList.add('show');
+                        this.bellBtn.setAttribute('aria-expanded', 'true');
+                    } else {
+                        this.dropdownMenu.classList.remove('show');
+                        this.bellBtn.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        }
+
+        if (this.dropdownMenu) {
+            this.dropdownMenu.addEventListener('click', (e) => {
+                // Không đóng dropdown khi click các thành phần bên trong (trừ link)
+                e.stopPropagation();
+            });
+        }
+
+        // Đóng dropdown khi click ra bất kỳ đâu bên ngoài
+        document.addEventListener('click', (e) => {
+            if (this.dropdownMenu && this.dropdownMenu.classList.contains('show')) {
+                if (!this.dropdownMenu.contains(e.target) && !this.bellBtn.contains(e.target)) {
+                    this.dropdownMenu.classList.remove('show');
+                    if (this.bellBtn) this.bellBtn.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
 
         // Polling thông minh: chỉ chạy khi tab đang mở (Visibility State)
         this.startPolling();

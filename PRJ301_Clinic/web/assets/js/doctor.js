@@ -4,7 +4,7 @@
  * ============================================================================
  */
 
-function openMedicalModal(id, patientName, serviceName, diagnosis, prescription) {
+function openMedicalModal(id, patientName, serviceName, diagnosis, prescription, moistureVal, oilVal) {
     const elId = document.getElementById('modalAppointmentId');
     const elName = document.getElementById('modalPatientName');
     const elService = document.getElementById('modalServiceName');
@@ -17,9 +17,9 @@ function openMedicalModal(id, patientName, serviceName, diagnosis, prescription)
     if (elDiag) elDiag.value = diagnosis || '';
     if (elPresc) elPresc.value = prescription || '';
 
-    // Khởi tạo ngẫu nhiên hoặc mặc định cho chỉ số da nếu chưa có
-    const moisture = Math.floor(Math.random() * 25) + 50; // 50 - 75%
-    const oil = Math.floor(Math.random() * 30) + 40; // 40 - 70%
+    // Khởi tạo chỉ số da từ dữ liệu thật hoặc mặc định
+    const moisture = (moistureVal !== null && moistureVal !== undefined) ? moistureVal : (Math.floor(Math.random() * 25) + 50);
+    const oil = (oilVal !== null && oilVal !== undefined) ? oilVal : (Math.floor(Math.random() * 30) + 40);
     const elMoist = document.getElementById('moistureSlider');
     const elMoistVal = document.getElementById('moistureVal');
     const elOil = document.getElementById('oilSlider');
