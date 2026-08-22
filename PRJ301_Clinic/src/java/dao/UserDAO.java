@@ -182,6 +182,68 @@ public class UserDAO extends BaseDAO<User> {
     }
 
     /**
+     * Lọc và tìm kiếm người dùng đa tiêu chí (Search, Role, Status) kèm phân trang cho Admin.
+     */
+    public List<User> findFilteredPaginated(String search, String role, String status, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Users WHERE 1=1 ");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (fullname LIKE ? OR username LIKE ? OR phone LIKE ? OR email LIKE ?) ");
+            String like = "%" + search.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
+
+        if (role != null && !role.trim().isEmpty() && !"ALL".equalsIgnoreCase(role.trim())) {
+            sql.append("AND role = ? ");
+            params.add(role.trim().toUpperCase());
+        }
+
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            sql.append("AND status = ? ");
+            params.add("ACTIVE".equalsIgnoreCase(status.trim()));
+        }
+
+        sql.append("ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(limit);
+
+        return queryList(sql.toString(), this::mapResultSetToUser, params.toArray());
+    }
+
+    /**
+     * Đếm tổng số người dùng khớp bộ lọc (Search, Role, Status).
+     */
+    public int countFiltered(String search, String role, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Users WHERE 1=1 ");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (fullname LIKE ? OR username LIKE ? OR phone LIKE ? OR email LIKE ?) ");
+            String like = "%" + search.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
+
+        if (role != null && !role.trim().isEmpty() && !"ALL".equalsIgnoreCase(role.trim())) {
+            sql.append("AND role = ? ");
+            params.add(role.trim().toUpperCase());
+        }
+
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            sql.append("AND status = ? ");
+            params.add("ACTIVE".equalsIgnoreCase(status.trim()));
+        }
+
+        return queryCount(sql.toString(), params.toArray());
+    }
+
+    /**
      * Cập nhật thông tin Hồ sơ cá nhân (Họ tên, Email, Số điện thoại).
      */
     public boolean updateProfile(int userId, String fullname, String email, String phone) {
@@ -226,10 +288,13 @@ public class UserDAO extends BaseDAO<User> {
         String username = (user.getUsername() != null && !user.getUsername().isEmpty())
                 ? user.getUsername()
                 : "walkin_" + user.getPhone();
-        String pass = (user.getPassword() != null) ? user.getPassword() : "WALKIN_" + System.currentTimeMillis();
+        String rawPass = (user.getPassword() != null && !user.getPassword().isEmpty())
+                ? user.getPassword()
+                : "WALKIN_" + System.currentTimeMillis();
+        String hashedPassword = BCryptUtil.hashPassword(rawPass);
 
         try {
-            return executeInsertAndGetGeneratedKey(sql, username, pass, user.getEmail(), user.getFullname(),
+            return executeInsertAndGetGeneratedKey(sql, username, hashedPassword, user.getEmail(), user.getFullname(),
                     user.getPhone(), user.getRole() != null ? user.getRole() : "PATIENT");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);

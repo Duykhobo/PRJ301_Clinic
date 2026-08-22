@@ -13,6 +13,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import constant.RoleConstant;
+import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.*;
 import exception.SlotAlreadyBookedException;
@@ -31,17 +33,26 @@ import util.PaginationUtil;
 public class ReceptionistServlet extends BaseRoleServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ReceptionistServlet.class.getName());
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
-    private final DoctorScheduleDAO doctorScheduleDAO = new DoctorScheduleDAO();
-    private final ServiceDAO serviceDAO = new ServiceDAO();
-    private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
-    private final UserDAO userDAO = new UserDAO();
+    private AppointmentDAO appointmentDAO;
+    private DoctorScheduleDAO doctorScheduleDAO;
+    private ServiceDAO serviceDAO;
+    private DoctorProfileDAO doctorProfileDAO;
+    private UserDAO userDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.appointmentDAO = new AppointmentDAO();
+        this.doctorScheduleDAO = new DoctorScheduleDAO();
+        this.serviceDAO = new ServiceDAO();
+        this.doctorProfileDAO = new DoctorProfileDAO();
+        this.userDAO = new UserDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User loginUser = requireRole(request, response, "RECEPTIONIST");
+        User loginUser = requireRole(request, response, RoleConstant.RECEPTIONIST);
         if (loginUser == null) {
             return;
         }
@@ -130,7 +141,7 @@ public class ReceptionistServlet extends BaseRoleServlet {
         request.setAttribute("allDoctors", doctorProfileDAO.findAllActiveDoctors());
         request.setAttribute("allServices", serviceDAO.findAllActive());
 
-        request.getRequestDispatcher("/WEB-INF/views/receptionist/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher(RouterConstant.RECEPTIONIST_DASHBOARD_JSP).forward(request, response);
     }
 
     @Override
@@ -138,7 +149,7 @@ public class ReceptionistServlet extends BaseRoleServlet {
             throws ServletException, IOException {
 
         // 1. Phân quyền doPost bằng 1 dòng
-        User loginUser = requireRole(request, response, "RECEPTIONIST");
+        User loginUser = requireRole(request, response, RoleConstant.RECEPTIONIST);
         if (loginUser == null)
             return;
 
@@ -282,6 +293,6 @@ public class ReceptionistServlet extends BaseRoleServlet {
             setError(request, "Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại!");
         }
 
-        response.sendRedirect(request.getContextPath() + "/receptionist/dashboard?date=" + date);
+        response.sendRedirect(request.getContextPath() + RouterConstant.DASHBOARD_RECEPTIONIST + "?date=" + date);
     }
 }

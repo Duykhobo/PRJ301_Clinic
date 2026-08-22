@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Quên Mật Khẩu | PRJ301 Clinic &amp; Spa</title>
+    <title>Quên Mật Khẩu | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -18,7 +18,7 @@
             <%-- Cột Trái: Banner Splash Thương Hiệu Y Tế --%>
             <div class="col-lg-6 d-none d-lg-block position-relative">
                 <img src="${pageContext.request.contextPath}/assets/images/auth_splash.jpg" 
-                     alt="PRJ301 Clinic Lounge" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0">
+                     alt="Clinic Lounge" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0">
                 <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-between p-5 text-white" 
                      style="background: linear-gradient(135deg, rgba(11, 19, 43, 0.88) 0%, rgba(15, 23, 42, 0.82) 100%);">
                     
@@ -27,7 +27,7 @@
                             <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
                                 <i class="fa-solid fa-heart-pulse fs-6"></i>
                             </div>
-                            <span data-i18n="nav_brand">Phòng Khám &amp; Spa PRJ301</span>
+                            <span><c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></span>
                         </div>
                         <h3 class="fw-bold display-6 mb-3" data-i18n="auth_forgot_banner_title">Khôi Phục Mật Khẩu Dễ Dàng</h3>
                         <p class="text-muted small" data-i18n="auth_forgot_banner_desc">Nhập địa chỉ Email đăng ký tài khoản của bạn để hệ thống tự động gửi mật khẩu tạm thời bảo mật qua hòm thư.</p>
@@ -95,9 +95,6 @@
         </div>
     </div>
 </div>
-
-<%-- Dynamic Footer Component --%>
-<jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

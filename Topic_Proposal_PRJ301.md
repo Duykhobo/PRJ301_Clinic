@@ -65,7 +65,7 @@ graph LR
 | **Transaction & Pool**  | HikariCP hoặc DBCP                      | Quản lý Connection tối ưu bằng**HikariCP** kết hợp **ThreadLocal** & **TransactionFilter** tự động Commit/Rollback.                     |
 | **Mã hóa mật khẩu** | BCrypt hoặc SHA-256                     | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`)                                                                                              |
 | **Bảo mật & Filter**  | Authentication, Authorization, Encoding  | 4 Filters:`EncodingFilter` (UTF-8), `TransactionFilter` (Quản lý Data), `AuthenticationFilter`, `AuthorizationFilter`                                     |
-| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động + Chuông Thông Báo 🔔 thời gian thực                                                             |
+| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động + Chuông Thông Báo 🔔 thời gian thực                                                      |
 
 ### 3. Ma trận Phân loại Tính năng theo Độ ưu tiên (Priority Level Matrix)
 
@@ -148,7 +148,7 @@ graph TD
 
 ## III. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (DATABASE SCHEMA & ERD)
 
-Hệ thống bao gồm **8 bảng (Models)** trong Microsoft SQL Server với đầy đủ quan hệ khóa ngoại, chỉ mục hiệu năng cao (Non-Clustered Indexes) và ràng buộc toàn vẹn:
+Hệ thống bao gồm **9 bảng (Models)** trong Microsoft SQL Server với đầy đủ quan hệ khóa ngoại, chỉ mục hiệu năng cao (Non-Clustered Indexes) và ràng buộc toàn vẹn:
 
 ```mermaid
 erDiagram
@@ -156,14 +156,16 @@ erDiagram
     Users ||--o{ Appointments : "1 Bệnh nhân đặt nhiều Cuộc hẹn (1 - N)"
     Users ||--o{ MedicalRecords : "1 Bệnh nhân có nhiều Bệnh án (1 - N)"
     Users ||--o{ Notifications : "1 Người dùng nhận nhiều Thông báo (1 - N)"
+    Users ||--o{ TreatmentPackages : "1 Bệnh nhân sở hữu nhiều Gói liệu trình (1 - N)"
 
     DoctorProfiles ||--o{ DoctorSchedules : "1 Bác sĩ quản lý nhiều Khung giờ khám (1 - N)"
     DoctorProfiles ||--o{ Appointments : "1 Bác sĩ phụ trách nhiều Cuộc hẹn (1 - N)"
     DoctorProfiles ||--o{ MedicalRecords : "1 Bác sĩ tạo nhiều Bệnh án (1 - N)"
 
     Services ||--o{ Appointments : "1 Dịch vụ áp dụng cho nhiều Cuộc hẹn (1 - N)"
-    DoctorSchedules ||--o| Appointments : "1 Khung giờ gán cho tối đa 1 Cuộc hẹn (1 - 0..1)"
+    Services ||--o{ TreatmentPackages : "1 Dịch vụ thuộc nhiều Gói liệu trình (1 - N)"
 
+    DoctorSchedules ||--o| Appointments : "1 Khung giờ gán cho tối đa 1 Cuộc hẹn (1 - 0..1)"
     Appointments ||--o| MedicalRecords : "1 Cuộc hẹn hoàn tất tạo 1 Bệnh án (1 - 0..1)"
 
     Users {
@@ -174,6 +176,8 @@ erDiagram
         nvarchar email
         varchar phone
         varchar role
+        decimal total_spent
+        varchar loyalty_tier
         bit status
         datetime created_at
     }
@@ -232,10 +236,22 @@ erDiagram
         nvarchar diagnosis
         nvarchar prescription_or_result
         int rating
-        nvarchar feedback
+        nvarchar review_comment
         int skin_moisture_level
         int skin_sebum_level
         datetime created_at
+    }
+
+    TreatmentPackages {
+        int id PK
+        int patient_id FK
+        int service_id FK
+        nvarchar package_name
+        int total_sessions
+        int completed_sessions
+        varchar status
+        datetime created_at
+        datetime updated_at
     }
 
     Notifications {
@@ -254,10 +270,11 @@ erDiagram
         varchar setting_key
         nvarchar setting_value
         nvarchar description
+        datetime updated_at
     }
 ```
 
-### 1. Chi tiết Thiết kế 8 Bảng CSDL (8 Models):
+### 1. Chi tiết Thiết kế 9 Bảng CSDL (9 Models):
 
 #### 1.1. `Users` (Quản lý Người dùng & Tài khoản)
 
@@ -351,7 +368,6 @@ erDiagram
 - `link` (VARCHAR(255)) - Đường dẫn điều hướng nhanh
 - `created_at` (DATETIME, Default: GETDATE()) - Thời gian gửi
 - _Tối ưu hiệu năng_: Đánh 2 chỉ mục **Non-Clustered Indexes** (`IX_Notification_User`, `IX_Notification_Unread`) tối ưu tốc độ polling thời gian thực.
-
 
 ---
 

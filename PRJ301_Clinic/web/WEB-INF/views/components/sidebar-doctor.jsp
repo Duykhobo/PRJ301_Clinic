@@ -13,13 +13,13 @@
           <aside class="ws-sidebar" id="wsSidebar">
 
             <%-- Brand --%>
-              <div class="sb-brand">
+              <a href="${pageContext.request.contextPath}/doctor/dashboard" class="sb-brand" style="text-decoration:none; color:inherit;">
                 <div class="sb-brand-icon"><i class="fa-solid fa-notes-medical"></i></div>
                 <div>
-                  <div class="sb-brand-text">PRJ301 <span style="color:#60a5fa;">Clinic &amp; Spa</span></div>
+                  <div class="sb-brand-text"><c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Clinic & Spa')}"/></div>
                   <div class="sb-brand-sub">Doctor Workspace</div>
                 </div>
-              </div>
+              </a>
 
               <%-- User Profile --%>
                 <div class="sb-profile">
@@ -64,13 +64,13 @@
                         </a>
                       </li>
                       <li>
-                        <a href="${pageContext.request.contextPath}/MainController?action=home">
-                          <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
-                          Trang Chủ
+                        <a href="${pageContext.request.contextPath}/doctor/dashboard">
+                          <span class="sb-icon"><i class="fa-solid fa-stethoscope"></i></span>
+                          Bàn Khám Bác Sĩ
                         </a>
                       </li>
                       <li>
-                        <a href="${pageContext.request.contextPath}/MainController?action=logout" class="danger-link">
+                        <a href="${pageContext.request.contextPath}/logout" onclick="return confirmLogout(event);" class="danger-link">
                           <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
                           Đăng Xuất
                         </a>

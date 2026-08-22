@@ -22,7 +22,12 @@ import util.JsonUtil;
 @WebServlet(name = "NotificationServlet", urlPatterns = {"/api/notifications"})
 public class NotificationServlet extends HttpServlet {
 
-    private final NotificationDAO notificationDAO = new NotificationDAO();
+    private NotificationDAO notificationDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.notificationDAO = new NotificationDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

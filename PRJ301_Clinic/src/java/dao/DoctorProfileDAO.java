@@ -75,4 +75,18 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
         String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?";
         return queryOne(sql, this::mapResultSetToDoctorProfile, userId);
     }
+
+    /**
+     * Cập nhật thông tin Hồ sơ Chuyên môn Bác sĩ (Chuyên khoa, Kinh nghiệm, Phòng, Giới thiệu).
+     */
+    public boolean updateDoctorProfile(int userId, String specialty, int experienceYears, String roomNumber, String bio) {
+        DoctorProfile existing = findByUserId(userId);
+        if (existing != null) {
+            String sql = "UPDATE DoctorProfiles SET specialty = ?, experience_years = ?, room_number = ?, bio = ? WHERE user_id = ?";
+            return executeUpdate(sql, specialty, experienceYears, roomNumber, bio, userId);
+        } else {
+            String sql = "INSERT INTO DoctorProfiles (user_id, specialty, experience_years, room_number, bio) VALUES (?, ?, ?, ?, ?)";
+            return executeUpdate(sql, userId, specialty, experienceYears, roomNumber, bio);
+        }
+    }
 }

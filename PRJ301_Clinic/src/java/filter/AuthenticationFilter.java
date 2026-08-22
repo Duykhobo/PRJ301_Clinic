@@ -44,15 +44,29 @@ public class AuthenticationFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String relativePath = uri.substring(contextPath.length());
 
-        // 1. NẾU KHÔNG PHẢI VÙNG NỘI BỘ BẢO VỆ -> MẶC ĐỊNH CHO QUA LUÔN (KHÔNG CẦN
-        // CHECK SESSION)
+        // 1. NẾU TRUY CẬP VÀO TRANG HOME/GỐC MÀ LÀ ADMIN/DOCTOR/RECEPTIONIST -> ĐẨY THẲNG VÀO DASHBOARD
+        User user = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
+        if (user != null && isHomeOrRootPath(httpRequest, relativePath)) {
+            String role = user.getRole();
+            if (RoleConstant.ADMIN.equalsIgnoreCase(role)) {
+                httpResponse.sendRedirect(contextPath + RouterConstant.DASHBOARD_ADMIN);
+                return;
+            } else if (RoleConstant.DOCTOR.equalsIgnoreCase(role)) {
+                httpResponse.sendRedirect(contextPath + RouterConstant.DASHBOARD_DOCTOR);
+                return;
+            } else if (RoleConstant.RECEPTIONIST.equalsIgnoreCase(role)) {
+                httpResponse.sendRedirect(contextPath + RouterConstant.DASHBOARD_RECEPTIONIST);
+                return;
+            }
+        }
+
+        // 2. NẾU KHÔNG PHẢI VÙNG NỘI BỘ BẢO VỆ -> MẶC ĐỊNH CHO QUA LUÔN (CHO GUEST VÀ PATIENT)
         if (!isProtectedUri(relativePath)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // 2. NẾU LÀ VÙNG NỘI BỘ -> KIỂM TRA ĐĂNG NHẬP (SESSION & CSDL)
-        User user = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
+        // 3. NẾU LÀ VÙNG NỘI BỘ -> KIỂM TRA ĐĂNG NHẬP (SESSION & CSDL)
         if (user == null || userDAO.findById(user.getId()) == null) {
             if (session != null) {
                 session.invalidate();
@@ -97,6 +111,18 @@ public class AuthenticationFilter implements Filter {
                 || path.startsWith("/receptionist")
                 || path.startsWith("/booking")
                 || path.startsWith("/history");
+    }
+
+    /**
+     * Hàm helper kiểm tra đường dẫn có phải trang chủ / gốc hay không.
+     */
+    private boolean isHomeOrRootPath(HttpServletRequest request, String path) {
+        String action = request.getParameter("action");
+        if (action != null && !action.trim().isEmpty() && !"home".equalsIgnoreCase(action)) {
+            return false;
+        }
+        return path == null || path.isEmpty() || "/".equals(path) || "/index.jsp".equals(path)
+                || "/home".equals(path) || "/main".equals(path) || "/MainController".equals(path);
     }
 
     @Override

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Lễ Tân &amp; Tiếp Đón | Phòng Khám &amp; Spa PRJ301</title>
+    <title>Lễ Tân &amp; Tiếp Đón | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
 
@@ -95,16 +95,27 @@
 
     <%-- APPOINTMENTS TABLE --%>
     <div class="panel animate-fade-in">
-        <div class="panel-header">
+        <div class="panel-header flex-wrap gap-3">
             <div class="panel-title text-cyan">
                 <i class="fa-solid fa-clipboard-list me-2"></i>
                 Danh Sách Bệnh Nhân Ngày <span style="color:#0ea5e9; margin-left:.4rem;">${selectedDate}</span>
+                <span id="receptionFilterCount" class="badge bg-dark border border-secondary text-cyan px-2 py-1 rounded-pill ms-2" style="font-size: .75rem;"></span>
             </div>
-            <div class="d-flex gap-2 align-items-center">
-                <span style="font-size:.78rem; color:rgba(255,255,255,.5);">
-                    <i class="fa-solid fa-table me-1"></i>${totalCount} lịch hẹn
-                </span>
-                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-600 shadow"
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <%-- LIVE SEARCH INPUT --%>
+                <div class="position-relative">
+                    <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50" style="font-size:.8rem; pointer-events:none;"></i>
+                    <input type="text" id="searchReception" class="adm-search-input" placeholder="Tìm Tên, SĐT, Bác sĩ..." oninput="filterReceptionTable()">
+                </div>
+                <%-- QUICK STATUS FILTER PILLS --%>
+                <div class="btn-group btn-group-sm" role="group" id="receptionStatusFilterGroup">
+                    <button type="button" class="btn btn-outline-secondary active text-white" onclick="setReceptionFilter('ALL', this)">Tất cả</button>
+                    <button type="button" class="btn btn-outline-warning" onclick="setReceptionFilter('UNPAID', this)">Chưa Thu</button>
+                    <button type="button" class="btn btn-outline-info" onclick="setReceptionFilter('CONFIRMED', this)">Đã Check-in</button>
+                    <button type="button" class="btn btn-outline-success" onclick="setReceptionFilter('COMPLETED', this)">Hoàn Tất</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="setReceptionFilter('REFUND', this)">Hoàn Tiền</button>
+                </div>
+                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold shadow"
                     style="background:linear-gradient(135deg,#10b981,#0ea5e9); color:#fff; font-size:.82rem; border:none;"
                     data-bs-toggle="modal" data-bs-target="#walkInModal">
                     <i class="fa-solid fa-person-walking-arrow-right me-1"></i>+ Đặt Lịch Tại Quầy
@@ -113,7 +124,7 @@
         </div>
 
         <div style="overflow-x:auto;">
-            <table class="tbl">
+            <table class="tbl" id="receptionTable">
                 <thead>
                     <tr>
                         <th style="padding-left:1.4rem;">Giờ Hẹn</th>
@@ -129,7 +140,7 @@
                     <c:choose>
                         <c:when test="${not empty appointments}">
                             <c:forEach var="app" items="${appointments}">
-                                <tr>
+                                <tr data-status="${app.status}" data-payment="${app.paymentStatus}">
                                     <td style="padding-left:1.4rem;">
                                         <span class="time-bubble">
                                             <i class="fa-solid fa-clock me-1"></i>${app.startTime}
@@ -159,8 +170,8 @@
                                                 <span class="badge bg-danger text-white px-2 py-1 rounded-pill shadow-sm">
                                                     <i class="fa-solid fa-hand-holding-dollar me-1"></i>Chờ Hoàn Tiền
                                                 </span>
-                                                <div style="font-size:.72rem; color:#fca5a5; margin-top:.2rem; font-weight:600;">
-                                                    Hoàn: <fmt:formatNumber value="${app.totalPrice}" type="number" groupingUsed="true"/> đ
+                                                <div style="font-size:.75rem; color:#fca5a5; margin-top:.2rem; font-weight:bold;">
+                                                    Hoàn: <fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ
                                                 </div>
                                             </c:when>
                                             <c:when test="${app.paymentStatus == 'REFUNDED'}">
@@ -172,8 +183,8 @@
                                                 <span class="badge-unpaid">
                                                     <i class="fa-solid fa-hourglass-half me-1"></i>Chưa Thu
                                                 </span>
-                                                <div style="font-size:.72rem; color:#fcd34d; margin-top:.2rem; font-weight:600;">
-                                                    <fmt:formatNumber value="${app.totalPrice}" type="number" groupingUsed="true"/> đ
+                                                <div style="font-size:.75rem; color:#fcd34d; margin-top:.2rem; font-weight:bold;">
+                                                    <fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ
                                                 </div>
                                             </c:otherwise>
                                         </c:choose>
@@ -201,7 +212,7 @@
                                                     <input type="hidden" name="action" value="confirm-refund">
                                                     <input type="hidden" name="appointmentId" value="${app.id}">
                                                     <input type="hidden" name="date" value="${selectedDate}">
-                                                    <button type="submit" class="btn btn-sm btn-danger px-3 py-1 rounded-pill shadow-sm" style="font-size:0.8rem; font-weight:600;" title="Xác nhận đã chuyển tiền lại cho khách">
+                                                    <button type="button" class="btn btn-sm btn-danger px-3 py-1 rounded-pill shadow-sm" style="font-size:0.8rem; font-weight:600;" title="Xác nhận đã chuyển tiền lại cho khách" onclick="confirmRefund(this.form, '<c:out value="${app.patientName}"/>')">
                                                         <i class="fa-solid fa-money-bill-transfer me-1"></i>Xác Nhận Hoàn Tiền
                                                     </button>
                                                 </form>
@@ -214,7 +225,7 @@
                                                         <input type="hidden" name="action" value="collect-cash">
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
-                                                        <button type="submit" class="btn-collect rounded-pill" title="Thu tiền mặt tại quầy và check-in vào sảnh">
+                                                        <button type="button" class="btn-collect rounded-pill" title="Thu tiền mặt tại quầy và check-in vào sảnh" onclick="confirmCollectCash(this.form, '<c:out value="${app.patientName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ')">
                                                             <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền &amp; Check-in
                                                         </button>
                                                     </form>
@@ -222,7 +233,7 @@
                                                         <input type="hidden" name="action" value="confirm-checkin">
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
-                                                        <button type="submit" class="btn-checkin rounded-pill" title="Chỉ tiếp nhận vào sảnh, thu tiền sau">
+                                                        <button type="button" class="btn-checkin rounded-pill" title="Chỉ tiếp nhận vào sảnh, thu tiền sau" onclick="confirmCheckin(this.form, '<c:out value="${app.patientName}"/>')">
                                                             <i class="fa-solid fa-user-check me-1"></i>Chỉ Check-in
                                                         </button>
                                                     </form>
@@ -234,7 +245,7 @@
                                                         <input type="hidden" name="action" value="confirm-checkin">
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
-                                                        <button type="submit" class="btn-checkin rounded-pill" title="Tiếp nhận bệnh nhân vào sảnh chờ khám">
+                                                        <button type="button" class="btn-checkin rounded-pill" title="Tiếp nhận bệnh nhân vào sảnh chờ khám" onclick="confirmCheckin(this.form, '<c:out value="${app.patientName}"/>')">
                                                             <i class="fa-solid fa-user-check me-1"></i>Check-in
                                                         </button>
                                                     </form>
@@ -246,7 +257,7 @@
                                                         <input type="hidden" name="action" value="collect-cash">
                                                         <input type="hidden" name="appointmentId" value="${app.id}">
                                                         <input type="hidden" name="date" value="${selectedDate}">
-                                                        <button type="submit" class="btn-collect rounded-pill" title="Thu tiền mặt">
+                                                        <button type="button" class="btn-collect rounded-pill" title="Thu tiền mặt" onclick="confirmCollectCash(this.form, '<c:out value="${app.patientName}"/>', '<fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ')">
                                                             <i class="fa-solid fa-hand-holding-dollar me-1"></i>Thu Tiền Mặt
                                                         </button>
                                                     </form>
@@ -303,7 +314,6 @@
 
 </div>
 
-<jsp:include page="/WEB-INF/views/components/footer.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <%-- ===== WALK-IN BOOKING MODAL ===== --%>
@@ -350,7 +360,7 @@
                                 <option value="">-- Chọn Dịch Vụ --</option>
                                 <c:forEach var="svc" items="${allServices}">
                                     <option value="${svc.id}">${svc.serviceName} &#8212;
-                                        <fmt:formatNumber value="${svc.price}" type="number" groupingUsed="true"/> đ
+                                        <fmt:formatNumber value="${svc.price}" pattern="#,##0" maxFractionDigits="0"/> VNĐ
                                     </option>
                                 </c:forEach>
                             </select>

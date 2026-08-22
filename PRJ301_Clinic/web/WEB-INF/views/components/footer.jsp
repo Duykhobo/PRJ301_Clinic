@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <footer class="footer-glass mt-auto py-5 border-top" style="border-color: rgba(56, 189, 248, 0.15) !important; background: rgba(11, 19, 43, 0.95);">
     <div class="container">
         <div class="row g-4">
@@ -8,7 +9,7 @@
                     <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
                         <i class="fa-solid fa-heart-pulse fs-6"></i>
                     </div>
-                    <span class="fw-bold text-white" data-i18n="nav_brand">Phòng Khám &amp; Spa PRJ301</span>
+                    <span class="fw-bold text-white"><c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></span>
                 </div>
                 <p class="text-muted small mb-3" data-i18n="footer_clinic_desc">
                     Hệ thống Phòng Khám Nha Khoa &amp; Spa Y Khoa Quốc Tế Hàng Đầu. Đội ngũ y bác sĩ chứng chỉ hành nghề, ứng dụng trang thiết bị y khoa hiện đại.
@@ -80,8 +81,8 @@
         <hr class="my-4 border-secondary opacity-25">
 
         <div class="d-flex flex-wrap justify-content-between align-items-center small text-white-50">
-            <p class="mb-0" data-i18n="footer_copyright">&copy; 2026 PRJ301 Clinic &amp; Spa Y Khoa. Tất cả quyền được bảo lưu.</p>
-            <p class="mb-0" data-i18n="footer_sub">Hệ Thống Đặt Lịch Y Tế Thông Minh - Đồ Án PRJ301 FPT University</p>
+            <p class="mb-0">&copy; 2026 <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></p>
+            <p class="mb-0">Hệ Thống Đặt Lịch Y Tế Thông Minh</p>
         </div>
     </div>
 </footer>

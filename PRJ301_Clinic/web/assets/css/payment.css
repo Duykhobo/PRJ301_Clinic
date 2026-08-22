@@ -1,0 +1,34 @@
+/* ═══════════════════════════════════════════════════════════════
+   PAYMENT & VIETQR SEPAY DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+.payment-box {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+}
+
+.payment-label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.payment-value {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.btn-success-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    transition: all 0.25s ease;
+}
+.btn-success-gradient:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}

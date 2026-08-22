@@ -33,6 +33,8 @@ CREATE TABLE Users (
     fullname NVARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'DOCTOR', 'PATIENT', 'RECEPTIONIST')),
+    total_spent DECIMAL(18,2) DEFAULT 0, -- Tổng chi tiêu tích lũy (O(1) Reading)
+    loyalty_tier VARCHAR(20) DEFAULT 'SILVER' CHECK (loyalty_tier IN ('SILVER', 'GOLD', 'DIAMOND')),
     status BIT DEFAULT 1, -- 1: Active, 0: Inactive / Banned
     created_at DATETIME DEFAULT GETDATE()
 );
@@ -115,6 +117,8 @@ CREATE TABLE MedicalRecords (
     doctor_id INT NOT NULL FOREIGN KEY REFERENCES DoctorProfiles(id),
     diagnosis NVARCHAR(MAX),
     prescription_or_result NVARCHAR(MAX),
+    skin_moisture_level INT NULL, -- Chỉ số đo độ ẩm da (%)
+    skin_sebum_level INT NULL,    -- Chỉ số tiết bã nhờn của da (%)
     rating INT CHECK (rating BETWEEN 1 AND 5),
     review_comment NVARCHAR(MAX),
     created_at DATETIME DEFAULT GETDATE()
@@ -122,7 +126,38 @@ CREATE TABLE MedicalRecords (
 GO
 
 -- ============================================================================
--- 7. BẢNG ClinicSettings (Cấu hình Hệ thống & Thông tin Phòng khám)
+-- 7. BẢNG TreatmentPackages (Quản lý Gói Liệu Trình 5-10 buổi Spa & Nha khoa)
+-- ============================================================================
+CREATE TABLE TreatmentPackages (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    patient_id INT NOT NULL FOREIGN KEY REFERENCES Users(id) ON DELETE CASCADE,
+    service_id INT NOT NULL FOREIGN KEY REFERENCES Services(id),
+    package_name NVARCHAR(150) NOT NULL,
+    total_sessions INT NOT NULL DEFAULT 5,
+    completed_sessions INT NOT NULL DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'COMPLETED', 'EXPIRED')),
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ============================================================================
+-- 8. BẢNG Notifications (Trung Tâm Thông Báo Hệ Thống Đa Vai Trò)
+-- ============================================================================
+CREATE TABLE Notifications (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL FOREIGN KEY REFERENCES Users(id) ON DELETE CASCADE,
+    title NVARCHAR(255) NOT NULL,
+    message NVARCHAR(1000) NOT NULL,
+    type VARCHAR(50) DEFAULT 'INFO', -- 'APPOINTMENT', 'SCHEDULE', 'PAYMENT', 'MEDICAL', 'SYSTEM'
+    is_read BIT DEFAULT 0,
+    link VARCHAR(255) NULL,
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ============================================================================
+-- 9. BẢNG ClinicSettings (Cấu hình Hệ thống & Thông tin Phòng khám)
 -- Cho phép Admin tự do điều chỉnh Tên phòng khám, Hotline, Giờ làm việc, STK SePay...
 -- ============================================================================
 CREATE TABLE ClinicSettings (
@@ -506,5 +541,56 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Notification_Unread')
 BEGIN
     CREATE NONCLUSTERED INDEX IX_Notification_Unread ON Notifications(user_id, is_read);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_TreatmentPackages_Patient')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_TreatmentPackages_Patient ON TreatmentPackages(patient_id);
+END
+GO
+
+-- =========================================================================
+-- 8. TRIGGER TỰ ĐỘNG ĐỒNG BỘ TOTAL_SPENT VÀ LOYALTY_TIER (ACID DATA INTEGRITY)
+-- =========================================================================
+IF OBJECT_ID('dbo.trg_SyncUserLoyaltySpending', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_SyncUserLoyaltySpending;
+GO
+
+CREATE TRIGGER dbo.trg_SyncUserLoyaltySpending
+ON Appointments
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF UPDATE(payment_status) OR UPDATE(total_price)
+    BEGIN
+        UPDATE u
+        SET u.total_spent = ISNULL(agg.sum_paid, 0),
+            u.loyalty_tier = CASE 
+                WHEN ISNULL(agg.sum_paid, 0) >= 10000000 THEN 'DIAMOND'
+                WHEN ISNULL(agg.sum_paid, 0) >= 3000000  THEN 'GOLD'
+                ELSE 'SILVER'
+            END
+        FROM Users u
+        CROSS APPLY (
+            SELECT SUM(a.total_price) AS sum_paid
+            FROM Appointments a
+            WHERE a.patient_id = u.id AND a.payment_status = 'PAID'
+        ) agg
+        WHERE u.id IN (SELECT DISTINCT patient_id FROM inserted);
+    END
+END;
+GO
+
+-- =========================================================================
+-- 9. SEED DATA MẪU CHO BẢNG TREATMENTPACKAGES
+-- =========================================================================
+IF NOT EXISTS (SELECT 1 FROM TreatmentPackages)
+BEGIN
+    INSERT INTO TreatmentPackages (patient_id, service_id, package_name, total_sessions, completed_sessions, status) VALUES
+    (7, 3, N'Liệu Trình Trị Mụn Chuyên Sâu Y Khoa (5 Buổi)', 5, 2, 'ACTIVE'),
+    (8, 4, N'Liệu Trình Trẻ Hóa Da & Nâng Cơ Hifu (10 Buổi)', 10, 4, 'ACTIVE'),
+    (9, 6, N'Gói Chăm Sóc Phục Hồi Da Sau Mụn (5 Buổi)', 5, 5, 'COMPLETED');
 END
 GO

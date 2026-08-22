@@ -26,24 +26,11 @@ public class LoyaltyDAO extends BaseDAO<LoyaltyProfile> {
                    + "FROM Appointments "
                    + "WHERE patient_id = ? AND payment_status = 'PAID'";
 
-        BigDecimal totalSpent = BigDecimal.ZERO;
-        try {
-            Connection conn = DBContext.getConnection();
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, patientId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        BigDecimal val = rs.getBigDecimal("total_spent");
-                        if (val != null) {
-                            totalSpent = val;
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi truy vấn LoyaltyProfile cho patientId: " + patientId, e);
-        }
+        LoyaltyProfile profile = queryOne(sql, rs -> {
+            BigDecimal totalSpent = rs.getBigDecimal("total_spent");
+            return new LoyaltyProfile(patientId, totalSpent != null ? totalSpent : BigDecimal.ZERO);
+        }, patientId);
 
-        return new LoyaltyProfile(patientId, totalSpent);
+        return profile != null ? profile : new LoyaltyProfile(patientId, BigDecimal.ZERO);
     }
 }

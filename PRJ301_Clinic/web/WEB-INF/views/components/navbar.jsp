@@ -5,14 +5,13 @@
     <div class="container-fluid px-3 px-xxl-4">
         <%-- Medical Logo & Brand Name (100% Full Visibility & Zero Truncation) --%>
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white me-2 me-xl-3 flex-shrink-0"
-           href="${pageContext.request.contextPath}/MainController?action=home"
-           data-i18n="nav_brand">
+           href="${pageContext.request.contextPath}/MainController?action=home">
             <div class="brand-icon-box d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm flex-shrink-0"
                  style="width: 36px; height: 36px; background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);">
                 <i class="fa-solid fa-heart-pulse fs-5"></i>
             </div>
             <span class="fw-bold text-white tracking-wide text-nowrap" style="font-size: 1.05rem;">
-                Phòng Khám &amp; Spa PRJ301
+                <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/>
             </span>
         </a>
 
@@ -45,7 +44,7 @@
                         <i class="fa-solid fa-user-doctor me-1 text-cyan"></i><span>Đội Ngũ Bác Sĩ</span>
                     </a>
                 </li>
-                <c:if test="${not empty sessionScope.LOGIN_USER}">
+                <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT'}">
                     <li class="nav-item">
                         <a class="nav-link text-white-50 text-white-hover px-2 px-xxl-3 py-1.5 rounded-3 transition-all text-nowrap"
                            href="${pageContext.request.contextPath}/MainController?action=history"
@@ -111,6 +110,42 @@
                                     </c:if>
                                 </li>
                                 <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
+                                
+                                <%-- Role-based Workspace Link --%>
+                                <c:if test="${sessionScope.LOGIN_USER.role == 'ADMIN'}">
+                                    <li>
+                                        <a class="dropdown-item rounded-3 py-2 text-warning fw-bold"
+                                           href="${pageContext.request.contextPath}/admin/dashboard">
+                                            <i class="fa-solid fa-gauge me-2 text-warning"></i><span>Bảng Quản Trị</span>
+                                        </a>
+                                    </li>
+                                </c:if>
+                                <c:if test="${sessionScope.LOGIN_USER.role == 'DOCTOR'}">
+                                    <li>
+                                        <a class="dropdown-item rounded-3 py-2 text-cyan fw-bold"
+                                           href="${pageContext.request.contextPath}/doctor/dashboard">
+                                            <i class="fa-solid fa-stethoscope me-2 text-cyan"></i><span>Bàn Khám Bác Sĩ</span>
+                                        </a>
+                                    </li>
+                                </c:if>
+                                <c:if test="${sessionScope.LOGIN_USER.role == 'RECEPTIONIST'}">
+                                    <li>
+                                        <a class="dropdown-item rounded-3 py-2 text-emerald fw-bold"
+                                           href="${pageContext.request.contextPath}/receptionist/dashboard">
+                                            <i class="fa-solid fa-hospital-user me-2 text-emerald"></i><span>Sảnh Tiếp Đón</span>
+                                        </a>
+                                    </li>
+                                </c:if>
+                                <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT'}">
+                                    <li>
+                                        <a class="dropdown-item rounded-3 py-2 text-white"
+                                           href="${pageContext.request.contextPath}/MainController?action=history"
+                                           data-i18n="nav_history">
+                                            <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i><span>Lịch Sử Đặt Khám</span>
+                                        </a>
+                                    </li>
+                                </c:if>
+
                                 <li>
                                     <a class="dropdown-item rounded-3 py-2 text-white"
                                        href="${pageContext.request.contextPath}/profile"
@@ -119,15 +154,9 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item rounded-3 py-2 text-white"
-                                       href="${pageContext.request.contextPath}/MainController?action=history"
-                                       data-i18n="nav_history">
-                                        <i class="fa-solid fa-clock-rotate-left me-2 text-cyan"></i><span>Lịch Sử Đặt Khám</span>
-                                    </a>
-                                </li>
-                                <li>
                                     <a class="dropdown-item rounded-3 py-2 text-danger"
-                                       href="${pageContext.request.contextPath}/MainController?action=logout"
+                                       href="${pageContext.request.contextPath}/logout"
+                                       onclick="return confirmLogout(event);"
                                        data-i18n="nav_logout">
                                         <i class="fa-solid fa-right-from-bracket me-2"></i><span>Đăng Xuất</span>
                                     </a>

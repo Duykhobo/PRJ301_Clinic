@@ -29,15 +29,16 @@ public abstract class BaseRoleServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         User user = (session != null) ? (User) session.getAttribute(SystemConstant.SESSION_USER) : null;
-        ;
 
         if (user == null) {
             response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN);
+            return null;
         }
 
         for (String role : roles) {
-            if (role.equalsIgnoreCase(user.getRole()))
+            if (role != null && role.equalsIgnoreCase(user.getRole())) {
                 return user;
+            }
         }
 
         response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN);
