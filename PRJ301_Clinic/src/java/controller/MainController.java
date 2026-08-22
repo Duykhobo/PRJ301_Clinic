@@ -23,6 +23,13 @@ import service.ClinicService;
 @WebServlet(name = "MainController", urlPatterns = {"/MainController", "/main", "/home"})
 public class MainController extends HttpServlet {
 
+    private ClinicService clinicService;
+
+    @Override
+    public void init() throws ServletException {
+        this.clinicService = new ClinicService();
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -66,7 +73,6 @@ public class MainController extends HttpServlet {
                     url = RouterConstant.ROUTE_PROFILE;
                     break;
                 default:
-                    ClinicService clinicService = new ClinicService();
                     request.setAttribute("services", clinicService.getActiveServices());
                     request.setAttribute("doctors", clinicService.getAllDoctors());
                     url = RouterConstant.HOME_JSP;

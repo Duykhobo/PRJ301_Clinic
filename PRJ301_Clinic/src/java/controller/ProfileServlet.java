@@ -24,8 +24,14 @@ import util.ValidationUtil;
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile"})
 public class ProfileServlet extends BaseRoleServlet {
 
-    private final UserDAO userDAO = new UserDAO();
-    private final dao.LoyaltyDAO loyaltyDAO = new dao.LoyaltyDAO();
+    private UserDAO userDAO;
+    private dao.LoyaltyDAO loyaltyDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.userDAO = new UserDAO();
+        this.loyaltyDAO = new dao.LoyaltyDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

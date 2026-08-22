@@ -27,12 +27,20 @@ import util.PaginationUtil;
 @WebServlet(name = "AdminServlet", urlPatterns = {"/admin/dashboard"})
 public class AdminServlet extends BaseRoleServlet {
 
-    private final UserDAO userDAO = new UserDAO();
-    private final ServiceDAO serviceDAO = new ServiceDAO();
-    private final ClinicSettingDAO clinicSettingDAO = new ClinicSettingDAO();
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
+    private UserDAO userDAO;
+    private ServiceDAO serviceDAO;
+    private ClinicSettingDAO clinicSettingDAO;
+    private AppointmentDAO appointmentDAO;
 
     private static final int PAGE_SIZE = 5;
+
+    @Override
+    public void init() throws ServletException {
+        this.userDAO = new UserDAO();
+        this.serviceDAO = new ServiceDAO();
+        this.clinicSettingDAO = new ClinicSettingDAO();
+        this.appointmentDAO = new AppointmentDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

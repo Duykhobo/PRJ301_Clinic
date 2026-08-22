@@ -33,11 +33,20 @@ import util.PaginationUtil;
 public class ReceptionistServlet extends BaseRoleServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ReceptionistServlet.class.getName());
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
-    private final DoctorScheduleDAO doctorScheduleDAO = new DoctorScheduleDAO();
-    private final ServiceDAO serviceDAO = new ServiceDAO();
-    private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
-    private final UserDAO userDAO = new UserDAO();
+    private AppointmentDAO appointmentDAO;
+    private DoctorScheduleDAO doctorScheduleDAO;
+    private ServiceDAO serviceDAO;
+    private DoctorProfileDAO doctorProfileDAO;
+    private UserDAO userDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.appointmentDAO = new AppointmentDAO();
+        this.doctorScheduleDAO = new DoctorScheduleDAO();
+        this.serviceDAO = new ServiceDAO();
+        this.doctorProfileDAO = new DoctorProfileDAO();
+        this.userDAO = new UserDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

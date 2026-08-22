@@ -28,7 +28,14 @@ import service.BookingService;
 public class SepayWebhookServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(SepayWebhookServlet.class.getName());
-    private final BookingService bookingService = new BookingService();
+    private BookingService bookingService;
+    private dao.UserDAO userDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.bookingService = new BookingService();
+        this.userDAO = new dao.UserDAO();
+    }
 
     // Secret Key cấu hình động từ Biến Môi Trường (System.getenv / System.getProperty) để chống lộ Key
     private String getSepaySecretKey() {
@@ -139,7 +146,6 @@ public class SepayWebhookServlet extends HttpServlet {
                 if (updated) {
                     model.Appointment app = bookingService.getAppointmentById(appointmentId);
                     if (app != null) {
-                        dao.UserDAO userDAO = new dao.UserDAO();
                         model.User patient = userDAO.findById(app.getPatientId());
                         if (patient != null) {
                             String txCode = (transactionCode != null && !transactionCode.trim().isEmpty()) ? transactionCode : ("SEPAY_" + appointmentId);

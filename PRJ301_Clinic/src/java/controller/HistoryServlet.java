@@ -29,12 +29,20 @@ import util.PaginationUtil;
 @WebServlet(name = "HistoryServlet", urlPatterns = {"/history"})
 public class HistoryServlet extends BaseRoleServlet {
 
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
-    private final MedicalRecordDAO medicalRecordDAO = new MedicalRecordDAO();
-    private final TreatmentPackageDAO treatmentPackageDAO = new TreatmentPackageDAO();
-    private final LoyaltyDAO loyaltyDAO = new LoyaltyDAO();
+    private AppointmentDAO appointmentDAO;
+    private MedicalRecordDAO medicalRecordDAO;
+    private TreatmentPackageDAO treatmentPackageDAO;
+    private LoyaltyDAO loyaltyDAO;
 
     private static final int PAGE_SIZE = 5; // Số ca khám trên mỗi trang
+
+    @Override
+    public void init() throws ServletException {
+        this.appointmentDAO = new AppointmentDAO();
+        this.medicalRecordDAO = new MedicalRecordDAO();
+        this.treatmentPackageDAO = new TreatmentPackageDAO();
+        this.loyaltyDAO = new LoyaltyDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

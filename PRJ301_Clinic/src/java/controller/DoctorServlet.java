@@ -30,12 +30,22 @@ import util.PaginationUtil;
 @WebServlet(name = "DoctorServlet", urlPatterns = { "/doctor/dashboard" })
 public class DoctorServlet extends BaseRoleServlet {
 
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
-    private final MedicalRecordDAO medicalRecordDAO = new MedicalRecordDAO();
-    private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
-    private final DoctorScheduleDAO doctorScheduleDAO = new DoctorScheduleDAO();
-    private final UserDAO userDAO = new UserDAO();
-    private final TreatmentPackageDAO treatmentPackageDAO = new TreatmentPackageDAO();
+    private AppointmentDAO appointmentDAO;
+    private MedicalRecordDAO medicalRecordDAO;
+    private DoctorProfileDAO doctorProfileDAO;
+    private DoctorScheduleDAO doctorScheduleDAO;
+    private UserDAO userDAO;
+    private TreatmentPackageDAO treatmentPackageDAO;
+
+    @Override
+    public void init() throws ServletException {
+        this.appointmentDAO = new AppointmentDAO();
+        this.medicalRecordDAO = new MedicalRecordDAO();
+        this.doctorProfileDAO = new DoctorProfileDAO();
+        this.doctorScheduleDAO = new DoctorScheduleDAO();
+        this.userDAO = new UserDAO();
+        this.treatmentPackageDAO = new TreatmentPackageDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
