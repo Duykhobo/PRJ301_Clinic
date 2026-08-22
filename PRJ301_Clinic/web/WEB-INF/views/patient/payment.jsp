@@ -4,10 +4,10 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Thanh Toán SePay VietQR | Phòng Khám &amp; Spa PRJ301</title>
+        <title>Thanh Toán SePay VietQR | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
         <!-- File CSS tách riêng -->
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/payment.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/payment.css">
     </head>
     <body class="d-flex flex-column min-vh-100">
 
@@ -76,7 +76,7 @@
                                 <div class="d-flex justify-content-between align-items-center border-top border-bottom border-secondary border-opacity-25 py-2 my-1">
                                     <span class="payment-label fw-bold">Tổng Tiền Thanh Toán:</span>
                                     <span class="fs-4 fw-bold text-warning">
-                                        <fmt:formatNumber value="${appointment.totalPrice}" pattern="#,##0"/> VNĐ
+                                        <fmt:formatNumber value="${appointment.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ
                                     </span>
                                 </div>
 
@@ -117,88 +117,11 @@
             </div>
         </div>
 
-        <%-- Dynamic Footer Component --%>
-        <jsp:include page="/WEB-INF/views/components/footer.jsp" />
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            let pollInterval = null;
-
-            document.addEventListener('DOMContentLoaded', function () {
-                pollInterval = setInterval(checkPaymentStatus, 3000);
-            });
-
-            function checkPaymentStatus() {
-                fetch('${pageContext.request.contextPath}/booking?action=check-payment-status&id=${appointment.id}')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.paymentStatus === 'PAID') {
-                            clearInterval(pollInterval);
-                            const badge = document.getElementById('paymentStatusBadge');
-                            const text = document.getElementById('paymentStatusText');
-                            const spinner = document.getElementById('paymentStatusSpinner');
-
-                            if (badge && text) {
-                                badge.className = 'badge px-3 py-2 rounded-pill slot-btn-selected mb-2 d-inline-flex align-items-center justify-content-center gap-2 w-100';
-                                spinner.className = 'fa-solid fa-circle-check text-emerald';
-                                text.innerText = 'ĐÃ THANH TOÁN SEPAY THÀNH CÔNG!';
-                            }
-
-                            if (typeof showToast === 'function') {
-                                showToast('Xác nhận thanh toán SePay VietQR thành công!', true);
-                            }
-
-                            setTimeout(() => {
-                                window.location.href = '${pageContext.request.contextPath}/MainController?action=history';
-                            }, 2000);
-                        }
-                    })
-                    .catch(err => console.log('Checking status...'));
-            }
-
-            function confirmPayCash(appointmentId) {
-                Swal.fire({
-                    title: 'Xác Nhận Thanh Toán Tiền Mặt?',
-                    text: 'Bạn có chắc chắn muốn chuyển sang hình thức thanh toán tiền mặt trực tiếp tại quầy lễ tân khi đến khám?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#f59e0b',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: '<i class="fa-solid fa-money-bill-wave me-1"></i> Đồng Ý',
-                    cancelButtonText: 'Quay Lại',
-                    background: '#0f172a',
-                    color: '#f8fafc',
-                    customClass: {
-                        popup: 'border border-warning border-opacity-40 shadow-lg'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '${pageContext.request.contextPath}/booking?action=pay-cash&id=' + appointmentId;
-                    }
-                });
-            }
-
-            function simulateSepayWebhook(appointmentId) {
-                if (typeof showToast === 'function') {
-                    showToast('Đang gửi tín hiệu mô phỏng thanh toán SePay...', false);
-                }
-                fetch('${pageContext.request.contextPath}/sepay-webhook?appointmentId=' + appointmentId)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 200) {
-                            checkPaymentStatus();
-                        } else {
-                            if (typeof showToast === 'function') {
-                                showToast('Lỗi mô phỏng thanh toán: ' + data.message, false);
-                            }
-                        }
-                    })
-                    .catch(err => {
-                        if (typeof showToast === 'function') {
-                            showToast('Khởi chạy mô phỏng thất bại', false);
-                        }
-                    });
-            }
+            window.PAYMENT_CTX = '${pageContext.request.contextPath}';
+            window.PAYMENT_APPOINTMENT_ID = '${appointment.id}';
         </script>
+        <script src="${pageContext.request.contextPath}/assets/js/payment.js" charset="UTF-8"></script>
     </body>
 </html>

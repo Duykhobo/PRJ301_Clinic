@@ -5,36 +5,9 @@
 <html lang="vi">
 
 <head>
-    <title>Bác Sĩ &amp; Khám Bệnh | Phòng Khám &amp; Spa PRJ301</title>
+    <title>Bác Sĩ &amp; Khám Bệnh | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
-    <style>
-        .slot-chip, .day-chip {
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.18) !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: #94a3b8 !important;
-        }
-        .slot-chip:hover, .day-chip:hover {
-            border-color: rgba(56, 189, 248, 0.5) !important;
-            color: #f8fafc !important;
-        }
-        .slot-chip.active {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-            color: #0f172a !important;
-            font-weight: 700 !important;
-            border-color: #f59e0b !important;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.45) !important;
-        }
-        .day-chip.active {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            border-color: #38bdf8 !important;
-            box-shadow: 0 0 12px rgba(14, 165, 233, 0.45) !important;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/doctor.css">
 </head>
 
 <body>
@@ -117,7 +90,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex gap-1">
-                                                    <button type="button" class="btn btn-xs ${slot.isAvailable ? 'btn-outline-warning' : 'btn-outline-success'} p-1 rounded-circle" title="${slot.isAvailable ? 'Khóa ca' : 'Mở ca'}" onclick="toggleSlotAjax(${slot.id}, ${!slot.isAvailable})">
+                                                    <button type="button" class="btn btn-xs ${slot.isAvailable ? 'btn-outline-warning' : 'btn-outline-success'} p-1 rounded-circle" title="${slot.isAvailable ? 'Khóa ca' : 'Mở ca'}" onclick="confirmToggleSlot(${slot.id}, ${!slot.isAvailable}, '${slot.startTime} - ${slot.endTime}')">
                                                         <i class="fa-solid ${slot.isAvailable ? 'fa-lock' : 'fa-unlock'}"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-xs btn-outline-danger p-1 rounded-circle" title="Xóa ca này" onclick="deleteSlotAjax(${slot.id})">
@@ -175,15 +148,30 @@
 
                 <%-- APPOINTMENTS TABLE --%>
                 <div class="panel animate-fade-in mb-4">
-                    <div class="panel-header">
+                    <div class="panel-header flex-wrap gap-3">
                         <div class="panel-title text-cyan">
                             <i class="fa-solid fa-bed-pulse text-cyan"></i>
                             Lịch Khám Y Tế Ngày <span style="color:#38bdf8; margin-left:.4rem;">${selectedDate}</span>
+                            <span id="doctorFilterCount" class="badge bg-dark border border-secondary text-cyan px-2 py-1 rounded-pill ms-2" style="font-size: .75rem;"></span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <%-- LIVE SEARCH INPUT --%>
+                            <div class="position-relative">
+                                <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50" style="font-size:.8rem; pointer-events:none;"></i>
+                                <input type="text" id="searchDoctorApp" class="adm-search-input" placeholder="Tìm Tên, SĐT, Dịch vụ..." oninput="filterDoctorAppointments()">
+                            </div>
+                            <%-- QUICK FILTER PILLS --%>
+                            <div class="btn-group btn-group-sm" role="group" id="doctorStatusFilterGroup">
+                                <button type="button" class="btn btn-outline-secondary active text-white" onclick="setDoctorAppFilter('ALL', this)">Tất cả</button>
+                                <button type="button" class="btn btn-outline-warning" onclick="setDoctorAppFilter('PENDING', this)">Chờ Khám</button>
+                                <button type="button" class="btn btn-outline-success" onclick="setDoctorAppFilter('COMPLETED', this)">Đã Khám</button>
+                                <button type="button" class="btn btn-outline-danger" onclick="setDoctorAppFilter('CANCELLED', this)">Đã Hủy</button>
+                            </div>
                         </div>
                     </div>
 
             <div style="overflow-x:auto;">
-                <table class="tbl">
+                <table class="tbl" id="doctorAppTable">
                     <thead>
                         <tr>
                             <th style="padding-left:1.4rem;">Giờ Khám</th>
@@ -198,7 +186,7 @@
                         <c:choose>
                             <c:when test="${not empty appointments}">
                                 <c:forEach var="app" items="${appointments}">
-                                    <tr>
+                                    <tr data-status="${app.status}" data-payment="${app.paymentStatus}">
                                         <td style="padding-left:1.4rem;">
                                             <span class="time-bubble">
                                                 <i class="fa-solid fa-clock me-1"></i>${app.startTime}
@@ -373,18 +361,28 @@
                                 <textarea name="diagnosis" id="modalDiagnosis" class="form-control form-control-glass" rows="3" placeholder="Nhập chi tiết chẩn đoán y khoa hoặc tình trạng da..." required></textarea>
                             </div>
 
-                            <div class="mb-2">
+                            <div class="mb-4">
                                 <label class="form-label fw-bold text-warning">
                                     <i class="fa-solid fa-pills me-1"></i>Chỉ Định, Phác Đồ Trị Liệu &amp; Đơn Thuốc / Mỹ Phẩm:
                                 </label>
                                 <textarea name="prescription" id="modalPrescription" class="form-control form-control-glass text-warning" rows="4" placeholder="Nhập phác đồ điều trị, đơn thuốc và lời dặn chăm sóc tại nhà..." required></textarea>
+                            </div>
+
+                            <div class="mb-2 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(52, 211, 153, 0.35);">
+                                <label class="form-label fw-bold text-emerald mb-1">
+                                    <i class="fa-solid fa-calendar-check me-1"></i>Chỉ Định Ngày Hẹn Tái Khám (Tùy chọn):
+                                </label>
+                                <input type="date" name="revisitDate" id="modalRevisitDate" class="form-control form-control-glass text-white border-emerald" style="border-color: rgba(52, 211, 153, 0.4) !important;">
+                                <div class="form-text text-muted small mt-1">
+                                    <i class="fa-solid fa-bell text-warning me-1"></i>Nếu chọn ngày tái khám, hệ thống sẽ tự động gửi <strong>Email &amp; Notification</strong> nhắc nhở bệnh nhân.
+                                </div>
                             </div>
                         </div>
 
                         <div class="modal-footer border-top border-secondary border-opacity-25">
                             <button type="button" class="btn text-white-50" data-bs-dismiss="modal">Hủy Bỏ</button>
                             <button type="submit" class="btn btn-primary-gradient px-4 rounded-pill">
-                                <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Hồ Sơ Khám
+                                <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Hồ Sơ Khám &amp; Gửi Thông Báo
                             </button>
                         </div>
                     </form>
@@ -578,533 +576,13 @@
             </div>
         </div>
 
-        <%-- Include Footer --%>
-        <jsp:include page="/WEB-INF/views/components/footer.jsp" />
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const CONTEXT_PATH = "${pageContext.request.contextPath}";
-        let CURRENT_DATE = "${selectedDate}";
-
-        flatpickr(".flatpickr-date", {
-            dateFormat: "Y-m-d",
-            defaultDate: "${selectedDate}"
-        });
-
-        function openMedicalModal(id, patientName, serviceName, diagnosis, prescription) {
-            document.getElementById('modalAppointmentId').value = id;
-            document.getElementById('modalPatientName').innerText = patientName;
-            document.getElementById('modalServiceName').innerText = serviceName;
-            document.getElementById('modalDiagnosis').value = diagnosis || '';
-            document.getElementById('modalPrescription').value = prescription || '';
-
-            // Khởi tạo ngẫu nhiên hoặc mặc định cho chỉ số da nếu chưa có
-            const moisture = Math.floor(Math.random() * 25) + 50; // 50 - 75%
-            const oil = Math.floor(Math.random() * 30) + 40; // 40 - 70%
-            document.getElementById('moistureSlider').value = moisture;
-            document.getElementById('moistureVal').innerText = moisture + '%';
-            document.getElementById('oilSlider').value = oil;
-            document.getElementById('oilVal').innerText = oil + '%';
-
-            const modal = new bootstrap.Modal(document.getElementById('medicalModal'));
-            modal.show();
-        }
-
-        // ── DOCTOR AJAX SCHEDULE MANAGEMENT ──
-        function renderDoctorSlots(slots) {
-            const container = document.getElementById('doctorSlotsContainer');
-            if (!container) return;
-            if (!slots || slots.length === 0) {
-                container.innerHTML = '<div class="text-center py-4 text-muted"><i class="fa-solid fa-calendar-xmark me-2"></i>Bác sĩ chưa có khung giờ làm việc nào cho ngày này.<button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 ms-2" onclick="generateScheduleAjax()"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Tự Động Sinh Tất Cả Ca Khám</button></div>';
-                return;
-            }
-            let html = '<div class="row g-3 animate-fade-in">';
-            slots.forEach(slot => {
-                const isAvail = slot.isAvailable === true || slot.isAvailable === 1;
-                const borderClass = isAvail ? 'border-cyan bg-cyan bg-opacity-10' : 'border-secondary bg-dark text-muted';
-                const clockIcon = isAvail ? 'text-cyan' : 'text-muted';
-                const textClass = isAvail ? 'text-white' : 'text-muted';
-                const statusBadge = isAvail ? '🟢 Khả dụng' : '🔴 Khóa / Đã đặt';
-                const lockBtnClass = isAvail ? 'btn-outline-warning' : 'btn-outline-success';
-                const lockIcon = isAvail ? 'fa-lock' : 'fa-unlock';
-                const lockTitle = isAvail ? 'Khóa ca này' : 'Mở ca này';
-
-                html += '<div class="col-12 col-sm-6 col-md-4 col-xl-3">' +
-                        '<div class="p-3 rounded-3 border d-flex align-items-center justify-content-between gap-2 ' + borderClass + ' shadow-sm" style="transition:all 0.2s;">' +
-                        '<div class="d-flex align-items-center gap-2">' +
-                        '<i class="fa-solid fa-clock fs-5 ' + clockIcon + '"></i>' +
-                        '<div>' +
-                        '<div class="fw-bold fs-7 ' + textClass + '">' + slot.startTime + ' - ' + slot.endTime + '</div>' +
-                        '<div class="fs-8 ' + (isAvail ? 'text-emerald fw-semibold' : 'text-danger') + '">' + statusBadge + '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="d-flex gap-1">' +
-                        '<button type="button" class="btn btn-xs ' + lockBtnClass + ' p-1 rounded-circle" title="' + lockTitle + '" onclick="toggleSlotAjax(' + slot.id + ', ' + (!isAvail) + ')">' +
-                        '<i class="fa-solid ' + lockIcon + '"></i>' +
-                        '</button>' +
-                        '<button type="button" class="btn btn-xs btn-outline-danger p-1 rounded-circle" title="Xóa ca này" onclick="deleteSlotAjax(' + slot.id + ')">' +
-                        '<i class="fa-solid fa-trash"></i>' +
-                        '</button>' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>';
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function fetchDoctorSlotsAjax() {
-            const params = new URLSearchParams();
-            params.append("action", "get-slots");
-            params.append("date", CURRENT_DATE);
-            params.append("ajax", "true");
-
-            fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body: params
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.slots) renderDoctorSlots(data.slots);
-            })
-            .catch(err => console.error("AJAX Error:", err));
-        }
-
-        function generateScheduleAjax() {
-            fetchDoctorSlotsAjax();
-        }
-
-        function toggleSlotAjax(slotId, newStatus) {
-            const params = new URLSearchParams();
-            params.append("action", "toggle-slot");
-            params.append("slotId", slotId);
-            params.append("status", newStatus);
-            params.append("date", CURRENT_DATE);
-            params.append("ajax", "true");
-
-            fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body: params
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.slots) renderDoctorSlots(data.slots);
-                showToastNotification(data.success ? "success" : "error", data.message);
-            })
-            .catch(err => console.error("AJAX Error:", err));
-        }
-
-        function deleteSlotAjax(slotId) {
-            Swal.fire({
-                title: 'Xóa Ca Khám Này?',
-                text: 'Bạn có chắc chắn muốn xóa khung giờ khám này không?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-solid fa-trash me-1"></i> Xóa Ca',
-                cancelButtonText: 'Hủy Bỏ',
-                background: '#0f172a',
-                color: '#f8fafc',
-                customClass: {
-                    popup: 'border border-danger border-opacity-40 shadow-lg'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const params = new URLSearchParams();
-                    params.append("action", "delete-slot");
-                    params.append("slotId", slotId);
-                    params.append("date", CURRENT_DATE);
-                    params.append("ajax", "true");
-
-                    fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                        body: params
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.slots) renderDoctorSlots(data.slots);
-                        showToastNotification(data.success ? "success" : "error", data.message);
-                    })
-                    .catch(err => console.error("AJAX Error:", err));
-                }
-            });
-        }
-
-        function addSlotAjax(event) {
-            event.preventDefault();
-            const form = document.getElementById("addSlotForm");
-            const params = new URLSearchParams(new FormData(form));
-            params.append("date", CURRENT_DATE);
-
-            fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body: params
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.slots) renderDoctorSlots(data.slots);
-                showToastNotification(data.success ? "success" : "error", data.message);
-                const modalEl = document.getElementById('addSlotModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
-            })
-            .catch(err => console.error("AJAX Error:", err));
-        }
-
-        // ── WEEKLY BATCH SCHEDULE JAVASCRIPT HELPERS ──
-        function setWeeklyPreset(preset) {
-            const today = new Date();
-            const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay(); // 1 (Mon) -> 7 (Sun)
-            
-            let start = new Date(today);
-            let end = new Date(today);
-
-            if (preset === 'this_week') {
-                start.setDate(today.getDate() - (dayOfWeek - 1));
-                end.setDate(today.getDate() + (7 - dayOfWeek));
-            } else if (preset === 'next_week') {
-                start.setDate(today.getDate() + (8 - dayOfWeek));
-                end.setDate(today.getDate() + (14 - dayOfWeek));
-            } else if (preset === 'next_2_weeks') {
-                start.setDate(today.getDate() + (8 - dayOfWeek));
-                end.setDate(today.getDate() + (21 - dayOfWeek));
-            }
-
-            const startStr = start.toISOString().split('T')[0];
-            const endStr = end.toISOString().split('T')[0];
-
-            document.getElementById('weeklyStartDate').value = startStr;
-            document.getElementById('weeklyEndDate').value = endStr;
-            calculateWeeklyEstimate();
-        }
-
-        function toggleAllDays(selected) {
-            document.querySelectorAll('#weeklyScheduleForm input[name="daysOfWeek"]').forEach(cb => {
-                cb.checked = selected;
-                updateChipStyle(cb, 'day-chip');
-            });
-            calculateWeeklyEstimate();
-        }
-
-        function selectWeekdayOnly() {
-            document.querySelectorAll('#weeklyScheduleForm input[name="daysOfWeek"]').forEach(cb => {
-                const val = parseInt(cb.value);
-                cb.checked = (val >= 1 && val <= 5);
-                updateChipStyle(cb, 'day-chip');
-            });
-            calculateWeeklyEstimate();
-        }
-
-        function selectMorningSlots() {
-            const morning = ["08:00", "09:00", "10:00", "11:00"];
-            document.querySelectorAll('#weeklyScheduleForm input[name="timeSlots"]').forEach(cb => {
-                cb.checked = morning.includes(cb.value);
-                updateChipStyle(cb, 'slot-chip');
-            });
-            calculateWeeklyEstimate();
-        }
-
-        function selectAfternoonSlots() {
-            const afternoon = ["14:00", "15:00", "16:00", "17:00"];
-            document.querySelectorAll('#weeklyScheduleForm input[name="timeSlots"]').forEach(cb => {
-                cb.checked = afternoon.includes(cb.value);
-                updateChipStyle(cb, 'slot-chip');
-            });
-            calculateWeeklyEstimate();
-        }
-
-        function selectAllSlots(selected) {
-            document.querySelectorAll('#weeklyScheduleForm input[name="timeSlots"]').forEach(cb => {
-                cb.checked = selected;
-                updateChipStyle(cb, 'slot-chip');
-            });
-            calculateWeeklyEstimate();
-        }
-
-        function handleDayChipChange(cb) {
-            updateChipStyle(cb, 'day-chip');
-            calculateWeeklyEstimate();
-        }
-
-        function handleSlotChipChange(cb) {
-            updateChipStyle(cb, 'slot-chip');
-            calculateWeeklyEstimate();
-        }
-
-        function updateChipStyle(cb, parentClass) {
-            const label = cb.closest('.' + parentClass);
-            if (!label) return;
-            if (cb.checked) {
-                label.classList.add('active');
-                label.style.opacity = "1";
-            } else {
-                label.classList.remove('active');
-                label.style.opacity = "0.5";
-            }
-        }
-
-        function calculateWeeklyEstimate() {
-            const startVal = document.getElementById('weeklyStartDate').value;
-            const endVal = document.getElementById('weeklyEndDate').value;
-            if (!startVal || !endVal) {
-                document.getElementById('weeklyEstimatedCount').innerText = "0";
-                return;
-            }
-
-            const start = new Date(startVal);
-            const end = new Date(endVal);
-            if (start > end) {
-                document.getElementById('weeklyEstimatedCount').innerText = "0";
-                return;
-            }
-
-            const selectedDays = [];
-            document.querySelectorAll('#weeklyScheduleForm input[name="daysOfWeek"]:checked').forEach(cb => {
-                selectedDays.push(parseInt(cb.value));
-            });
-
-            const selectedSlotsCount = document.querySelectorAll('#weeklyScheduleForm input[name="timeSlots"]:checked').length;
-
-            let matchingDaysCount = 0;
-            let cur = new Date(start);
-            while (cur <= end) {
-                const day = cur.getDay() === 0 ? 7 : cur.getDay();
-                if (selectedDays.includes(day)) {
-                    matchingDaysCount++;
-                }
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            const totalEstimate = matchingDaysCount * selectedSlotsCount;
-            document.getElementById('weeklyEstimatedCount').innerText = totalEstimate;
-        }
-
-        function submitWeeklyScheduleAjax(event) {
-            event.preventDefault();
-            const start = document.getElementById('weeklyStartDate').value;
-            const end = document.getElementById('weeklyEndDate').value;
-            const estimate = document.getElementById('weeklyEstimatedCount').innerText;
-
-            if (!start || !end) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Chưa Chọn Khoảng Ngày',
-                    text: 'Vui lòng chọn ngày bắt đầu và kết thúc áp dụng lịch!',
-                    background: '#0f172a',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#0ea5e9'
-                });
-                return;
-            }
-            if (parseInt(estimate) <= 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Chưa Chọn Khung Giờ',
-                    text: 'Vui lòng chọn ít nhất một ngày trong tuần và một khung giờ khám!',
-                    background: '#0f172a',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#0ea5e9'
-                });
-                return;
-            }
-
-            Swal.fire({
-                title: 'Áp Dụng Lịch Khám Toàn Tuần?',
-                html: 'Hệ thống sẽ tạo khoảng <b class="text-warning fs-5">' + estimate + '</b> ca khám 60 phút từ ngày <b class="text-cyan">' + start + '</b> đến ngày <b class="text-cyan">' + end + '</b>.<br><br><span class="text-emerald fw-semibold"><i class="fa-solid fa-shield-check me-1"></i>Hệ thống tự động bỏ qua các ca đã trùng lặp!</span>',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0ea5e9',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-solid fa-wand-magic-sparkles me-1"></i> Xác Nhận Tạo Lịch',
-                cancelButtonText: 'Hủy Bỏ',
-                background: '#0f172a',
-                color: '#f8fafc',
-                customClass: {
-                    popup: 'border border-cyan border-opacity-40 shadow-lg'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.getElementById("weeklyScheduleForm");
-                    const formData = new FormData(form);
-                    const params = new URLSearchParams();
-                    for (let pair of formData.entries()) {
-                        params.append(pair[0], pair[1]);
-                    }
-
-                    const btn = document.getElementById("btnSubmitWeekly");
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang xử lý...';
-
-                    fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                        body: params
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles me-1"></i>Áp Dụng Lịch Toàn Tuần';
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành Công!',
-                                text: data.message,
-                                background: '#0f172a',
-                                color: '#f8fafc',
-                                confirmButtonColor: '#10b981'
-                            });
-                            const modalEl = document.getElementById('weeklyScheduleModal');
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            if (modal) modal.hide();
-                            generateScheduleAjax();
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Không Thể Tạo Lịch',
-                                text: data.message,
-                                background: '#0f172a',
-                                color: '#f8fafc',
-                                confirmButtonColor: '#ef4444'
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles me-1"></i>Áp Dụng Lịch Toàn Tuần';
-                        console.error("AJAX Error:", err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi Kết Nối Máy Chủ',
-                            text: 'Vui lòng kiểm tra lại đường truyền!',
-                            background: '#0f172a',
-                            color: '#f8fafc'
-                        });
-                    });
-                }
-            });
-        }
-
-        function clearWeeklyScheduleAjax() {
-            const start = document.getElementById('weeklyStartDate').value;
-            const end = document.getElementById('weeklyEndDate').value;
-
-            if (!start || !end) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Chưa Chọn Khoảng Ngày',
-                    text: 'Vui lòng chọn Từ Ngày và Đến Ngày để thực hiện dọn dẹp ca trống!',
-                    background: '#0f172a',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#0ea5e9'
-                });
-                return;
-            }
-
-            Swal.fire({
-                title: 'Xác Nhận Dọn Dẹp Ca Trống?',
-                html: 'Thao tác này sẽ <b class="text-danger">XÓA TOÀN BỘ</b> các ca khám <b>TRỐNG</b> (chưa có bệnh nhân đặt) từ ngày <b class="text-cyan">' + start + '</b> đến ngày <b class="text-cyan">' + end + '</b>.<br><br><span class="text-emerald fw-semibold"><i class="fa-solid fa-shield-check me-1"></i>Các ca đã có bệnh nhân đặt sẽ được bảo toàn an toàn 100%.</span>',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-solid fa-trash-can me-1"></i> Xóa Ca Trống',
-                cancelButtonText: 'Hủy Bỏ',
-                background: '#0f172a',
-                color: '#f8fafc',
-                customClass: {
-                    popup: 'border border-danger border-opacity-40 shadow-lg'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const params = new URLSearchParams();
-                    params.append("action", "clear-weekly-schedule");
-                    params.append("startDate", start);
-                    params.append("endDate", end);
-                    params.append("ajax", "true");
-
-                    document.querySelectorAll('#weeklyScheduleForm input[name="daysOfWeek"]:checked').forEach(cb => {
-                        params.append("daysOfWeek", cb.value);
-                    });
-
-                    fetch(CONTEXT_PATH + "/doctor/dashboard", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                        body: params
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Đã Dọn Dẹp!',
-                                text: data.message,
-                                background: '#0f172a',
-                                color: '#f8fafc',
-                                confirmButtonColor: '#10b981'
-                            });
-                            generateScheduleAjax();
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Thất Bại',
-                                text: data.message,
-                                background: '#0f172a',
-                                color: '#f8fafc',
-                                confirmButtonColor: '#ef4444'
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        console.error("AJAX Error:", err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi Kết Nối',
-                            text: 'Không thể kết nối máy chủ!',
-                            background: '#0f172a',
-                            color: '#f8fafc'
-                        });
-                    });
-                }
-            });
-        }
-
-        // Init weekly modal preset on load
-        document.addEventListener('DOMContentLoaded', () => {
-            setWeeklyPreset('next_week');
-            document.querySelectorAll('#weeklyScheduleForm input[type="checkbox"]').forEach(cb => {
-                updateChipStyle(cb, cb.name === 'daysOfWeek' ? 'day-chip' : 'slot-chip');
-            });
-            calculateWeeklyEstimate();
-        });
-
-        function showToastNotification(type, message) {
-            let container = document.getElementById("toastContainer");
-            if (!container) {
-                container = document.createElement("div");
-                container.id = "toastContainer";
-                container.style.cssText = "position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;";
-                document.body.appendChild(container);
-            }
-
-            const toast = document.createElement("div");
-            toast.className = "toast-glass " + type;
-            toast.style.cssText = "background:rgba(15,23,42,0.9);color:#fff;border-radius:12px;padding:12px 18px;border-left:4px solid " + (type === "success" ? "#22c55e" : "#ef4444") + ";box-shadow:0 10px 25px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;animation:slideInRight 0.3s ease-out;";
-            toast.innerHTML = '<i class="fa-solid ' + (type === "success" ? "fa-circle-check text-success" : "fa-triangle-exclamation text-danger") + ' fs-5"></i><span>' + message + '</span>';
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = "0";
-                toast.style.transition = "opacity 0.3s ease";
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
+        window.DOCTOR_CTX = '${pageContext.request.contextPath}';
+        window.DOCTOR_CURRENT_DATE = '${selectedDate}';
     </script>
+    <script src="${pageContext.request.contextPath}/assets/js/doctor.js" charset="UTF-8"></script>
 </body>
 </html>

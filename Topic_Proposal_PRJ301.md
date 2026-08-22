@@ -16,7 +16,7 @@ Trong thời đại công nghệ số, việc đăng ký và quản lý lịch h
 
 - **Đối với Khách hàng / Bệnh nhân**: Tìm kiếm dịch vụ, lựa chọn bác sĩ theo chuyên khoa, đặt lịch hẹn theo khung giờ rảnh 60 phút, quét mã QR thanh toán SePay tự động (tự động khóa số tiền & nội dung chuyển khoản) và tra cứu hồ sơ kết quả/bệnh án trực tuyến.
 - **Đối với Bác sĩ / Kỹ thuật viên (Mô hình Hybrid)**: Tự đăng ký khung giờ rảnh cá nhân hoặc nhận lịch phân công từ Admin, theo dõi danh sách lịch hẹn trong ngày/tuần, cập nhật chẩn đoán, kê đơn/kết quả dịch vụ và xem đánh giá từ khách hàng.
-- **Đối với Quản trị viên (Admin)**: Toàn quyền quản trị 8 bảng (bao gồm quản lý Cấu hình hệ thống `ClinicSettings` và `Notifications`), chủ động phân lịch cho bác sĩ, kiểm duyệt lịch hẹn, quản lý giá cả dịch vụ và xem thống kê báo cáo doanh thu.
+- **Đối với Quản trị viên (Admin)**: Toàn quyền quản trị 9 bảng (bao gồm quản lý Cấu hình hệ thống `ClinicSettings`, `TreatmentPackages` và `Notifications`), chủ động phân lịch cho bác sĩ, kiểm duyệt lịch hẹn, quản lý giá cả dịch vụ và xem thống kê báo cáo doanh thu.
 
 ---
 
@@ -59,13 +59,13 @@ graph LR
 
 | Hạng mục                    | Yêu cầu Đề bài (PRJ301)             | Giải pháp Thực hiện trong Dự án                                                                                                                               |
 | ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Số lượng Models**  | Tối thiểu 4 – 6 models                | **Đầy đủ 8 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100%                                                                             |
+| **Số lượng Models**  | Tối thiểu 4 – 6 models                | **Đầy đủ 9 Models (Tables)** vượt mức tối thiểu đề bài, có CRUD 100%                                                                             |
 | **Kiến trúc**         | MVC-V2 3-Tier chuẩn Doanh Nghiệp       | Tách biệt 3 Tầng độc lập:**Thin Controller (Servlet)** $\rightarrow$ **Fat Service (Business Logic)** $\rightarrow$ **DAO (Pure JDBC)** |
 | **ORM / Database**      | JDBC thuần (Không dùng JPA/Hibernate) | Dùng`PreparedStatement`, `try-with-resources`, **Microsoft SQL Server**                                                                                  |
 | **Transaction & Pool**  | HikariCP hoặc DBCP                      | Quản lý Connection tối ưu bằng**HikariCP** kết hợp **ThreadLocal** & **TransactionFilter** tự động Commit/Rollback.                     |
 | **Mã hóa mật khẩu** | BCrypt hoặc SHA-256                     | Mã hóa chiều rộng chuẩn**BCrypt** (`org.mindrot:jbcrypt`)                                                                                              |
-| **Bảo mật & Filter**  | Authentication, Authorization, Encoding  | 4 Filters:`EncodingFilter` (UTF-8), `TransactionFilter` (Quản lý Data), `AuthenticationFilter`, `AuthorizationFilter`                                     |
-| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động + Chuông Thông Báo 🔔 thời gian thực                                                      |
+| **Bảo mật & Filter**  | Authentication, Authorization, Encoding  | 5 Filters:`EncodingFilter` (UTF-8 & Settings), `XSSFilter`, `CSRFTokenFilter`, `TransactionFilter` (Quản lý Data), `AuthenticationFilter` |
+| **Front-end UI**        | HTML5, CSS3, Bootstrap 5, JS ES6+        | Bootstrap 5.3 Responsive + JavaScript Fetch/AJAX tương tác động + Chuông Thông Báo 🔔 thời gian thực + Tách 100% CSS/JS |
 
 ### 3. Ma trận Phân loại Tính năng theo Độ ưu tiên (Priority Level Matrix)
 
@@ -79,9 +79,9 @@ graph TD
 
     P1 --> P1_1["Kiến trúc MVC-V2 & NetBeans Ant"]
     P1 --> P1_2["JDBC thuần HikariCP & SQL Server"]
-    P1 --> P1_3["Mã hóa BCrypt & 4 Filters (có TransactionFilter)"]
+    P1 --> P1_3["Mã hóa BCrypt & 5 Filters Chuyên Sâu"]
     P1 --> P1_4["Phân quyền 4 Roles: Admin, Doctor, Patient, Receptionist"]
-    P1 --> P1_5["CRUD 100% trên 8 Bảng CSDL"]
+    P1 --> P1_5["CRUD 100% trên 9 Bảng CSDL"]
     P1 --> P1_6["Chống Race Condition: WITH UPDLOCK & UNIQUE schedule_id"]
 
     P2 --> P2_1["Tự động thanh toán SePay VietQR & Tự sinh mã CLINIC_ID"]

@@ -134,12 +134,54 @@ public class ServiceDAO extends BaseDAO<Service> {
      * Đếm tổng số lượng Dịch vụ trong hệ thống.
      */
     public int countAllForAdmin() {
-        String sql = "SELECT COUNT(*) FROM Services";
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException ignored) {}
-        return 0;
+        return queryCount("SELECT COUNT(*) FROM Services");
+    }
+
+    /**
+     * Lọc và tìm kiếm Dịch vụ theo Tên/Mô tả và Trạng thái cho Admin.
+     */
+    public List<Service> findFilteredPaginated(String search, String status, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Services WHERE 1=1 ");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (service_name LIKE ? OR description LIKE ?) ");
+            String like = "%" + search.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            sql.append("AND status = ? ");
+            params.add("ACTIVE".equalsIgnoreCase(status.trim()));
+        }
+
+        sql.append("ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(limit);
+
+        return queryList(sql.toString(), this::mapResultSetToService, params.toArray());
+    }
+
+    /**
+     * Đếm tổng số Dịch vụ khớp bộ lọc cho Admin.
+     */
+    public int countFiltered(String search, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Services WHERE 1=1 ");
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (service_name LIKE ? OR description LIKE ?) ");
+            String like = "%" + search.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            sql.append("AND status = ? ");
+            params.add("ACTIVE".equalsIgnoreCase(status.trim()));
+        }
+
+        return queryCount(sql.toString(), params.toArray());
     }
 }

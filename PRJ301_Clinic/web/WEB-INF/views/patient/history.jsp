@@ -4,21 +4,9 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Lịch Sử Khám &amp; Liệu Trình | Phòng Khám &amp; Spa PRJ301</title>
+        <title>Lịch Sử Khám &amp; Liệu Trình | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
-        <style>
-            /* CSS ép màu tương phản hiển thị chữ sắc nét cho các Badge trạng thái */
-            .badge-unpaid {
-                background-color: rgba(245, 158, 11, 0.15) !important;
-                color: #fbbf24 !important;
-                border: 1px solid rgba(251, 191, 36, 0.4) !important;
-            }
-            .badge-paid {
-                background-color: rgba(16, 185, 129, 0.15) !important;
-                color: #34d399 !important;
-                border: 1px solid rgba(52, 211, 153, 0.4) !important;
-            }
-        </style>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/patient-history.css">
     </head>
 
     <body class="d-flex flex-column min-vh-100">
@@ -105,8 +93,30 @@
 
             <%-- History Table Glassmorphism --%>
             <div class="glass-card p-4 animate-fade-in mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="fw-bold text-white mb-0">
+                            <i class="fa-solid fa-clock-rotate-left text-cyan me-2"></i>Lịch Sử Cuộc Hẹn
+                        </h5>
+                        <span id="patientFilterCount" class="badge bg-dark border border-secondary text-cyan px-2 py-1 rounded-pill" style="font-size: .75rem;"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="position-relative">
+                            <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50" style="font-size:.8rem; pointer-events:none;"></i>
+                            <input type="text" id="searchHistory" class="form-control form-control-sm form-control-glass ps-5 rounded-pill" style="min-width:220px; font-size:.85rem;" placeholder="Tìm bác sĩ, dịch vụ, mã ca..." oninput="filterPatientHistory()">
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group" id="patientStatusFilterGroup">
+                            <button type="button" class="btn btn-outline-secondary active text-white" onclick="setPatientHistoryFilter('ALL', this)">Tất cả</button>
+                            <button type="button" class="btn btn-outline-success" onclick="setPatientHistoryFilter('COMPLETED', this)">Đã Khám</button>
+                            <button type="button" class="btn btn-outline-warning" onclick="setPatientHistoryFilter('PENDING', this)">Chờ Khám</button>
+                            <button type="button" class="btn btn-outline-info" onclick="setPatientHistoryFilter('UNPAID', this)">Chưa TT</button>
+                            <button type="button" class="btn btn-outline-danger" onclick="setPatientHistoryFilter('CANCELLED', this)">Đã Hủy</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0">
+                    <table class="table table-dark table-hover align-middle mb-0" id="patientHistoryTable">
                         <thead>
                             <tr class="text-cyan border-bottom border-secondary border-opacity-25">
                                 <th>Mã Ca</th>
@@ -123,7 +133,7 @@
                             <c:choose>
                                 <c:when test="${not empty historyList}">
                                     <c:forEach var="app" items="${historyList}">
-                                        <tr>
+                                        <tr data-status="${app.status}" data-payment="${app.paymentStatus}">
                                             <td class="fw-bold text-white">#${app.id}</td>
                                             <td>
                                                 <div class="fw-bold text-cyan"><i class="fa-solid fa-calendar-day me-1"></i>${app.appointmentDate}</div>
@@ -138,9 +148,9 @@
                                                     <i class="fa-solid fa-notes-medical me-1"></i><c:out value="${app.serviceName}"/>
                                                 </span>
                                             </td>
-                                            <%-- Định dạng số tiền 2,000 VNĐ --%>
-                                            <td class="fw-bold text-warning">
-                                                <fmt:formatNumber value="${app.totalPrice}" pattern="#,##0"/> VNĐ
+                                            <%-- Định dạng số tiền chuẩn VNĐ không thập phân --%>
+                                            <td class="fw-bold text-warning fs-6">
+                                                <fmt:formatNumber value="${app.totalPrice}" pattern="#,##0" maxFractionDigits="0"/> VNĐ
                                             </td>
                                             <td>
                                                 <c:choose>
@@ -322,12 +332,22 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary text-white-50" id="pModalDiagnosis" style="white-space: pre-line;"></div>
                         </div>
 
-                        <div class="mb-3">
-                            <h6 class="fw-bold text-warning mb-2"><i class="fa-solid fa-pills me-2"></i>Đơn Thuốc, Phác Đồ Trị Liệu &amp; Mỹ Phẩm Chăm Sóc:</h6>
-                            <div class="p-3 rounded-3 bg-dark border border-warning border-opacity-30 text-warning" id="pModalPrescription" style="white-space: pre-line;"></div>
+                        <div class="p-3 rounded-3 mb-2" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(52, 211, 153, 0.35);">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-emerald fw-bold"><i class="fa-solid fa-calendar-check me-1"></i>Chỉ Định Tái Khám:</span>
+                                    <span class="text-white-50 small ms-1">Tái khám theo dõi định kỳ sau 7-14 ngày hoặc theo chỉ dẫn của Bác sĩ.</span>
+                                </div>
+                                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-sm btn-emerald-gradient rounded-pill px-3 fw-bold">
+                                    <i class="fa-solid fa-calendar-plus me-1"></i>Đặt Lịch Tái Khám Ngay
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <div class="modal-footer border-top border-secondary border-opacity-25 justify-content-between">
+                        <button type="button" class="btn btn-outline-glass rounded-pill px-3" onclick="window.print()">
+                            <i class="fa-solid fa-print me-1"></i>In Hồ Sơ Bệnh Án
+                        </button>
                         <button type="button" class="btn btn-primary-gradient px-4 rounded-pill" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
@@ -338,23 +358,6 @@
         <jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            function viewPatientPrescription(appId, doctor, service, diagnosis, prescription) {
-                document.getElementById('pModalAppId').innerText = appId;
-                document.getElementById('pModalDoctor').innerText = doctor;
-                document.getElementById('pModalService').innerText = service;
-                document.getElementById('pModalDiagnosis').innerText = diagnosis || 'Chưa có chẩn đoán chi tiết.';
-                document.getElementById('pModalPrescription').innerText = prescription || 'Chưa có đơn thuốc chỉ định.';
-
-                // Tự động tính chỉ số da sinh động
-                const moisture = Math.floor(Math.random() * 25) + 50;
-                const oil = Math.floor(Math.random() * 25) + 40;
-                document.getElementById('pModalMoisture').innerText = moisture + '%';
-                document.getElementById('pModalOil').innerText = oil + '%';
-
-                const modal = new bootstrap.Modal(document.getElementById('patientPrescriptionModal'));
-                modal.show();
-            }
-        </script>
+        <script src="${pageContext.request.contextPath}/assets/js/patient-history.js" charset="UTF-8"></script>
     </body>
 </html>

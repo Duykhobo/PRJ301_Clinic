@@ -169,6 +169,154 @@ public class EmailUtil {
     }
 
     /**
+     * Gửi Email Chào Mừng Đăng Ký Tài Khoản Bệnh Nhân Mới (Async SSLSocket).
+     */
+    public static void sendWelcomeEmailAsync(String recipientEmail, String patientName, String username) {
+        if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
+            return;
+        }
+
+        executor.submit(() -> {
+            try {
+                String subject = "🎉 CHÀO MỪNG BẠN ĐẾN VỚI PRJ301 CLINIC & SPA!";
+                String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #0f172a; padding: 30px; color: #ffffff;\">"
+                        + "  <div style=\"max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 25px; border: 1px solid #334155;\">"
+                        + "    <h2 style=\"color: #38bdf8; text-align: center; margin-bottom: 5px;\">PRJ301 CLINIC &amp; SPA</h2>"
+                        + "    <h3 style=\"color: #4ade80; text-align: center; margin-top: 0;\">CHÀO MỪNG THÀNH VIÊN MỚI</h3>"
+                        + "    <p>Xin chào <strong>" + patientName + "</strong>,</p>"
+                        + "    <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>PRJ301 Clinic &amp; Spa</strong>. Tài khoản của bạn đã sẵn sàng sử dụng các tiện ích chăm sóc sức khỏe &amp; sắc đẹp hàng đầu:</p>"
+                        + "    <div style=\"background: #0f172a; padding: 16px; border-radius: 12px; margin: 20px 0; border: 1px solid #334155;\">"
+                        + "      <p style=\"margin: 5px 0;\">👤 <strong>Tên đăng nhập:</strong> <span style=\"color: #38bdf8;\">" + username + "</span></p>"
+                        + "      <p style=\"margin: 5px 0;\">🌟 <strong>Hạng Hội Viên:</strong> <span style=\"color: #fbbf24; font-weight: bold;\">STANDARD MEMBER (0 Điểm)</span></p>"
+                        + "      <p style=\"margin: 5px 0;\">📅 <strong>Đặt lịch thông minh:</strong> Khung giờ 60 phút không chờ đợi</p>"
+                        + "      <p style=\"margin: 5px 0;\">💳 <strong>Thanh toán tiện lợi:</strong> Quét mã VietQR SePay tự động</p>"
+                        + "    </div>"
+                        + "    <p style=\"margin-top: 20px; font-size: 0.9em; color: #94a3b8; text-align: center;\">Chúc bạn có những trải nghiệm khám và điều trị tuyệt vời nhất!</p>"
+                        + "  </div>"
+                        + "</div>";
+
+                sendRealSmtpEmail(recipientEmail, subject, htmlContent);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể gửi email chào mừng (Async): " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Gửi Email Bệnh Án & Toa Thuốc Điện Tử Cho Bệnh Nhân (Async SSLSocket).
+     */
+    public static void sendMedicalRecordAsync(String recipientEmail, String patientName, String doctorName,
+            String serviceName, String diagnosis, String prescription, Date appointmentDate) {
+        if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
+            return;
+        }
+
+        executor.submit(() -> {
+            try {
+                String subject = "📋 HỒ SƠ BỆNH ÁN & ĐƠN THUỐC ĐIỆN TỬ — PRJ301 CLINIC";
+                String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #0f172a; padding: 30px; color: #ffffff;\">"
+                        + "  <div style=\"max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 25px; border: 1px solid #334155;\">"
+                        + "    <h2 style=\"color: #38bdf8; text-align: center; margin-bottom: 5px;\">PRJ301 CLINIC &amp; SPA</h2>"
+                        + "    <h3 style=\"color: #38bdf8; text-align: center; margin-top: 0;\">KẾT QUẢ KHÁM BỆNH &amp; ĐƠN THUỐC ĐIỆN TỬ</h3>"
+                        + "    <p>Xin chào <strong>" + patientName + "</strong>,</p>"
+                        + "    <p>Ca khám của bạn đã được Bác sĩ kết luận và xuất Hồ sơ Bệnh án Điện tử với thông tin như sau:</p>"
+                        + "    <table style=\"width: 100%; color: #ffffff; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px;\">"
+                        + "      <tr><td style=\"padding: 8px; color: #94a3b8;\">Bác sĩ phụ trách:</td><td style=\"padding: 8px; font-weight: bold;\">" + doctorName + "</td></tr>"
+                        + "      <tr><td style=\"padding: 8px; color: #94a3b8;\">Dịch vụ:</td><td style=\"padding: 8px; font-weight: bold; color: #38bdf8;\">" + serviceName + "</td></tr>"
+                        + "      <tr><td style=\"padding: 8px; color: #94a3b8;\">Ngày khám:</td><td style=\"padding: 8px;\">" + (appointmentDate != null ? appointmentDate.toString() : "Hôm nay") + "</td></tr>"
+                        + "    </table>"
+                        + "    <div style=\"background: rgba(14, 165, 233, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #38bdf8; margin-bottom: 15px;\">"
+                        + "      <p style=\"margin: 0 0 5px 0; color: #38bdf8; font-weight: bold;\">🩺 Chẩn đoán y khoa &amp; Tình trạng:</p>"
+                        + "      <p style=\"margin: 0; color: #e2e8f0;\">" + (diagnosis != null && !diagnosis.trim().isEmpty() ? diagnosis : "Chưa có chẩn đoán chi tiết") + "</p>"
+                        + "    </div>"
+                        + "    <div style=\"background: rgba(251, 191, 36, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #fbbf24; margin-bottom: 20px;\">"
+                        + "      <p style=\"margin: 0 0 5px 0; color: #fbbf24; font-weight: bold;\">💊 Chỉ định, Toa thuốc &amp; Lời dặn:</p>"
+                        + "      <p style=\"margin: 0; color: #fde68a; white-space: pre-line;\">" + (prescription != null && !prescription.trim().isEmpty() ? prescription : "Tuân thủ hướng dẫn trực tiếp từ Bác sĩ") + "</p>"
+                        + "    </div>"
+                        + "    <p style=\"margin-top: 20px; font-size: 0.9em; color: #94a3b8; text-align: center;\">Bạn có thể đăng nhập để tra cứu lịch sử khám bệnh và in hồ sơ bất cứ lúc nào.</p>"
+                        + "  </div>"
+                        + "</div>";
+
+                sendRealSmtpEmail(recipientEmail, subject, htmlContent);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể gửi email bệnh án điện tử (Async): " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Gửi Email Nhắc Lịch Hẹn Tái Khám Định Kỳ (Async SSLSocket).
+     */
+    public static void sendRevisitReminderAsync(String recipientEmail, String patientName, String doctorName,
+            String serviceName, String revisitDateStr, String doctorNotes) {
+        if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
+            return;
+        }
+
+        executor.submit(() -> {
+            try {
+                String subject = "📅 NHẮC LỊCH HẸN TÁI KHÁM ĐỊNH KỲ (" + revisitDateStr + ") — PRJ301 CLINIC";
+                String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #0f172a; padding: 30px; color: #ffffff;\">"
+                        + "  <div style=\"max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 25px; border: 1px solid #334155;\">"
+                        + "    <h2 style=\"color: #38bdf8; text-align: center; margin-bottom: 5px;\">PRJ301 CLINIC &amp; SPA</h2>"
+                        + "    <h3 style=\"color: #10b981; text-align: center; margin-top: 0;\">LỊCH HẸN TÁI KHÁM ĐỊNH KỲ</h3>"
+                        + "    <p>Xin chào <strong>" + patientName + "</strong>,</p>"
+                        + "    <p>Bác sĩ <strong>" + doctorName + "</strong> đã chỉ định lịch tái khám cho dịch vụ <strong>" + serviceName + "</strong> của bạn:</p>"
+                        + "    <div style=\"background: #0f172a; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; border: 1px solid #10b981;\">"
+                        + "      <p style=\"margin: 0; color: #94a3b8; font-size: 0.9em;\">Ngày hẹn tái khám dự kiến:</p>"
+                        + "      <h2 style=\"color: #10b981; margin: 10px 0;\">" + revisitDateStr + "</h2>"
+                        + "      <p style=\"margin: 0; color: #e2e8f0; font-size: 0.95em;\">" + (doctorNotes != null && !doctorNotes.trim().isEmpty() ? doctorNotes : "Tái khám theo dõi tiến triển điều trị") + "</p>"
+                        + "    </div>"
+                        + "    <p style=\"color: #94a3b8; font-size: 0.9em;\">💡 Để đảm bảo hiệu quả điều trị tốt nhất, bạn vui lòng truy cập hệ thống và chọn khung giờ khám phù hợp vào ngày trên.</p>"
+                        + "    <p style=\"margin-top: 20px; font-size: 0.85em; color: #94a3b8; text-align: center;\">PRJ301 Clinic &amp; Spa kính chúc quý khách luôn khỏe mạnh!</p>"
+                        + "  </div>"
+                        + "</div>";
+
+                sendRealSmtpEmail(recipientEmail, subject, htmlContent);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể gửi email nhắc tái khám (Async): " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Gửi Email Cập Nhật Tiến Độ Gói Liệu Trình Spa & Điều Trị (Async SSLSocket).
+     */
+    public static void sendTreatmentProgressAsync(String recipientEmail, String patientName, String packageName,
+            String serviceName, int completedSessions, int totalSessions, int remainingSessions) {
+        if (recipientEmail == null || recipientEmail.trim().isEmpty() || !recipientEmail.contains("@")) {
+            return;
+        }
+
+        executor.submit(() -> {
+            try {
+                int percent = (int) Math.round(((double) completedSessions / Math.max(1, totalSessions)) * 100);
+                String subject = "💆 TIẾN ĐỘ GÓI LIỆU TRÌNH (" + completedSessions + "/" + totalSessions + " BUỔI) — PRJ301 SPA";
+                String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #0f172a; padding: 30px; color: #ffffff;\">"
+                        + "  <div style=\"max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 25px; border: 1px solid #334155;\">"
+                        + "    <h2 style=\"color: #38bdf8; text-align: center; margin-bottom: 5px;\">PRJ301 CLINIC &amp; SPA</h2>"
+                        + "    <h3 style=\"color: #38bdf8; text-align: center; margin-top: 0;\">CẬP NHẬT TIẾN ĐỘ LIỆU TRÌNH</h3>"
+                        + "    <p>Xin chào <strong>" + patientName + "</strong>,</p>"
+                        + "    <p>Hệ thống ghi nhận bạn vừa hoàn tất một buổi chăm sóc/điều trị trong gói liệu trình:</p>"
+                        + "    <div style=\"background: #0f172a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #38bdf8;\">"
+                        + "      <h3 style=\"color: #fbbf24; margin: 0 0 10px 0;\">" + packageName + "</h3>"
+                        + "      <p style=\"margin: 5px 0; color: #e2e8f0;\">🌿 Dịch vụ: <strong>" + serviceName + "</strong></p>"
+                        + "      <p style=\"margin: 5px 0; color: #4ade80;\">✅ Đã hoàn thành: <strong>" + completedSessions + " / " + totalSessions + " buổi</strong> (" + percent + "%)</p>"
+                        + "      <p style=\"margin: 5px 0; color: #fca5a5;\">⏳ Số buổi còn lại: <strong>" + remainingSessions + " buổi</strong></p>"
+                        + "    </div>"
+                        + "    <p style=\"color: #94a3b8; font-size: 0.9em;\">💆 Hãy duy trì liệu trình đúng định kỳ để đạt kết quả phục hồi và chăm sóc tối ưu nhất!</p>"
+                        + "    <p style=\"margin-top: 20px; font-size: 0.85em; color: #94a3b8; text-align: center;\">Cảm ơn bạn đã tin tưởng đồng hành cùng PRJ301 Clinic &amp; Spa.</p>"
+                        + "  </div>"
+                        + "</div>";
+
+                sendRealSmtpEmail(recipientEmail, subject, htmlContent);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể gửi email cập nhật tiến độ liệu trình (Async): " + e.getMessage());
+            }
+        });
+    }
+
+    /**
      * Gửi Email HTML Khôi Phục Mật Khẩu Đồng Bộ (Báo thành công / thất bại trực tiếp cho Controller).
      */
     public static boolean sendPasswordResetSync(String recipientEmail, String patientName, String newPassword) {

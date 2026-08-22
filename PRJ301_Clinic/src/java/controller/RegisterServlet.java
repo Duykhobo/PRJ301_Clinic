@@ -16,6 +16,7 @@ import constant.RouterConstant;
 import constant.SystemConstant;
 import model.User;
 import service.UserService;
+import util.EmailUtil;
 import util.ValidationUtil;
 
 /**
@@ -96,6 +97,9 @@ public class RegisterServlet extends HttpServlet {
 
         boolean created = userService.registerPatient(newUser);
         if (created) {
+            if (email != null && !email.trim().isEmpty()) {
+                EmailUtil.sendWelcomeEmailAsync(email, fullname, username);
+            }
             response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?registered=success");
         } else {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Đã xảy ra lỗi trong quá trình tạo tài khoản. Vui lòng thử lại!");

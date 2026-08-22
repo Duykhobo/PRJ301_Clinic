@@ -22,20 +22,34 @@ import model.ClinicSetting;
 import model.RevenueReport;
 import model.Service;
 import model.User;
+import util.PaginationUtil;
 
 @WebServlet(name = "AdminServlet", urlPatterns = {"/admin/dashboard"})
-public class AdminServlet extends HttpServlet {
+public class AdminServlet extends BaseRoleServlet {
 
-    private final UserDAO userDAO = new UserDAO();
-    private final ServiceDAO serviceDAO = new ServiceDAO();
-    private final ClinicSettingDAO clinicSettingDAO = new ClinicSettingDAO();
-    private final AppointmentDAO appointmentDAO = new AppointmentDAO();
+    private UserDAO userDAO;
+    private ServiceDAO serviceDAO;
+    private ClinicSettingDAO clinicSettingDAO;
+    private AppointmentDAO appointmentDAO;
 
     private static final int PAGE_SIZE = 5;
 
     @Override
+    public void init() throws ServletException {
+        this.userDAO = new UserDAO();
+        this.serviceDAO = new ServiceDAO();
+        this.clinicSettingDAO = new ClinicSettingDAO();
+        this.appointmentDAO = new AppointmentDAO();
+    }
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        User loginUser = requireRole(request, response, "ADMIN");
+        if (loginUser == null) {
+            return;
+        }
 
         // 1. DATE RANGE FOR REVENUE REPORT
         String startStr = request.getParameter("startDate");
@@ -50,43 +64,40 @@ public class AdminServlet extends HttpServlet {
         Date endDate = Date.valueOf(endLocalDate);
 
         // 2. PAGINATION & TAB PARAMETERS
-        int pageUser = 1;
-        int pageService = 1;
-        try {
-            if (request.getParameter("pageUser") != null) {
-                pageUser = Math.max(1, Integer.parseInt(request.getParameter("pageUser")));
-            }
-        } catch (NumberFormatException ignored) {}
-
-        try {
-            if (request.getParameter("pageService") != null) {
-                pageService = Math.max(1, Integer.parseInt(request.getParameter("pageService")));
-            }
-        } catch (NumberFormatException ignored) {}
+        int pageUser = PaginationUtil.parsePage(request, "pageUser");
+        int pageService = PaginationUtil.parsePage(request, "pageService");
 
         String activeTab = request.getParameter("tab");
         if (activeTab == null || activeTab.trim().isEmpty()) {
             activeTab = "users";
         }
 
-        // 3. FETCH PAGINATED DATA & COUNTS
-        int totalUsers = userDAO.countAll();
-        int totalPagesUser = Math.max(1, (int) Math.ceil((double) totalUsers / PAGE_SIZE));
-        if (pageUser > totalPagesUser) pageUser = totalPagesUser;
-        int offsetUser = (pageUser - 1) * PAGE_SIZE;
+        // 3. FILTER PARAMETERS FOR USERS & SERVICES
+        String searchUser = request.getParameter("searchUser") != null ? request.getParameter("searchUser").trim() : "";
+        String roleUser = request.getParameter("roleUser") != null ? request.getParameter("roleUser").trim().toUpperCase() : "ALL";
+        String statusUser = request.getParameter("statusUser") != null ? request.getParameter("statusUser").trim().toUpperCase() : "ALL";
 
-        int totalServices = serviceDAO.countAllForAdmin();
-        int totalPagesService = Math.max(1, (int) Math.ceil((double) totalServices / PAGE_SIZE));
-        if (pageService > totalPagesService) pageService = totalPagesService;
-        int offsetService = (pageService - 1) * PAGE_SIZE;
+        String searchService = request.getParameter("searchService") != null ? request.getParameter("searchService").trim() : "";
+        String statusService = request.getParameter("statusService") != null ? request.getParameter("statusService").trim().toUpperCase() : "ALL";
+
+        // 4. FETCH PAGINATED DATA & COUNTS (WITH DB-LEVEL FILTERING)
+        int totalUsers = userDAO.countFiltered(searchUser, roleUser, statusUser);
+        int totalPagesUser = Math.max(1, PaginationUtil.totalPages(totalUsers, PAGE_SIZE));
+        pageUser = Math.min(Math.max(1, pageUser), totalPagesUser);
+        int offsetUser = PaginationUtil.offset(pageUser, PAGE_SIZE);
+
+        int totalServices = serviceDAO.countFiltered(searchService, statusService);
+        int totalPagesService = Math.max(1, PaginationUtil.totalPages(totalServices, PAGE_SIZE));
+        pageService = Math.min(Math.max(1, pageService), totalPagesService);
+        int offsetService = PaginationUtil.offset(pageService, PAGE_SIZE);
 
         RevenueReport revenueReport = appointmentDAO.getRevenueReport(startDate, endDate);
-        List<User> usersList = userDAO.findPaginated(offsetUser, PAGE_SIZE);
-        List<Service> servicesList = serviceDAO.findAllForAdminPaginated(offsetService, PAGE_SIZE);
+        List<User> usersList = userDAO.findFilteredPaginated(searchUser, roleUser, statusUser, offsetUser, PAGE_SIZE);
+        List<Service> servicesList = serviceDAO.findFilteredPaginated(searchService, statusService, offsetService, PAGE_SIZE);
         List<ClinicSetting> settingsList = clinicSettingDAO.getAllSettings();
         Map<String, String> settingsMap = clinicSettingDAO.getSettingsMap();
 
-        // 4. SET REQUEST ATTRIBUTES
+        // 5. SET REQUEST ATTRIBUTES
         request.setAttribute("startDate", startLocalDate.toString());
         request.setAttribute("endDate", endLocalDate.toString());
         request.setAttribute("revenueReport", revenueReport);
@@ -95,18 +106,32 @@ public class AdminServlet extends HttpServlet {
         request.setAttribute("settingsList", settingsList);
         request.setAttribute("settingsMap", settingsMap);
 
+        request.setAttribute("searchUser", searchUser);
+        request.setAttribute("roleUser", roleUser);
+        request.setAttribute("statusUser", statusUser);
+        request.setAttribute("totalUsersCount", totalUsers);
+
+        request.setAttribute("searchService", searchService);
+        request.setAttribute("statusService", statusService);
+        request.setAttribute("totalServicesCount", totalServices);
+
         request.setAttribute("currentPageUser", pageUser);
         request.setAttribute("totalPagesUser", totalPagesUser);
         request.setAttribute("currentPageService", pageService);
         request.setAttribute("totalPagesService", totalPagesService);
         request.setAttribute("activeTab", activeTab);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher(constant.RouterConstant.ADMIN_DASHBOARD_JSP).forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        User loginUser = requireRole(request, response, "ADMIN");
+        if (loginUser == null) {
+            return;
+        }
 
         request.setCharacterEncoding("UTF-8");
         boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
@@ -130,10 +155,15 @@ public class AdminServlet extends HttpServlet {
                 if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
                     try {
                         int userId = Integer.parseInt(userIdStr.trim());
-                        success = userDAO.toggleStatus(userId);
-                        User updatedUser = userDAO.findById(userId);
-                        newStatus = updatedUser != null && updatedUser.isStatus();
-                        message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                        if (userId == loginUser.getId()) {
+                            success = false;
+                            message = "Không thể tự khóa tài khoản của chính bạn!";
+                        } else {
+                            success = userDAO.toggleStatus(userId);
+                            User updatedUser = userDAO.findById(userId);
+                            newStatus = updatedUser != null && updatedUser.isStatus();
+                            message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                        }
                     } catch (NumberFormatException e) {
                         message = "Mã người dùng không hợp lệ!";
                     }
@@ -146,7 +176,10 @@ public class AdminServlet extends HttpServlet {
                 if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
                     try {
                         int userId = Integer.parseInt(userIdStr.trim());
-                        if (newRole != null && !newRole.trim().isEmpty()) {
+                        if (userId == loginUser.getId()) {
+                            success = false;
+                            message = "Bạn không thể tự đổi vai trò của chính mình!";
+                        } else if (newRole != null && !newRole.trim().isEmpty()) {
                             newRoleStr = newRole.trim().toUpperCase();
                             success = userDAO.updateRole(userId, newRoleStr);
                             message = "Đã cập nhật vai trò người dùng #" + userId + " thành " + newRoleStr;
@@ -228,6 +261,7 @@ public class AdminServlet extends HttpServlet {
                         }
                     }
                 }
+                getServletContext().setAttribute("clinicSettings", clinicSettingDAO.getSettingsMap());
                 success = true;
                 message = "Cập nhật cấu hình hệ thống thành công!";
                 break;
@@ -243,7 +277,7 @@ public class AdminServlet extends HttpServlet {
             return;
         }
 
-        String redirectUrl = request.getContextPath() + "/admin/dashboard?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
+        String redirectUrl = request.getContextPath() + constant.RouterConstant.DASHBOARD_ADMIN + "?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
                 + "&pageService=" + (pageServiceParam != null ? pageServiceParam : "1")
                 + "&tab=" + (tabParam != null ? tabParam : "users");
 

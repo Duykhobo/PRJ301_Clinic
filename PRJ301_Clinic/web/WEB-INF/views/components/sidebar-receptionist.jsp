@@ -9,13 +9,13 @@
 <aside class="ws-sidebar" id="wsSidebar">
 
   <%-- Brand --%>
-  <div class="sb-brand">
+  <a href="${pageContext.request.contextPath}/receptionist/dashboard" class="sb-brand" style="text-decoration:none; color:inherit;">
     <div class="sb-brand-icon" style="background: linear-gradient(135deg, #10b981, #0ea5e9);"><i class="fa-solid fa-headset"></i></div>
     <div>
-      <div class="sb-brand-text">PRJ301 <span style="color:#10b981;">Clinic &amp; Spa</span></div>
+      <div class="sb-brand-text"><c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Clinic & Spa')}"/></div>
       <div class="sb-brand-sub">Reception Workspace</div>
     </div>
-  </div>
+  </a>
 
   <%-- User Profile --%>
   <div class="sb-profile" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(14, 165, 233, 0.08)); border-color: rgba(16, 185, 129, 0.25);">
@@ -54,13 +54,13 @@
       </a>
     </li>
     <li>
-      <a href="${pageContext.request.contextPath}/MainController?action=home">
-        <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
-        Trang Chủ
+      <a href="${pageContext.request.contextPath}/receptionist/dashboard">
+        <span class="sb-icon"><i class="fa-solid fa-hospital-user"></i></span>
+        Sảnh Tiếp Đón
       </a>
     </li>
     <li>
-      <a href="${pageContext.request.contextPath}/MainController?action=logout" class="danger-link">
+      <a href="${pageContext.request.contextPath}/logout" onclick="return confirmLogout(event);" class="danger-link">
         <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
         Đăng Xuất
       </a>

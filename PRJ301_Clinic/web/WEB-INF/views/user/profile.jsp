@@ -4,49 +4,9 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Hồ Sơ Cá Nhân — PRJ301 Clinic &amp; Spa</title>
+    <title>Hồ Sơ Cá Nhân — <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
-    <style>
-        .profile-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0ea5e9, #10b981);
-            color: #ffffff;
-            font-size: 2.4rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
-            border: 3px solid rgba(56, 189, 248, 0.4);
-        }
-        .nav-pills .nav-link {
-            color: #94a3b8;
-            border-radius: 12px;
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .nav-pills .nav-link.active {
-            background: linear-gradient(135deg, #0ea5e9, #10b981);
-            color: #ffffff;
-            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35);
-        }
-        .form-control-custom {
-            background: rgba(15, 23, 42, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #f8fafc;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-        }
-        .form-control-custom:focus {
-            background: rgba(15, 23, 42, 0.9);
-            border-color: #0ea5e9;
-            color: #ffffff;
-            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/profile.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -59,9 +19,28 @@
             <h4 class="fw-bold text-white mb-0">
                 <i class="fa-solid fa-id-card-clip text-cyan me-2"></i>Hồ Sơ &amp; Cấu Hình Tài Khoản
             </h4>
-            <a href="${pageContext.request.contextPath}/MainController?action=home" class="btn btn-outline-glass rounded-pill px-4" style="font-size: .9rem;">
-                <i class="fa-solid fa-arrow-left me-2"></i>Trang Chủ
-            </a>
+            <c:choose>
+                <c:when test="${sessionScope.LOGIN_USER.role == 'ADMIN'}">
+                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-glass rounded-pill px-4" style="font-size: .9rem;">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Bảng Điều Khiển
+                    </a>
+                </c:when>
+                <c:when test="${sessionScope.LOGIN_USER.role == 'DOCTOR'}">
+                    <a href="${pageContext.request.contextPath}/doctor/dashboard" class="btn btn-outline-glass rounded-pill px-4" style="font-size: .9rem;">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Bàn Khám Bác Sĩ
+                    </a>
+                </c:when>
+                <c:when test="${sessionScope.LOGIN_USER.role == 'RECEPTIONIST'}">
+                    <a href="${pageContext.request.contextPath}/receptionist/dashboard" class="btn btn-outline-glass rounded-pill px-4" style="font-size: .9rem;">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Sảnh Tiếp Đón
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/MainController?action=home" class="btn btn-outline-glass rounded-pill px-4" style="font-size: .9rem;">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Trang Chủ
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <%-- Alerts --%>
@@ -73,15 +52,15 @@
                 <div class="glass-card p-4 text-center">
                     <div class="d-flex justify-content-center mb-3">
                         <div class="profile-avatar">
-                            ${sessionScope.LOGIN_USER.fullname.substring(0,1).toUpperCase()}
+                            ${(not empty user ? user.fullname : sessionScope.LOGIN_USER.fullname).substring(0,1).toUpperCase()}
                         </div>
                     </div>
-                    <h5 class="fw-bold text-white mb-1"><c:out value="${sessionScope.LOGIN_USER.fullname}"/></h5>
-                    <p class="text-cyan mb-3 small"><c:out value="${sessionScope.LOGIN_USER.email}"/></p>
+                    <h5 class="fw-bold text-white mb-1"><c:out value="${not empty user ? user.fullname : sessionScope.LOGIN_USER.fullname}"/></h5>
+                    <p class="text-cyan mb-3 small"><c:out value="${not empty user ? user.email : sessionScope.LOGIN_USER.email}"/></p>
 
                     <div class="d-flex justify-content-center gap-2 mb-4">
                         <span class="badge bg-cyan bg-opacity-20 text-cyan border border-cyan border-opacity-30 px-3 py-2 rounded-pill fw-bold">
-                            <i class="fa-solid fa-user-shield me-1"></i><c:out value="${sessionScope.LOGIN_USER.role}"/>
+                            <i class="fa-solid fa-user-shield me-1"></i><c:out value="${not empty user ? user.role : sessionScope.LOGIN_USER.role}"/>
                         </span>
                         <span class="badge bg-success bg-opacity-20 text-emerald border border-success border-opacity-30 px-3 py-2 rounded-pill fw-bold">
                             <i class="fa-solid fa-circle-check me-1"></i>Hoạt Động
@@ -89,9 +68,9 @@
                     </div>
 
                     <div class="border-top border-secondary border-opacity-25 pt-3 text-start text-white-50 small">
-                        <div class="mb-2"><i class="fa-solid fa-user me-2 text-cyan"></i>Username: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.username}"/></strong></div>
-                        <div class="mb-2"><i class="fa-solid fa-phone me-2 text-warning"></i>SĐT: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.phone}"/></strong></div>
-                        <div><i class="fa-solid fa-calendar-alt me-2 text-emerald"></i>Thành viên từ: <strong class="text-white"><c:out value="${sessionScope.LOGIN_USER.createdAt}"/></strong></div>
+                        <div class="mb-2"><i class="fa-solid fa-user me-2 text-cyan"></i>Username: <strong class="text-white"><c:out value="${not empty user ? user.username : sessionScope.LOGIN_USER.username}"/></strong></div>
+                        <div class="mb-2"><i class="fa-solid fa-phone me-2 text-warning"></i>SĐT: <strong class="text-white"><c:out value="${not empty user ? user.phone : sessionScope.LOGIN_USER.phone}"/></strong></div>
+                        <div><i class="fa-solid fa-calendar-alt me-2 text-emerald"></i>Thành viên từ: <strong class="text-white"><c:out value="${not empty user ? user.createdAt : sessionScope.LOGIN_USER.createdAt}"/></strong></div>
                     </div>
 
                     <c:if test="${sessionScope.LOGIN_USER.role == 'PATIENT' && not empty loyaltyProfile}">
@@ -101,14 +80,14 @@
                                 <span class="badge ${loyaltyProfile.tierBadgeClass} px-2 py-1 rounded-pill fw-bold">
                                     <i class="fa-solid fa-crown me-1 text-warning"></i><c:out value="${loyaltyProfile.tierName}"/>
                                 </span>
-                                <small class="text-white-50"><i class="fa-solid fa-star text-warning me-1"></i><fmt:formatNumber value="${loyaltyProfile.totalPoints}" type="number"/> Điểm</small>
+                                <small class="text-white-50"><i class="fa-solid fa-star text-warning me-1"></i><fmt:formatNumber value="${loyaltyProfile.totalPoints}" pattern="#,##0" maxFractionDigits="0"/> Điểm</small>
                             </div>
                             <div class="fs-7 text-white fw-semibold mb-1">Đặc quyền Hội viên Spa:</div>
                             <ul class="list-unstyled mb-0 text-white-50 fs-8">
                                 <c:if test="${loyaltyProfile.discountPercent > 0}">
                                     <li><i class="fa-solid fa-check text-emerald me-1"></i>Ưu đãi giảm <strong class="text-warning">${loyaltyProfile.discountPercent}%</strong> tất cả hóa đơn</li>
                                 </c:if>
-                                <li><i class="fa-solid fa-check text-emerald me-1"></i>Tổng chi tiêu: <strong class="text-cyan"><fmt:formatNumber value="${loyaltyProfile.totalSpent}" pattern="#,##0"/> VNĐ</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald me-1"></i>Tổng chi tiêu: <strong class="text-cyan"><fmt:formatNumber value="${loyaltyProfile.totalSpent}" pattern="#,##0" maxFractionDigits="0"/> VNĐ</strong></li>
                                 <li><i class="fa-solid fa-check text-emerald me-1"></i><c:out value="${loyaltyProfile.specialBenefit}"/></li>
                             </ul>
                         </div>
@@ -142,34 +121,67 @@
 
                                 <div class="mb-3">
                                     <label class="form-label text-white-50 fw-semibold">Tên Đăng Nhập (Username)</label>
-                                    <input type="text" class="form-control form-control-custom bg-dark text-muted" value="${sessionScope.LOGIN_USER.username}" disabled readonly>
+                                    <input type="text" class="form-control form-control-custom bg-dark text-muted" value="${not empty user ? user.username : sessionScope.LOGIN_USER.username}" disabled readonly>
                                     <div class="form-text text-muted" style="font-size: .78rem;">Username là định danh duy nhất không thể thay đổi.</div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label text-white fw-semibold">Họ và Tên <span class="text-cyan">*</span></label>
-                                    <input type="text" name="fullname" class="form-control form-control-custom ${not empty errors.fullname ? 'is-invalid' : ''}" value="${not empty param.fullname ? param.fullname : sessionScope.LOGIN_USER.fullname}" required placeholder="Nhập họ và tên...">
+                                    <input type="text" name="fullname" class="form-control form-control-custom ${not empty errors.fullname ? 'is-invalid' : ''}" value="${not empty param.fullname ? param.fullname : (not empty user ? user.fullname : sessionScope.LOGIN_USER.fullname)}" required placeholder="Nhập họ và tên...">
                                     <c:if test="${not empty errors.fullname}">
                                         <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.fullname}</span></div>
                                     </c:if>
                                 </div>
 
-                                <div class="row g-3 mb-4">
+                                <div class="row g-3 mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Địa Chỉ Email <span class="text-cyan">*</span></label>
-                                        <input type="email" name="email" class="form-control form-control-custom ${not empty errors.email ? 'is-invalid' : ''}" value="${not empty param.email ? param.email : sessionScope.LOGIN_USER.email}" required placeholder="nhapemail@gmail.com">
+                                        <input type="email" name="email" class="form-control form-control-custom ${not empty errors.email ? 'is-invalid' : ''}" value="${not empty param.email ? param.email : (not empty user ? user.email : sessionScope.LOGIN_USER.email)}" required placeholder="nhapemail@gmail.com">
                                         <c:if test="${not empty errors.email}">
                                             <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.email}</span></div>
                                         </c:if>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-white fw-semibold">Số Điện Thoại <span class="text-cyan">*</span></label>
-                                        <input type="text" name="phone" class="form-control form-control-custom ${not empty errors.phone ? 'is-invalid' : ''}" value="${not empty param.phone ? param.phone : sessionScope.LOGIN_USER.phone}" required placeholder="09xxxxxxxx">
+                                        <input type="text" name="phone" class="form-control form-control-custom ${not empty errors.phone ? 'is-invalid' : ''}" value="${not empty param.phone ? param.phone : (not empty user ? user.phone : sessionScope.LOGIN_USER.phone)}" required placeholder="09xxxxxxxx">
                                         <c:if test="${not empty errors.phone}">
                                             <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.phone}</span></div>
                                         </c:if>
                                     </div>
                                 </div>
+
+                                <%-- DOCTOR SPECIFIC PROFESSIONAL PROFILE --%>
+                                <c:if test="${sessionScope.LOGIN_USER.role == 'DOCTOR'}">
+                                    <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background: rgba(15, 23, 42, 0.5);">
+                                        <h6 class="text-cyan fw-bold mb-3 d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-user-doctor text-cyan"></i>Thông Tin Chuyên Môn Bác Sĩ
+                                        </h6>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-white-50 fw-semibold">Chuyên Khoa Điều Trị <span class="text-cyan">*</span></label>
+                                                <input type="text" name="specialty" class="form-control form-control-custom ${not empty errors.specialty ? 'is-invalid' : ''}" value="${not empty param.specialty ? param.specialty : (not empty doctorProfile ? doctorProfile.specialty : '')}" placeholder="VD: Da liễu, Trị liệu Spa...">
+                                                <c:if test="${not empty errors.specialty}">
+                                                    <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.specialty}</span></div>
+                                                </c:if>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label text-white-50 fw-semibold">Số Năm KN</label>
+                                                <input type="number" name="experienceYears" min="0" max="60" class="form-control form-control-custom ${not empty errors.experienceYears ? 'is-invalid' : ''}" value="${not empty param.experienceYears ? param.experienceYears : (not empty doctorProfile ? doctorProfile.experienceYears : 1)}">
+                                                <c:if test="${not empty errors.experienceYears}">
+                                                    <div class="field-error-text"><i class="fa-solid fa-circle-exclamation"></i><span>${errors.experienceYears}</span></div>
+                                                </c:if>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label text-white-50 fw-semibold">Phòng Khám</label>
+                                                <input type="text" name="roomNumber" class="form-control form-control-custom" value="${not empty param.roomNumber ? param.roomNumber : (not empty doctorProfile ? doctorProfile.roomNumber : '')}" placeholder="Phòng P.102">
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <label class="form-label text-white-50 fw-semibold">Giới Thiệu &amp; Tiểu Sử Chuyên Môn</label>
+                                            <textarea name="bio" rows="3" class="form-control form-control-custom" placeholder="Giới thiệu về kinh nghiệm, chứng chỉ chuyên môn của Bác sĩ...">${not empty param.bio ? param.bio : (not empty doctorProfile ? doctorProfile.bio : '')}</textarea>
+                                        </div>
+                                    </div>
+                                </c:if>
 
                                 <button type="submit" class="btn btn-primary-gradient rounded-pill px-4 py-2 fw-bold">
                                     <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi

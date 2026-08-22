@@ -8,13 +8,13 @@
 <aside class="ws-sidebar" id="wsSidebar">
 
   <%-- Brand --%>
-  <div class="sb-brand">
+  <a href="${pageContext.request.contextPath}/admin/dashboard" class="sb-brand" style="text-decoration:none; color:inherit;">
     <div class="sb-brand-icon" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"><i class="fa-solid fa-user-shield"></i></div>
     <div>
-      <div class="sb-brand-text">PRJ301 <span style="color:#ef4444;">Clinic &amp; Spa</span></div>
+      <div class="sb-brand-text"><c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Clinic & Spa')}"/></div>
       <div class="sb-brand-sub">Admin Control Center</div>
     </div>
-  </div>
+  </a>
 
   <%-- User Profile --%>
   <div class="sb-profile" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.08)); border-color: rgba(239, 68, 68, 0.25);">
@@ -65,13 +65,13 @@
       </a>
     </li>
     <li>
-      <a href="${pageContext.request.contextPath}/MainController?action=home">
-        <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
-        Trang Chủ
+      <a href="${pageContext.request.contextPath}/admin/dashboard">
+        <span class="sb-icon"><i class="fa-solid fa-gauge"></i></span>
+        Bảng Điều Khiển
       </a>
     </li>
     <li>
-      <a href="${pageContext.request.contextPath}/MainController?action=logout" class="danger-link">
+      <a href="${pageContext.request.contextPath}/logout" onclick="return confirmLogout(event);" class="danger-link">
         <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
         Đăng Xuất
       </a>

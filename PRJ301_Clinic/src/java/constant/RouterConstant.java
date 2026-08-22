@@ -1,7 +1,8 @@
 package constant;
 
 /**
- * RouterConstant - Quản lý các Hằng số Đường dẫn JSP Views & Servlet Routing URLs.
+ * RouterConstant - Quản lý các Hằng số Đường dẫn JSP Views & Servlet Routing
+ * URLs.
  */
 public class RouterConstant {
 
@@ -13,8 +14,13 @@ public class RouterConstant {
     public static final String BOOKING_JSP = "/WEB-INF/views/patient/booking.jsp";
     public static final String PAYMENT_JSP = "/WEB-INF/views/patient/payment.jsp";
     public static final String HISTORY_JSP = "/WEB-INF/views/patient/history.jsp";
-    
+    public static final String PROFILE_JSP = "/WEB-INF/views/user/profile.jsp";
+    public static final String ADMIN_DASHBOARD_JSP = "/WEB-INF/views/admin/dashboard.jsp";
+    public static final String DOCTOR_DASHBOARD_JSP = "/WEB-INF/views/doctor/dashboard.jsp";
+    public static final String RECEPTIONIST_DASHBOARD_JSP = "/WEB-INF/views/receptionist/dashboard.jsp";
+
     // Error JSPs Encapsulated inside WEB-INF (Chống gõ trực tiếp từ URL)
+    public static final String ERROR_400_JSP = "/WEB-INF/views/error/400.jsp";
     public static final String ERROR_403_JSP = "/WEB-INF/views/error/403.jsp";
     public static final String ERROR_404_JSP = "/WEB-INF/views/error/404.jsp";
     public static final String ERROR_500_JSP = "/WEB-INF/views/error/500.jsp";
@@ -28,11 +34,12 @@ public class RouterConstant {
     public static final String ROUTE_HOME = "/home";
     public static final String ROUTE_BOOKING = "/booking";
     public static final String ROUTE_HISTORY = "/history";
+    public static final String ROUTE_PROFILE = "/profile";
     public static final String ROUTE_SEPAY_WEBHOOK = "/sepay-webhook";
-    
+
     // Role Redirect Dashboards
     public static final String DASHBOARD_ADMIN = "/admin/dashboard";
     public static final String DASHBOARD_DOCTOR = "/doctor/dashboard";
     public static final String DASHBOARD_RECEPTIONIST = "/receptionist/dashboard";
-    public static final String DASHBOARD_PATIENT = "/patient/history";
+    public static final String DASHBOARD_PATIENT = "/history";
 }
