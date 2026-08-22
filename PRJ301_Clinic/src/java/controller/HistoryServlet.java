@@ -20,13 +20,14 @@ import dao.TreatmentPackageDAO;
 import model.Appointment;
 import model.MedicalRecord;
 import model.User;
+import util.PaginationUtil;
 
 /**
  * HistoryServlet - Servlet Quản lý Lịch sử Khám & Thanh Toán của Bệnh Nhân (/history).
  * Tích hợp Phân Trang chuyên nghiệp & Xem Đơn Thuốc / Kết Quả Khám Bệnh.
  */
 @WebServlet(name = "HistoryServlet", urlPatterns = {"/history"})
-public class HistoryServlet extends HttpServlet {
+public class HistoryServlet extends BaseRoleServlet {
 
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
     private final MedicalRecordDAO medicalRecordDAO = new MedicalRecordDAO();
@@ -41,29 +42,18 @@ public class HistoryServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
-            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=/history");
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_HISTORY);
             return;
         }
 
         User user = (User) session.getAttribute(SystemConstant.SESSION_USER);
 
-        // 1. Phân trang
-        int page = 1;
-        String pageParam = request.getParameter("page");
-        if (pageParam != null && !pageParam.trim().isEmpty()) {
-            try {
-                page = Integer.parseInt(pageParam);
-                if (page < 1) page = 1;
-            } catch (NumberFormatException ignored) {
-            }
-        }
-
+        // 1. Phân trang an toàn với PaginationUtil
+        int page = PaginationUtil.parsePage(request, "page");
         int totalItems = appointmentDAO.countPatientAppointments(user.getId());
-        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
-        if (totalPages < 1) totalPages = 1;
-        if (page > totalPages) page = totalPages;
-
-        int offset = (page - 1) * PAGE_SIZE;
+        int totalPages = PaginationUtil.totalPages(totalItems, PAGE_SIZE);
+        page = Math.min(page, totalPages);
+        int offset = PaginationUtil.offset(page, PAGE_SIZE);
 
         // 2. Nạp danh sách lịch hẹn có phân trang
         List<Appointment> historyList = appointmentDAO.findPatientAppointmentsPaginated(user.getId(), offset, PAGE_SIZE);

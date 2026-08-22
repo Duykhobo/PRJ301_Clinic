@@ -322,12 +322,22 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary text-white-50" id="pModalDiagnosis" style="white-space: pre-line;"></div>
                         </div>
 
-                        <div class="mb-3">
-                            <h6 class="fw-bold text-warning mb-2"><i class="fa-solid fa-pills me-2"></i>Đơn Thuốc, Phác Đồ Trị Liệu &amp; Mỹ Phẩm Chăm Sóc:</h6>
-                            <div class="p-3 rounded-3 bg-dark border border-warning border-opacity-30 text-warning" id="pModalPrescription" style="white-space: pre-line;"></div>
+                        <div class="p-3 rounded-3 mb-2" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(52, 211, 153, 0.35);">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-emerald fw-bold"><i class="fa-solid fa-calendar-check me-1"></i>Chỉ Định Tái Khám:</span>
+                                    <span class="text-white-50 small ms-1">Tái khám theo dõi định kỳ sau 7-14 ngày hoặc theo chỉ dẫn của Bác sĩ.</span>
+                                </div>
+                                <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-sm btn-emerald-gradient rounded-pill px-3 fw-bold">
+                                    <i class="fa-solid fa-calendar-plus me-1"></i>Đặt Lịch Tái Khám Ngay
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <div class="modal-footer border-top border-secondary border-opacity-25 justify-content-between">
+                        <button type="button" class="btn btn-outline-glass rounded-pill px-3" onclick="window.print()">
+                            <i class="fa-solid fa-print me-1"></i>In Hồ Sơ Bệnh Án
+                        </button>
                         <button type="button" class="btn btn-primary-gradient px-4 rounded-pill" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>

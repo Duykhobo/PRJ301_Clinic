@@ -134,12 +134,6 @@ public class ServiceDAO extends BaseDAO<Service> {
      * Đếm tổng số lượng Dịch vụ trong hệ thống.
      */
     public int countAllForAdmin() {
-        String sql = "SELECT COUNT(*) FROM Services";
-        try (java.sql.Connection conn = config.DBContext.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException ignored) {}
-        return 0;
+        return queryCount("SELECT COUNT(*) FROM Services");
     }
 }

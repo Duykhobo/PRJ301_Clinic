@@ -226,10 +226,13 @@ public class UserDAO extends BaseDAO<User> {
         String username = (user.getUsername() != null && !user.getUsername().isEmpty())
                 ? user.getUsername()
                 : "walkin_" + user.getPhone();
-        String pass = (user.getPassword() != null) ? user.getPassword() : "WALKIN_" + System.currentTimeMillis();
+        String rawPass = (user.getPassword() != null && !user.getPassword().isEmpty())
+                ? user.getPassword()
+                : "WALKIN_" + System.currentTimeMillis();
+        String hashedPassword = BCryptUtil.hashPassword(rawPass);
 
         try {
-            return executeInsertAndGetGeneratedKey(sql, username, pass, user.getEmail(), user.getFullname(),
+            return executeInsertAndGetGeneratedKey(sql, username, hashedPassword, user.getEmail(), user.getFullname(),
                     user.getPhone(), user.getRole() != null ? user.getRole() : "PATIENT");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);

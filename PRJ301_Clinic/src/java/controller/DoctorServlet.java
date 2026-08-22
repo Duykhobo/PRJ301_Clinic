@@ -13,13 +13,18 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import constant.RoleConstant;
+import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.AppointmentDAO;
 import dao.DoctorProfileDAO;
 import dao.DoctorScheduleDAO;
 import dao.MedicalRecordDAO;
 import dao.NotificationDAO;
+import dao.TreatmentPackageDAO;
+import dao.UserDAO;
 import model.*;
+import util.EmailUtil;
 import util.PaginationUtil;
 
 @WebServlet(name = "DoctorServlet", urlPatterns = { "/doctor/dashboard" })
@@ -29,13 +34,15 @@ public class DoctorServlet extends BaseRoleServlet {
     private final MedicalRecordDAO medicalRecordDAO = new MedicalRecordDAO();
     private final DoctorProfileDAO doctorProfileDAO = new DoctorProfileDAO();
     private final DoctorScheduleDAO doctorScheduleDAO = new DoctorScheduleDAO();
+    private final UserDAO userDAO = new UserDAO();
+    private final TreatmentPackageDAO treatmentPackageDAO = new TreatmentPackageDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         // 1. Dùng requireRole thay vì check session thủ công
-        User loginUser = requireRole(request, response, "DOCTOR");
+        User loginUser = requireRole(request, response, RoleConstant.DOCTOR);
         if (loginUser == null)
             return;
 
@@ -123,7 +130,7 @@ public class DoctorServlet extends BaseRoleServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
 
-        request.getRequestDispatcher("/WEB-INF/views/doctor/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher(RouterConstant.DOCTOR_DASHBOARD_JSP).forward(request, response);
     }
 
     @Override
@@ -131,7 +138,7 @@ public class DoctorServlet extends BaseRoleServlet {
             throws ServletException, IOException {
 
         // 1. Áp dụng requireRole
-        User loginUser = requireRole(request, response, "DOCTOR");
+        User loginUser = requireRole(request, response, RoleConstant.DOCTOR);
         if (loginUser == null)
             return;
 
@@ -325,7 +332,7 @@ public class DoctorServlet extends BaseRoleServlet {
         } else {
             setError(request, msg);
         }
-        response.sendRedirect(request.getContextPath() + "/doctor/dashboard?tab=schedules&date=" + dateParam);
+        response.sendRedirect(request.getContextPath() + RouterConstant.DASHBOARD_DOCTOR + "?tab=schedules&date=" + dateParam);
     }
 
     private void writeSlotsJson(HttpServletResponse response, int doctorId, Date workDate, String message,
@@ -359,6 +366,7 @@ public class DoctorServlet extends BaseRoleServlet {
             int appointmentId = Integer.parseInt(request.getParameter("appointmentId"));
             String diagnosis = request.getParameter("diagnosis");
             String prescription = request.getParameter("prescription");
+            String revisitDateStr = request.getParameter("revisitDate");
 
             Appointment app = appointmentDAO.findById(appointmentId);
             if (app != null) {
@@ -372,11 +380,52 @@ public class DoctorServlet extends BaseRoleServlet {
                 boolean saved = medicalRecordDAO.saveOrUpdateRecord(record);
                 if (saved) {
                     appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_COMPLETED);
+
+                    User patient = userDAO.findById(app.getPatientId());
+                    String patientEmail = (patient != null) ? patient.getEmail() : null;
+                    String patientName = (patient != null) ? patient.getFullname() : "Quý khách";
+                    String doctorName = doctorUser.getFullname();
+                    String serviceName = (app.getServiceName() != null) ? app.getServiceName() : "Dịch vụ khám & điều trị";
+
+                    // 1. Gửi Notification & Email Bệnh Án Điện Tử
                     NotificationDAO.pushNotification(app.getPatientId(), "Bệnh án & Toa thuốc đã sẵn sàng",
-                            "Bác sĩ đã hoàn tất ca khám #" + appointmentId + " và cập nhật bệnh án điện tử của bạn.",
+                            "Bác sĩ " + doctorName + " đã hoàn tất ca khám #" + appointmentId + " và cập nhật bệnh án điện tử của bạn.",
                             "MEDICAL", "history");
+
+                    if (patientEmail != null && !patientEmail.trim().isEmpty()) {
+                        EmailUtil.sendMedicalRecordAsync(patientEmail, patientName, doctorName, serviceName,
+                                record.getDiagnosis(), record.getPrescriptionOrResult(), app.getAppointmentDate());
+                    }
+
+                    // 2. Xử lý Lịch Hẹn Tái Khám (Nếu Bác sĩ có chỉ định ngày tái khám)
+                    if (revisitDateStr != null && !revisitDateStr.trim().isEmpty()) {
+                        String cleanRevisitDate = revisitDateStr.trim();
+                        NotificationDAO.pushNotification(app.getPatientId(), "📅 Lịch Hẹn Tái Khám Ngày " + cleanRevisitDate,
+                                "Bác sĩ " + doctorName + " chỉ định bạn tái khám vào ngày " + cleanRevisitDate + " cho dịch vụ " + serviceName + ".",
+                                "SCHEDULE", "booking?doctorId=" + app.getDoctorId());
+
+                        if (patientEmail != null && !patientEmail.trim().isEmpty()) {
+                            EmailUtil.sendRevisitReminderAsync(patientEmail, patientName, doctorName, serviceName,
+                                    cleanRevisitDate, record.getPrescriptionOrResult());
+                        }
+                    }
+
+                    // 3. Xử lý Cập nhật Tiến độ Gói Liệu Trình Spa (Nếu bệnh nhân đang theo liệu trình)
+                    List<TreatmentPackage> packages = treatmentPackageDAO.findActivePackagesByPatient(app.getPatientId());
+                    if (packages != null && !packages.isEmpty()) {
+                        for (TreatmentPackage pkg : packages) {
+                            if (pkg.getServiceName() != null && pkg.getServiceName().equalsIgnoreCase(serviceName)) {
+                                if (patientEmail != null && !patientEmail.trim().isEmpty()) {
+                                    EmailUtil.sendTreatmentProgressAsync(patientEmail, patientName, pkg.getPackageName(),
+                                            serviceName, pkg.getCompletedSessions(), pkg.getTotalSessions(), pkg.getRemainingSessions());
+                                }
+                                break;
+                            }
+                        }
+                    }
+
                     setSuccess(request,
-                            "Lưu đơn thuốc và chẩn đoán y khoa cho ca khám #" + appointmentId + " thành công!");
+                            "Lưu đơn thuốc, chẩn đoán y khoa và gửi thông báo điện tử cho ca khám #" + appointmentId + " thành công!");
                 } else {
                     setError(request, "Không thể lưu hồ sơ bệnh án. Vui lòng thử lại!");
                 }
@@ -385,7 +434,7 @@ public class DoctorServlet extends BaseRoleServlet {
             setError(request, "Lỗi dữ liệu: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/doctor/dashboard?date="
+        response.sendRedirect(request.getContextPath() + RouterConstant.DASHBOARD_DOCTOR + "?date="
                 + (date != null ? date : LocalDate.now().toString()));
     }
 }

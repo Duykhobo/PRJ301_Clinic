@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import constant.RoleConstant;
+import constant.RouterConstant;
 import constant.SystemConstant;
 import dao.UserDAO;
 import model.User;
@@ -20,7 +22,7 @@ import util.ValidationUtil;
  * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile"})
-public class ProfileServlet extends HttpServlet {
+public class ProfileServlet extends BaseRoleServlet {
 
     private final UserDAO userDAO = new UserDAO();
     private final dao.LoyaltyDAO loyaltyDAO = new dao.LoyaltyDAO();
@@ -30,7 +32,7 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         User loginUser = (User) request.getSession().getAttribute(SystemConstant.SESSION_USER);
         if (loginUser == null) {
-            response.sendRedirect(request.getContextPath() + "/MainController?action=login-page");
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_PROFILE);
             return;
         }
 
@@ -38,12 +40,12 @@ public class ProfileServlet extends HttpServlet {
         request.setAttribute("user", freshUser != null ? freshUser : loginUser);
         if (freshUser != null) {
             request.getSession().setAttribute(SystemConstant.SESSION_USER, freshUser);
-            if (constant.RoleConstant.PATIENT.equals(freshUser.getRole())) {
+            if (RoleConstant.PATIENT.equals(freshUser.getRole())) {
                 request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(freshUser.getId()));
             }
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/user/profile.jsp").forward(request, response);
+        request.getRequestDispatcher(RouterConstant.PROFILE_JSP).forward(request, response);
     }
 
     @Override
@@ -52,7 +54,7 @@ public class ProfileServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         User loginUser = (User) request.getSession().getAttribute(SystemConstant.SESSION_USER);
         if (loginUser == null) {
-            response.sendRedirect(request.getContextPath() + "/MainController?action=login-page");
+            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_PROFILE);
             return;
         }
 

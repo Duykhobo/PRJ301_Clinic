@@ -182,9 +182,8 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     public boolean updatePaymentSuccess(int appointmentId, String transactionCode) {
-        String sql = "UPDATE Appointments SET payment_status = '" + SystemConstant.PAYMENT_PAID + "', status = '"
-                + SystemConstant.STATUS_CONFIRMED + "', transaction_code = ? WHERE id = ?";
-        return executeUpdate(sql, transactionCode, appointmentId);
+        String sql = "UPDATE Appointments SET payment_status = ?, status = ?, transaction_code = ? WHERE id = ?";
+        return executeUpdate(sql, SystemConstant.PAYMENT_PAID, SystemConstant.STATUS_CONFIRMED, transactionCode, appointmentId);
     }
 
     public List<Appointment> findAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {

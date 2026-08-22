@@ -63,7 +63,7 @@ public class MainController extends HttpServlet {
                     break;
                 case "profile-page":
                 case "profile":
-                    url = "/profile";
+                    url = RouterConstant.ROUTE_PROFILE;
                     break;
                 default:
                     ClinicService clinicService = new ClinicService();

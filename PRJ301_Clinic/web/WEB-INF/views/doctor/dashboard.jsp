@@ -373,18 +373,28 @@
                                 <textarea name="diagnosis" id="modalDiagnosis" class="form-control form-control-glass" rows="3" placeholder="Nhập chi tiết chẩn đoán y khoa hoặc tình trạng da..." required></textarea>
                             </div>
 
-                            <div class="mb-2">
+                            <div class="mb-4">
                                 <label class="form-label fw-bold text-warning">
                                     <i class="fa-solid fa-pills me-1"></i>Chỉ Định, Phác Đồ Trị Liệu &amp; Đơn Thuốc / Mỹ Phẩm:
                                 </label>
                                 <textarea name="prescription" id="modalPrescription" class="form-control form-control-glass text-warning" rows="4" placeholder="Nhập phác đồ điều trị, đơn thuốc và lời dặn chăm sóc tại nhà..." required></textarea>
+                            </div>
+
+                            <div class="mb-2 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(52, 211, 153, 0.35);">
+                                <label class="form-label fw-bold text-emerald mb-1">
+                                    <i class="fa-solid fa-calendar-check me-1"></i>Chỉ Định Ngày Hẹn Tái Khám (Tùy chọn):
+                                </label>
+                                <input type="date" name="revisitDate" id="modalRevisitDate" class="form-control form-control-glass text-white border-emerald" style="border-color: rgba(52, 211, 153, 0.4) !important;">
+                                <div class="form-text text-muted small mt-1">
+                                    <i class="fa-solid fa-bell text-warning me-1"></i>Nếu chọn ngày tái khám, hệ thống sẽ tự động gửi <strong>Email &amp; Notification</strong> nhắc nhở bệnh nhân.
+                                </div>
                             </div>
                         </div>
 
                         <div class="modal-footer border-top border-secondary border-opacity-25">
                             <button type="button" class="btn text-white-50" data-bs-dismiss="modal">Hủy Bỏ</button>
                             <button type="submit" class="btn btn-primary-gradient px-4 rounded-pill">
-                                <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Hồ Sơ Khám
+                                <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Hồ Sơ Khám &amp; Gửi Thông Báo
                             </button>
                         </div>
                     </form>

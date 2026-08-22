@@ -22,9 +22,10 @@ import model.ClinicSetting;
 import model.RevenueReport;
 import model.Service;
 import model.User;
+import util.PaginationUtil;
 
 @WebServlet(name = "AdminServlet", urlPatterns = {"/admin/dashboard"})
-public class AdminServlet extends HttpServlet {
+public class AdminServlet extends BaseRoleServlet {
 
     private final UserDAO userDAO = new UserDAO();
     private final ServiceDAO serviceDAO = new ServiceDAO();
@@ -36,6 +37,11 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        User loginUser = requireRole(request, response, "ADMIN");
+        if (loginUser == null) {
+            return;
+        }
 
         // 1. DATE RANGE FOR REVENUE REPORT
         String startStr = request.getParameter("startDate");
@@ -50,19 +56,8 @@ public class AdminServlet extends HttpServlet {
         Date endDate = Date.valueOf(endLocalDate);
 
         // 2. PAGINATION & TAB PARAMETERS
-        int pageUser = 1;
-        int pageService = 1;
-        try {
-            if (request.getParameter("pageUser") != null) {
-                pageUser = Math.max(1, Integer.parseInt(request.getParameter("pageUser")));
-            }
-        } catch (NumberFormatException ignored) {}
-
-        try {
-            if (request.getParameter("pageService") != null) {
-                pageService = Math.max(1, Integer.parseInt(request.getParameter("pageService")));
-            }
-        } catch (NumberFormatException ignored) {}
+        int pageUser = PaginationUtil.parsePage(request, "pageUser");
+        int pageService = PaginationUtil.parsePage(request, "pageService");
 
         String activeTab = request.getParameter("tab");
         if (activeTab == null || activeTab.trim().isEmpty()) {
@@ -71,14 +66,14 @@ public class AdminServlet extends HttpServlet {
 
         // 3. FETCH PAGINATED DATA & COUNTS
         int totalUsers = userDAO.countAll();
-        int totalPagesUser = Math.max(1, (int) Math.ceil((double) totalUsers / PAGE_SIZE));
-        if (pageUser > totalPagesUser) pageUser = totalPagesUser;
-        int offsetUser = (pageUser - 1) * PAGE_SIZE;
+        int totalPagesUser = PaginationUtil.totalPages(totalUsers, PAGE_SIZE);
+        pageUser = Math.min(pageUser, totalPagesUser);
+        int offsetUser = PaginationUtil.offset(pageUser, PAGE_SIZE);
 
         int totalServices = serviceDAO.countAllForAdmin();
-        int totalPagesService = Math.max(1, (int) Math.ceil((double) totalServices / PAGE_SIZE));
-        if (pageService > totalPagesService) pageService = totalPagesService;
-        int offsetService = (pageService - 1) * PAGE_SIZE;
+        int totalPagesService = PaginationUtil.totalPages(totalServices, PAGE_SIZE);
+        pageService = Math.min(pageService, totalPagesService);
+        int offsetService = PaginationUtil.offset(pageService, PAGE_SIZE);
 
         RevenueReport revenueReport = appointmentDAO.getRevenueReport(startDate, endDate);
         List<User> usersList = userDAO.findPaginated(offsetUser, PAGE_SIZE);
@@ -101,12 +96,17 @@ public class AdminServlet extends HttpServlet {
         request.setAttribute("totalPagesService", totalPagesService);
         request.setAttribute("activeTab", activeTab);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher(constant.RouterConstant.ADMIN_DASHBOARD_JSP).forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        User loginUser = requireRole(request, response, "ADMIN");
+        if (loginUser == null) {
+            return;
+        }
 
         request.setCharacterEncoding("UTF-8");
         boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
@@ -243,7 +243,7 @@ public class AdminServlet extends HttpServlet {
             return;
         }
 
-        String redirectUrl = request.getContextPath() + "/admin/dashboard?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
+        String redirectUrl = request.getContextPath() + constant.RouterConstant.DASHBOARD_ADMIN + "?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
                 + "&pageService=" + (pageServiceParam != null ? pageServiceParam : "1")
                 + "&tab=" + (tabParam != null ? tabParam : "users");
 
