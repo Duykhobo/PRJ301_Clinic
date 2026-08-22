@@ -11,8 +11,8 @@ import exception.ValidationException;
 public class ValidationUtil {
 
     private static final String USERNAME_REGEX = "^[a-zA-Z0-9_]{4,20}$";
-    private static final String PHONE_REGEX = "^(03|05|07|08|09)\\d{8}$";
-    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+    private static final String PHONE_REGEX = "^(?:\\+84|0)(?:3|5|7|8|9|2|1)\\d{8}$";
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,63}$";
 
     public static boolean isValidUsername(String u) {
         return (u != null && !u.trim().isEmpty()) ? Pattern.matches(USERNAME_REGEX, u.trim()) : false;
@@ -27,7 +27,9 @@ public class ValidationUtil {
     }
 
     public static boolean isValidPhone(String p) {
-        return (p != null && !p.trim().isEmpty()) ? Pattern.matches(PHONE_REGEX, p.trim()) : false;
+        if (p == null || p.trim().isEmpty()) return false;
+        String cleanPhone = p.trim().replaceAll("[\\s.\\-\\(\\)]", "");
+        return Pattern.matches(PHONE_REGEX, cleanPhone) || Pattern.matches("^0\\d{9}$", cleanPhone);
     }
 
     public static boolean isValidEmail(String e) {

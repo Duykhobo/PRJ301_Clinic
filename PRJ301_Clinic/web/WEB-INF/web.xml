@@ -244,11 +244,15 @@
     <!-- =================================================================== -->
     <mime-mapping>
         <extension>js</extension>
-        <mime-type>text/javascript;charset=UTF-8</mime-type>
+        <mime-type>application/javascript;charset=UTF-8</mime-type>
     </mime-mapping>
     <mime-mapping>
         <extension>css</extension>
         <mime-type>text/css;charset=UTF-8</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>json</extension>
+        <mime-type>application/json;charset=UTF-8</mime-type>
     </mime-mapping>
 
 </web-app>

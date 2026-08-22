@@ -26,11 +26,13 @@ public class ProfileServlet extends BaseRoleServlet {
 
     private UserDAO userDAO;
     private dao.LoyaltyDAO loyaltyDAO;
+    private dao.DoctorProfileDAO doctorProfileDAO;
 
     @Override
     public void init() throws ServletException {
         this.userDAO = new UserDAO();
         this.loyaltyDAO = new dao.LoyaltyDAO();
+        this.doctorProfileDAO = new dao.DoctorProfileDAO();
     }
 
     @Override
@@ -43,12 +45,14 @@ public class ProfileServlet extends BaseRoleServlet {
         }
 
         User freshUser = userDAO.findById(loginUser.getId());
-        request.setAttribute("user", freshUser != null ? freshUser : loginUser);
-        if (freshUser != null) {
-            request.getSession().setAttribute(SystemConstant.SESSION_USER, freshUser);
-            if (RoleConstant.PATIENT.equals(freshUser.getRole())) {
-                request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(freshUser.getId()));
-            }
+        User effectiveUser = freshUser != null ? freshUser : loginUser;
+        request.setAttribute("user", effectiveUser);
+        request.getSession().setAttribute(SystemConstant.SESSION_USER, effectiveUser);
+
+        if (RoleConstant.PATIENT.equalsIgnoreCase(effectiveUser.getRole())) {
+            request.setAttribute("loyaltyProfile", loyaltyDAO.getLoyaltyProfileByPatient(effectiveUser.getId()));
+        } else if (RoleConstant.DOCTOR.equalsIgnoreCase(effectiveUser.getRole())) {
+            request.setAttribute("doctorProfile", doctorProfileDAO.findByUserId(effectiveUser.getId()));
         }
 
         request.getRequestDispatcher(RouterConstant.PROFILE_JSP).forward(request, response);
@@ -76,23 +80,71 @@ public class ProfileServlet extends BaseRoleServlet {
             throws ServletException, IOException {
         String fullname = request.getParameter("fullname") != null ? request.getParameter("fullname").trim() : "";
         String email = request.getParameter("email") != null ? request.getParameter("email").trim() : "";
-        String phone = request.getParameter("phone") != null ? request.getParameter("phone").trim() : "";
+        String phone = request.getParameter("phone") != null ? request.getParameter("phone").trim().replaceAll("[\\s.\\-\\(\\)]", "") : "";
+
+        // Doctor specific fields
+        String specialty = request.getParameter("specialty") != null ? request.getParameter("specialty").trim() : "";
+        String expYearsStr = request.getParameter("experienceYears") != null ? request.getParameter("experienceYears").trim() : "1";
+        String roomNumber = request.getParameter("roomNumber") != null ? request.getParameter("roomNumber").trim() : "";
+        String bio = request.getParameter("bio") != null ? request.getParameter("bio").trim() : "";
 
         Map<String, String> errors = new HashMap<>();
         ValidationUtil.validateField(errors, "fullname", ValidationUtil.isValidFullname(fullname), "Họ và tên không hợp lệ (độ dài 2-100 ký tự)!");
         ValidationUtil.validateField(errors, "email", ValidationUtil.isValidEmail(email), "Địa chỉ Email không đúng định dạng!");
         ValidationUtil.validateField(errors, "phone", ValidationUtil.isValidPhone(phone), "Số điện thoại không hợp lệ (10 chữ số)!");
 
+        // Check duplicate email
+        if (email != null && !email.isEmpty() && ValidationUtil.isValidEmail(email)) {
+            User existingEmailUser = userDAO.findByEmail(email);
+            if (existingEmailUser != null && existingEmailUser.getId() != loginUser.getId()) {
+                ValidationUtil.validateField(errors, "email", false, "Địa chỉ Email này đã thuộc tài khoản khác!");
+            }
+        }
+
+        // Check duplicate phone
+        if (phone != null && !phone.isEmpty() && ValidationUtil.isValidPhone(phone)) {
+            User existingPhoneUser = userDAO.findByPhone(phone);
+            if (existingPhoneUser != null && existingPhoneUser.getId() != loginUser.getId()) {
+                ValidationUtil.validateField(errors, "phone", false, "Số điện thoại này đã thuộc tài khoản khác!");
+            }
+        }
+
+        // Validate Doctor fields if applicable
+        int expYears = 1;
+        if (RoleConstant.DOCTOR.equalsIgnoreCase(loginUser.getRole())) {
+            ValidationUtil.validateField(errors, "specialty", !specialty.isEmpty(), "Vui lòng nhập chuyên khoa điều trị!");
+            try {
+                expYears = Integer.parseInt(expYearsStr);
+                if (expYears < 0 || expYears > 60) {
+                    ValidationUtil.validateField(errors, "experienceYears", false, "Số năm kinh nghiệm không hợp lệ (0-60 năm)!");
+                }
+            } catch (NumberFormatException e) {
+                ValidationUtil.validateField(errors, "experienceYears", false, "Số năm kinh nghiệm phải là chữ số!");
+            }
+        }
+
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng kiểm tra lại thông tin hồ sơ!");
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng kiểm tra lại các trường thông tin bị lỗi bên dưới!");
             doGet(request, response);
             return;
         }
 
         boolean updated = userDAO.updateProfile(loginUser.getId(), fullname, email, phone);
-        request.setAttribute(updated ? SystemConstant.SUCCESS_MESSAGE_ATTR : SystemConstant.ERROR_MESSAGE_ATTR,
-                             updated ? "Cập nhật hồ sơ cá nhân thành công!" : "Cập nhật hồ sơ thất bại, vui lòng thử lại!");
+        if (RoleConstant.DOCTOR.equalsIgnoreCase(loginUser.getRole()) && updated) {
+            doctorProfileDAO.updateDoctorProfile(loginUser.getId(), specialty, expYears, roomNumber, bio);
+        }
+
+        if (updated) {
+            User fresh = userDAO.findById(loginUser.getId());
+            if (fresh != null) {
+                request.getSession().setAttribute(SystemConstant.SESSION_USER, fresh);
+                request.setAttribute("user", fresh);
+            }
+            request.setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR, "Cập nhật hồ sơ cá nhân thành công!");
+        } else {
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Cập nhật hồ sơ thất bại, vui lòng kiểm tra lại thông tin!");
+        }
         doGet(request, response);
     }
 

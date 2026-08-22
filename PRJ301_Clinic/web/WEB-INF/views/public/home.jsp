@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Trang Chủ | Phòng Khám & Spa Y Khoa PRJ301</title>
+    <title>Trang Chủ | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -107,7 +107,7 @@
                                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-25">
                                     <div>
                                         <div class="fs-7 text-muted">Giá niêm yết</div>
-                                        <span class="fw-bold text-warning fs-5">${s.price} VNĐ</span>
+                                        <span class="fw-bold text-warning fs-5"><fmt:formatNumber value="${s.price}" pattern="#,##0" maxFractionDigits="0"/> VNĐ</span>
                                     </div>
                                     <a href="${pageContext.request.contextPath}/MainController?action=booking-page" class="btn btn-sm btn-primary-gradient rounded-pill px-3 py-2">
                                         <i class="fa-solid fa-calendar-plus me-1"></i>Đặt Ca

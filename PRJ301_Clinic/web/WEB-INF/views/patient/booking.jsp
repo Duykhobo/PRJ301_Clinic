@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <title>Đặt Lịch Khám | Phòng Khám &amp; Spa PRJ301</title>
+        <title>Đặt Lịch Khám | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
         <jsp:include page="/WEB-INF/views/components/head.jsp" />
     </head>
     <body class="d-flex flex-column min-vh-100">
@@ -65,7 +65,7 @@
                             <select name="serviceId" id="serviceSelect" class="form-select form-control-glass border-start-0 ps-0 ${not empty errors.serviceId ? 'is-invalid' : ''}" onchange="updateStepProgress()">
                                 <option value="">-- Chọn dịch vụ khám hoặc spa --</option>
                                 <c:forEach items="${services}" var="s">
-                                    <option value="${s.id}" ${selectedServiceId == s.id ? 'selected' : ''}>${s.serviceName} - <fmt:formatNumber value="${s.price}" pattern="#,##0"/> VNĐ</option>
+                                    <option value="${s.id}" ${selectedServiceId == s.id ? 'selected' : ''}>${s.serviceName} - <fmt:formatNumber value="${s.price}" pattern="#,##0" maxFractionDigits="0"/> VNĐ</option>
                                 </c:forEach>
                             </select>
                         </div>

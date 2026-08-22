@@ -1,0 +1,15 @@
+/* ═══════════════════════════════════════════════════════════════
+   PATIENT HISTORY DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+/* CSS ép màu tương phát hiển thị chữ sắc nét cho các Badge trạng thái */
+.badge-unpaid {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.4) !important;
+}
+.badge-paid {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(52, 211, 153, 0.4) !important;
+}

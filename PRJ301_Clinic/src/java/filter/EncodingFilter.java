@@ -30,12 +30,29 @@ public class EncodingFilter implements Filter {
         // 1. Ép mã hóa UTF-8 cho Request và Response
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
+        if (response instanceof javax.servlet.http.HttpServletResponse && request instanceof javax.servlet.http.HttpServletRequest) {
+            javax.servlet.http.HttpServletResponse httpResponse = (javax.servlet.http.HttpServletResponse) response;
+            javax.servlet.http.HttpServletRequest httpRequest = (javax.servlet.http.HttpServletRequest) request;
+            httpResponse.setCharacterEncoding("UTF-8");
+            String uri = httpRequest.getRequestURI();
+            if (uri != null) {
+                if (uri.endsWith(".js")) {
+                    httpResponse.setContentType("application/javascript; charset=UTF-8");
+                } else if (uri.endsWith(".css")) {
+                    httpResponse.setContentType("text/css; charset=UTF-8");
+                }
+            }
+        }
 
         // 2. Nạp cấu hình động ClinicSettings & Ngôn Ngữ cho TOÀN BỘ CÁC TRANG WEB
         try {
             Map<String, String> settingsMap = clinicSettingDAO.getSettingsMap();
             request.setAttribute("clinicSettings", settingsMap);
             request.setAttribute("settingsMap", settingsMap);
+            if (request.getServletContext() != null) {
+                request.getServletContext().setAttribute("clinicSettings", settingsMap);
+                request.getServletContext().setAttribute("settingsMap", settingsMap);
+            }
 
             if (request instanceof javax.servlet.http.HttpServletRequest) {
                 javax.servlet.http.HttpServletRequest httpRequest = (javax.servlet.http.HttpServletRequest) request;

@@ -30,12 +30,13 @@ public class ClinicSettingDAO extends BaseDAO<ClinicSetting> {
     }
 
     public boolean updateSetting(String key, String value) {
-        String sql = "UPDATE ClinicSettings SET setting_value = ?, updated_at = GETDATE() WHERE setting_key = ?";
-        boolean updated = executeUpdate(sql, value, key);
-        if (!updated) {
-            String insertSql = "INSERT INTO ClinicSettings (setting_key, setting_value, description) VALUES (?, ?, N'Cấu hình động hệ thống')";
+        String checkSql = "SELECT COUNT(*) FROM ClinicSettings WHERE setting_key = ?";
+        if (queryCount(checkSql, key) > 0) {
+            String updateSql = "UPDATE ClinicSettings SET setting_value = ?, updated_at = GETDATE() WHERE setting_key = ?";
+            return executeUpdate(updateSql, value, key);
+        } else {
+            String insertSql = "INSERT INTO ClinicSettings (setting_key, setting_value, description, updated_at) VALUES (?, ?, N'Cấu hình động hệ thống', GETDATE())";
             return executeUpdate(insertSql, key, value);
         }
-        return true;
     }
 }

@@ -72,24 +72,32 @@ public class AdminServlet extends BaseRoleServlet {
             activeTab = "users";
         }
 
-        // 3. FETCH PAGINATED DATA & COUNTS
-        int totalUsers = userDAO.countAll();
-        int totalPagesUser = PaginationUtil.totalPages(totalUsers, PAGE_SIZE);
-        pageUser = Math.min(pageUser, totalPagesUser);
+        // 3. FILTER PARAMETERS FOR USERS & SERVICES
+        String searchUser = request.getParameter("searchUser") != null ? request.getParameter("searchUser").trim() : "";
+        String roleUser = request.getParameter("roleUser") != null ? request.getParameter("roleUser").trim().toUpperCase() : "ALL";
+        String statusUser = request.getParameter("statusUser") != null ? request.getParameter("statusUser").trim().toUpperCase() : "ALL";
+
+        String searchService = request.getParameter("searchService") != null ? request.getParameter("searchService").trim() : "";
+        String statusService = request.getParameter("statusService") != null ? request.getParameter("statusService").trim().toUpperCase() : "ALL";
+
+        // 4. FETCH PAGINATED DATA & COUNTS (WITH DB-LEVEL FILTERING)
+        int totalUsers = userDAO.countFiltered(searchUser, roleUser, statusUser);
+        int totalPagesUser = Math.max(1, PaginationUtil.totalPages(totalUsers, PAGE_SIZE));
+        pageUser = Math.min(Math.max(1, pageUser), totalPagesUser);
         int offsetUser = PaginationUtil.offset(pageUser, PAGE_SIZE);
 
-        int totalServices = serviceDAO.countAllForAdmin();
-        int totalPagesService = PaginationUtil.totalPages(totalServices, PAGE_SIZE);
-        pageService = Math.min(pageService, totalPagesService);
+        int totalServices = serviceDAO.countFiltered(searchService, statusService);
+        int totalPagesService = Math.max(1, PaginationUtil.totalPages(totalServices, PAGE_SIZE));
+        pageService = Math.min(Math.max(1, pageService), totalPagesService);
         int offsetService = PaginationUtil.offset(pageService, PAGE_SIZE);
 
         RevenueReport revenueReport = appointmentDAO.getRevenueReport(startDate, endDate);
-        List<User> usersList = userDAO.findPaginated(offsetUser, PAGE_SIZE);
-        List<Service> servicesList = serviceDAO.findAllForAdminPaginated(offsetService, PAGE_SIZE);
+        List<User> usersList = userDAO.findFilteredPaginated(searchUser, roleUser, statusUser, offsetUser, PAGE_SIZE);
+        List<Service> servicesList = serviceDAO.findFilteredPaginated(searchService, statusService, offsetService, PAGE_SIZE);
         List<ClinicSetting> settingsList = clinicSettingDAO.getAllSettings();
         Map<String, String> settingsMap = clinicSettingDAO.getSettingsMap();
 
-        // 4. SET REQUEST ATTRIBUTES
+        // 5. SET REQUEST ATTRIBUTES
         request.setAttribute("startDate", startLocalDate.toString());
         request.setAttribute("endDate", endLocalDate.toString());
         request.setAttribute("revenueReport", revenueReport);
@@ -97,6 +105,15 @@ public class AdminServlet extends BaseRoleServlet {
         request.setAttribute("servicesList", servicesList);
         request.setAttribute("settingsList", settingsList);
         request.setAttribute("settingsMap", settingsMap);
+
+        request.setAttribute("searchUser", searchUser);
+        request.setAttribute("roleUser", roleUser);
+        request.setAttribute("statusUser", statusUser);
+        request.setAttribute("totalUsersCount", totalUsers);
+
+        request.setAttribute("searchService", searchService);
+        request.setAttribute("statusService", statusService);
+        request.setAttribute("totalServicesCount", totalServices);
 
         request.setAttribute("currentPageUser", pageUser);
         request.setAttribute("totalPagesUser", totalPagesUser);
@@ -138,10 +155,15 @@ public class AdminServlet extends BaseRoleServlet {
                 if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
                     try {
                         int userId = Integer.parseInt(userIdStr.trim());
-                        success = userDAO.toggleStatus(userId);
-                        User updatedUser = userDAO.findById(userId);
-                        newStatus = updatedUser != null && updatedUser.isStatus();
-                        message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                        if (userId == loginUser.getId()) {
+                            success = false;
+                            message = "Không thể tự khóa tài khoản của chính bạn!";
+                        } else {
+                            success = userDAO.toggleStatus(userId);
+                            User updatedUser = userDAO.findById(userId);
+                            newStatus = updatedUser != null && updatedUser.isStatus();
+                            message = newStatus ? "Đã MỞ KHÓA tài khoản #" + userId : "Đã KHÓA tài khoản #" + userId;
+                        }
                     } catch (NumberFormatException e) {
                         message = "Mã người dùng không hợp lệ!";
                     }
@@ -154,7 +176,10 @@ public class AdminServlet extends BaseRoleServlet {
                 if (userIdStr != null && !userIdStr.trim().isEmpty() && !"undefined".equalsIgnoreCase(userIdStr.trim())) {
                     try {
                         int userId = Integer.parseInt(userIdStr.trim());
-                        if (newRole != null && !newRole.trim().isEmpty()) {
+                        if (userId == loginUser.getId()) {
+                            success = false;
+                            message = "Bạn không thể tự đổi vai trò của chính mình!";
+                        } else if (newRole != null && !newRole.trim().isEmpty()) {
                             newRoleStr = newRole.trim().toUpperCase();
                             success = userDAO.updateRole(userId, newRoleStr);
                             message = "Đã cập nhật vai trò người dùng #" + userId + " thành " + newRoleStr;
@@ -236,6 +261,7 @@ public class AdminServlet extends BaseRoleServlet {
                         }
                     }
                 }
+                getServletContext().setAttribute("clinicSettings", clinicSettingDAO.getSettingsMap());
                 success = true;
                 message = "Cập nhật cấu hình hệ thống thành công!";
                 break;

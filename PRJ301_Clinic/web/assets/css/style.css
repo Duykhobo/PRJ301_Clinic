@@ -28,8 +28,8 @@
     --border-radius-md: 14px;
     --border-radius-sm: 10px;
     --transition-smooth: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-heading: 'Be Vietnam Pro', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* 2. BASE STYLES & HARDWARE-ACCELERATED AMBIENT BACKGROUND (60-120 FPS ZERO LAG) */
