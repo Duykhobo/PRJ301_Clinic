@@ -2,12 +2,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%-- COMPONENT: TRUNG TÂM THÔNG BÁO THỜI GIAN THỰC (NOTIFICATION BELL DROPDOWN) --%>
-<div class="dropdown noti-bell-wrapper d-inline-block">
-    <button class="noti-bell-btn" type="button" id="notificationBellDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo hệ thống">
+<div class="dropdown noti-bell-wrapper d-inline-block position-relative">
+    <button class="noti-bell-btn" type="button" id="notificationBellDropdown" aria-expanded="false" title="Thông báo hệ thống">
         <i class="fa-solid fa-bell"></i>
         <span class="noti-badge d-none" id="notification-badge">0</span>
     </button>
-    <div class="dropdown-menu dropdown-menu-end noti-dropdown-menu shadow-lg" aria-labelledby="notificationBellDropdown">
+    <div class="dropdown-menu dropdown-menu-end noti-dropdown-menu shadow-lg" id="notificationDropdownMenu" aria-labelledby="notificationBellDropdown">
         <div class="noti-header">
             <div class="d-flex align-items-center gap-2">
                 <i class="fa-solid fa-bell text-cyan"></i>

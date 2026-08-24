@@ -97,7 +97,44 @@ function confirmRefund(form, patientName) {
     });
 }
 
-// 2. WALK-IN: LOAD CA KHAM THEO BAC SI + NGAY (AJAX)
+// 2. COUNTER VIETQR SEPAY MODAL
+function openCounterQRModal(appId, patientName, serviceName, formattedAmount, rawAmount, paymentContent) {
+    const elImg = document.getElementById('counterQRImage');
+    const elId = document.getElementById('qrModalAppId');
+    const elName = document.getElementById('qrModalPatientName');
+    const elServ = document.getElementById('qrModalServiceName');
+    const elAmt = document.getElementById('qrModalAmount');
+    const elContent = document.getElementById('qrModalContent');
+    const elConfirmId = document.getElementById('qrConfirmAppId');
+
+    const bank = window.SEPAY_BANK_NAME || 'Sacombank';
+    const acc = window.SEPAY_BANK_ACC || '070148520060';
+    const holder = window.SEPAY_HOLDER || 'NGUYEN%20THANH%20DUY';
+    const content = paymentContent || ('CLN' + appId);
+
+    if (elId) elId.innerText = '#' + appId;
+    if (elName) elName.innerText = patientName || '';
+    if (elServ) elServ.innerText = serviceName || '';
+    if (elAmt) elAmt.innerText = (formattedAmount || rawAmount) + ' VN\u0110';
+    if (elContent) elContent.innerText = content;
+    if (elConfirmId) elConfirmId.value = appId;
+
+    if (elImg) {
+        elImg.src = 'https://vietqr.app/img?bank=' + encodeURIComponent(bank)
+            + '&acc=' + encodeURIComponent(acc)
+            + '&amount=' + encodeURIComponent(rawAmount)
+            + '&des=' + encodeURIComponent(content)
+            + '&template=compact&showinfo=true&holder=' + encodeURIComponent(holder);
+    }
+
+    const modalEl = document.getElementById('counterQRModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+// 3. WALK-IN: LOAD CA KHAM THEO BAC SI + NGAY (AJAX)
 function loadWalkInSlots() {
     var doctorIdEl = document.getElementById('wi_doctorId');
     var dateEl     = document.getElementById('wi_date');

@@ -211,6 +211,16 @@
         <url-pattern>/sepay-webhook</url-pattern>
     </servlet-mapping>
 
+    <!-- 4.13. API Thông báo (Notification API Endpoint) -->
+    <servlet>
+        <servlet-name>NotificationServlet</servlet-name>
+        <servlet-class>controller.NotificationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NotificationServlet</servlet-name>
+        <url-pattern>/api/notifications</url-pattern>
+    </servlet-mapping>
+
     <!-- =================================================================== -->
     <!-- 5. ĐIỀU HƯỚNG TRANG BÁO LỖI TOÀN CỤC (GLOBAL ERROR PAGES)           -->
     <!-- =================================================================== -->

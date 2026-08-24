@@ -219,8 +219,14 @@
                                                     <c:if test="${app.status == 'COMPLETED' && not empty recordsMap[app.id]}">
                                                         <button type="button"
                                                                 class="btn btn-sm btn-outline-glass rounded-pill px-3 fw-bold"
-                                                                onclick="viewPatientPrescription('#${app.id}', '${app.doctorName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}')">
-                                                            <i class="fa-solid fa-file-medical me-1 text-cyan"></i>Xem Đơn Thuốc
+                                                                onclick="viewPatientPrescription('#${app.id}', '${app.doctorName}', '${app.serviceName}', '${recordsMap[app.id].diagnosis}', '${recordsMap[app.id].prescriptionOrResult}', ${not empty recordsMap[app.id].skinMoistureLevel ? recordsMap[app.id].skinMoistureLevel : 'null'}, ${not empty recordsMap[app.id].skinSebumLevel ? recordsMap[app.id].skinSebumLevel : 'null'})">
+                                                            <i class="fa-solid fa-file-medical me-1 text-cyan"></i>Xem Bệnh Án
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold"
+                                                                onclick="openReviewModal(${app.id}, '${app.doctorName}', '${app.serviceName}', ${not empty recordsMap[app.id].rating ? recordsMap[app.id].rating : 5}, '${not empty recordsMap[app.id].reviewComment ? recordsMap[app.id].reviewComment : ''}')">
+                                                            <i class="fa-solid fa-star me-1 text-warning"></i>${not empty recordsMap[app.id].rating ? 'Đã Đánh Giá' : 'Đánh Giá'}
                                                         </button>
                                                     </c:if>
                                                 </div>
@@ -350,6 +356,57 @@
                         </button>
                         <button type="button" class="btn btn-primary-gradient px-4 rounded-pill" data-bs-dismiss="modal">Đóng</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <%-- Modal Đánh Giá Chất Lượng Dịch Vụ & Bác Sĩ (Rating & Review) --%>
+        <div class="modal fade" id="patientReviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content glass-card border border-warning border-opacity-40 text-white" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                        <h5 class="modal-title fw-bold text-warning d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-star text-warning"></i> Đánh Giá &amp; Phản Hồi Dịch Vụ
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/history" method="POST" novalidate="true">
+                        <input type="hidden" name="action" value="submit-review">
+                        <input type="hidden" name="appointmentId" id="revModalAppId">
+
+                        <div class="modal-body p-4">
+                            <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.05);">
+                                <div class="small text-muted mb-1">Ca khám: <strong class="text-white" id="revModalAppLabel">#</strong></div>
+                                <div class="small text-muted mb-1">Bác sĩ: <strong class="text-cyan" id="revModalDoctor"></strong></div>
+                                <div class="small text-muted">Dịch vụ: <strong class="text-warning" id="revModalService"></strong></div>
+                            </div>
+
+                            <div class="mb-3 text-center">
+                                <label class="form-label text-warning fw-bold d-block mb-2">Đánh Giá Mức Độ Hài Lòng:</label>
+                                <div class="d-flex justify-content-center gap-2" id="starRatingGroup">
+                                    <input type="hidden" name="rating" id="revRatingInput" value="5">
+                                    <i class="fa-solid fa-star fs-3 text-warning cursor-pointer" onclick="setRatingStars(1)"></i>
+                                    <i class="fa-solid fa-star fs-3 text-warning cursor-pointer" onclick="setRatingStars(2)"></i>
+                                    <i class="fa-solid fa-star fs-3 text-warning cursor-pointer" onclick="setRatingStars(3)"></i>
+                                    <i class="fa-solid fa-star fs-3 text-warning cursor-pointer" onclick="setRatingStars(4)"></i>
+                                    <i class="fa-solid fa-star fs-3 text-warning cursor-pointer" onclick="setRatingStars(5)"></i>
+                                </div>
+                                <span class="small text-white-50 mt-1 d-block" id="ratingTextLabel">Tuyệt vời (5/5 sao)</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-white fw-bold small">Cảm Nhận &amp; Nhận Xét Của Bạn:</label>
+                                <textarea name="reviewComment" id="revCommentInput" class="form-control form-control-glass text-white" rows="3" placeholder="Chia sẻ trải nghiệm khám, dịch vụ phòng khám và tay nghề bác sĩ..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                            <button type="button" class="btn btn-outline-glass rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">
+                                <i class="fa-solid fa-paper-plane me-1"></i>Gửi Đánh Giá
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

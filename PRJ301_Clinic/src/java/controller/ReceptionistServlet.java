@@ -116,10 +116,21 @@ public class ReceptionistServlet extends BaseRoleServlet {
         int paidCount = 0;
         int cashUnpaidCount = 0;
         int completedCount = 0;
+        BigDecimal todayRevenuePaid = BigDecimal.ZERO;
+        BigDecimal todayCashPaid = BigDecimal.ZERO;
+        BigDecimal todaySepayPaid = BigDecimal.ZERO;
 
         for (Appointment app : allDayApps) {
             if (SystemConstant.PAYMENT_PAID.equalsIgnoreCase(app.getPaymentStatus())) {
                 paidCount++;
+                if (app.getTotalPrice() != null) {
+                    todayRevenuePaid = todayRevenuePaid.add(app.getTotalPrice());
+                    if (SystemConstant.METHOD_CASH.equalsIgnoreCase(app.getPaymentMethod())) {
+                        todayCashPaid = todayCashPaid.add(app.getTotalPrice());
+                    } else {
+                        todaySepayPaid = todaySepayPaid.add(app.getTotalPrice());
+                    }
+                }
             } else {
                 cashUnpaidCount++;
             }
@@ -134,6 +145,9 @@ public class ReceptionistServlet extends BaseRoleServlet {
         request.setAttribute("paidCount", paidCount);
         request.setAttribute("cashUnpaidCount", cashUnpaidCount);
         request.setAttribute("completedCount", completedCount);
+        request.setAttribute("todayRevenuePaid", todayRevenuePaid);
+        request.setAttribute("todayCashPaid", todayCashPaid);
+        request.setAttribute("todaySepayPaid", todaySepayPaid);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
 
@@ -203,6 +217,34 @@ public class ReceptionistServlet extends BaseRoleServlet {
                     setSuccess(request, "✅ Đã thu tiền mặt & cập nhật thanh toán ca #" + appointmentId + " thành công!");
                 }
 
+            } else if ("confirm-qr-payment".equals(action)) {
+                appointmentDAO.updatePayment(appointmentId, SystemConstant.PAYMENT_PAID, SystemConstant.METHOD_SEPAY_QR);
+                Appointment currentApp = appointmentDAO.findById(appointmentId);
+                if (currentApp != null) {
+                    if (SystemConstant.STATUS_PENDING.equalsIgnoreCase(currentApp.getStatus())) {
+                        appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_CONFIRMED);
+                    }
+                    NotificationDAO.pushNotification(currentApp.getPatientId(), "Đã thanh toán VietQR & Check-in",
+                            "Đã nhận chuyển khoản VietQR và tiếp nhận bạn vào sảnh chờ khám cho ca #" + appointmentId + ".",
+                            "APPOINTMENT", "history");
+                    try {
+                        model.DoctorProfile dp = doctorProfileDAO.findById(currentApp.getDoctorId());
+                        if (dp != null && dp.getUserId() > 0) {
+                            NotificationDAO.pushNotification(dp.getUserId(), "Bệnh nhân đã vào sảnh",
+                                    "Bệnh nhân ca #" + appointmentId + " đã thanh toán VietQR và vào sảnh chờ khám.",
+                                    "APPOINTMENT", "doctor/dashboard?tab=appointments");
+                        }
+                    } catch (Exception ignored) {}
+
+                    // Gửi Email hóa đơn cho bệnh nhân
+                    User patient = userDAO.findById(currentApp.getPatientId());
+                    if (patient != null && patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
+                        EmailUtil.sendPaymentSuccessAsync(patient.getEmail(), patient.getFullname(),
+                                "CLN" + currentApp.getId(), currentApp.getTotalPrice());
+                    }
+                    setSuccess(request, "✅ Đã xác nhận thanh toán VietQR SePay & tiếp nhận ca #" + appointmentId + " vào sảnh!");
+                }
+
             } else if ("cancel-appointment".equals(action)) {
                 Appointment app = appointmentDAO.findById(appointmentId);
                 appointmentDAO.updateStatus(appointmentId, SystemConstant.STATUS_CANCELLED);
@@ -244,22 +286,40 @@ public class ReceptionistServlet extends BaseRoleServlet {
                 int serviceId = Integer.parseInt(request.getParameter("wi_serviceId"));
                 int scheduleId = Integer.parseInt(request.getParameter("wi_scheduleId"));
                 String wiDate = request.getParameter("wi_date");
-                String patientName = request.getParameter("wi_patientName").trim();
-                String patientPhone = request.getParameter("wi_patientPhone").trim();
+                String patientName = request.getParameter("wi_patientName");
+                String patientPhone = request.getParameter("wi_patientPhone");
                 String notes = request.getParameter("wi_notes");
+
+                if (patientName != null) patientName = patientName.trim();
+                if (patientPhone != null) patientPhone = patientPhone.trim();
+                if (patientName == null || patientName.isEmpty()) patientName = "Khách Vãng Lai";
 
                 User walkInUser = userDAO.findByPhone(patientPhone);
                 if (walkInUser == null) {
                     walkInUser = new User();
+                    walkInUser.setUsername("walkin_" + patientPhone + "_" + (System.currentTimeMillis() % 10000));
                     walkInUser.setFullname(patientName);
                     walkInUser.setPhone(patientPhone);
-                    walkInUser.setEmail(patientPhone + "@walkin.clinic");
-                    walkInUser.setRole("PATIENT");
+                    walkInUser.setEmail("walkin_" + patientPhone + "_" + (System.currentTimeMillis() % 10000) + "@clinic.vn");
+                    walkInUser.setRole(RoleConstant.PATIENT);
                     walkInUser.setStatus(true);
                     walkInUser.setPassword("WALKIN_" + System.currentTimeMillis());
 
                     int newUserId = userDAO.insertAndGetId(walkInUser);
-                    walkInUser.setId(newUserId);
+                    if (newUserId > 0) {
+                        walkInUser.setId(newUserId);
+                    } else {
+                        User fallback = userDAO.findByPhone(patientPhone);
+                        if (fallback != null) {
+                            walkInUser = fallback;
+                        }
+                    }
+                } else {
+                    // Nếu bệnh nhân đã có số điện thoại trong hệ thống -> Cập nhật họ tên mới nhất được nhập
+                    if (patientName != null && !patientName.isEmpty()) {
+                        walkInUser.setFullname(patientName);
+                        userDAO.updateProfile(walkInUser.getId(), patientName, walkInUser.getEmail(), patientPhone);
+                    }
                 }
 
                 Service svc = serviceDAO.findById(serviceId);

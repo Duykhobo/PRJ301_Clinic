@@ -4,7 +4,7 @@
 
 <!DOCTYPE html>
 <html lang="vi">
-
+<head>
     <title>Trung Tâm Quản Trị Admin | <c:out value="${not empty clinicSettings['CLINIC_NAME'] ? clinicSettings['CLINIC_NAME'] : (not empty settingsMap['CLINIC_NAME'] ? settingsMap['CLINIC_NAME'] : 'Phòng Khám & Spa')}"/></title>
     <jsp:include page="/WEB-INF/views/components/head.jsp" />
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">

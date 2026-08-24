@@ -182,8 +182,8 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     public boolean updatePaymentSuccess(int appointmentId, String transactionCode) {
-        String sql = "UPDATE Appointments SET payment_status = ?, status = ?, transaction_code = ? WHERE id = ?";
-        return executeUpdate(sql, SystemConstant.PAYMENT_PAID, SystemConstant.STATUS_CONFIRMED, transactionCode, appointmentId);
+        String sql = "UPDATE Appointments SET payment_status = ?, transaction_code = ? WHERE id = ?";
+        return executeUpdate(sql, SystemConstant.PAYMENT_PAID, transactionCode, appointmentId);
     }
 
     public List<Appointment> findAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {
@@ -310,11 +310,19 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     }
 
     public RevenueReport getRevenueReport(Date startDate, Date endDate) {
-        String sql = "EXEC dbo.sp_GetClinicRevenueReport ?, ?";
-        try ( Connection conn = DBContext.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT "
+                + "COUNT(id) AS total_appointments, "
+                + "COALESCE(SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END), 0) AS completed_appointments, "
+                + "COALESCE(SUM(CASE WHEN status = 'CANCELLED' THEN 1 ELSE 0 END), 0) AS cancelled_appointments, "
+                + "COALESCE(SUM(CASE WHEN payment_status = 'PAID' THEN total_price ELSE 0 END), 0) AS total_revenue_paid, "
+                + "COALESCE(SUM(CASE WHEN (payment_method = 'SEPAY_QR' OR payment_method IS NULL) AND payment_status = 'PAID' THEN total_price ELSE 0 END), 0) AS sepay_revenue, "
+                + "COALESCE(SUM(CASE WHEN payment_method = 'CASH' AND payment_status = 'PAID' THEN total_price ELSE 0 END), 0) AS cash_revenue "
+                + "FROM Appointments "
+                + "WHERE appointment_date BETWEEN ? AND ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, startDate);
             ps.setDate(2, endDate);
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new RevenueReport(
                             rs.getInt("total_appointments"),
@@ -326,7 +334,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi gọi Stored Proc sp_GetClinicRevenueReport", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi truy vấn báo cáo doanh thu getRevenueReport", e);
         }
         return new RevenueReport();
     }

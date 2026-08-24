@@ -9,8 +9,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,17 +27,25 @@ import config.DBContext;
 import model.DoctorSchedule;
 
 /**
- * Lớp DoctorScheduleDAO quản lý Khung giờ làm việc 60 phút của Bác sĩ
- * (DoctorSchedules). Tích hợp gọi Stored Procedure
- * sp_GetAvailableSlotsByDoctorAndDate.
+ * DoctorScheduleDAO - Quản lý Khung giờ làm việc (DoctorSchedules) của Bác sĩ.
+ * Kế thừa {@link BaseDAO} để tối ưu hóa JDBC, chống duplicate logic (DRY),
+ * và hỗ trợ gọi Stored Procedure {@code sp_GetAvailableSlotsByDoctorAndDate}.
  */
 public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
 
     private static final Logger LOGGER = Logger.getLogger(DoctorScheduleDAO.class.getName());
 
+    private static final List<String> DEFAULT_TIME_SLOTS = Collections.unmodifiableList(Arrays.asList(
+            "08:00", "09:00", "10:00", "11:00",
+            "14:00", "15:00", "16:00", "17:00"
+    ));
+
+    private static final int MAX_BATCH_REGISTRATION_DAYS = 90;
+
     // =========================================================================
     // 🧱 1. HELPER MAPPER (CHUẨN DRY)
     // =========================================================================
+
     protected DoctorSchedule mapResultSetToSchedule(ResultSet rs) throws SQLException {
         DoctorSchedule schedule = new DoctorSchedule();
         try {
@@ -53,18 +65,23 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     // 🔍 2. STORED PROCEDURE & QUERY METHODS
     // =========================================================================
 
+    /**
+     * Tìm khung giờ làm việc theo ID.
+     */
     public DoctorSchedule findById(int id) {
         String sql = "SELECT * FROM DoctorSchedules WHERE id = ?";
         return queryOne(sql, this::mapResultSetToSchedule, id);
     }
 
+    /**
+     * Alias cho {@link #getAvailableSlots(int, Date)}.
+     */
     public List<DoctorSchedule> findAvailableSlotsByDoctorAndDate(int doctorId, Date workDate) {
         return getAvailableSlots(doctorId, workDate);
     }
 
     /**
-     * Lấy danh sách Khung giờ KHẢ DỤNG (Available) của Bác sĩ theo Ngày thông
-     * qua Stored Procedure sp_GetAvailableSlotsByDoctorAndDate.
+     * Lấy danh sách Khung giờ KHẢ DỤNG của Bác sĩ theo Ngày qua Stored Procedure {@code sp_GetAvailableSlotsByDoctorAndDate}.
      */
     public List<DoctorSchedule> getAvailableSlots(int doctorId, Date workDate) {
         List<DoctorSchedule> list = new ArrayList<>();
@@ -75,7 +92,6 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
             try (CallableStatement cs = conn.prepareCall(sql)) {
                 cs.setInt(1, doctorId);
                 cs.setDate(2, workDate);
-
                 try (ResultSet rs = cs.executeQuery()) {
                     while (rs.next()) {
                         list.add(mapResultSetToSchedule(rs));
@@ -83,17 +99,15 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi gọi sp_GetAvailableSlotsByDoctorAndDate cho doctorId="
-                    + doctorId + ", workDate=" + workDate, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi gọi sp_GetAvailableSlotsByDoctorAndDate cho doctorId=" + doctorId + ", workDate=" + workDate, e);
         }
         return list;
     }
 
     /**
-     * Tự động đồng bộ Khung giờ làm việc (Slots) cho Bác sĩ theo Cấu hình CSDL
-     * mới nhất (CLINIC_TIME_SLOTS). 1. Tự động chèn các mốc giờ mới được Admin
-     * bật. 2. Tự động dọn dẹp (xóa) các mốc giờ Admin đã bỏ chọn (với điều kiện
-     * ca đó chưa có bệnh nhân đặt lịch).
+     * Tự động đồng bộ Khung giờ làm việc (Slots) cho Bác sĩ theo Cấu hình CSDL mới nhất (CLINIC_TIME_SLOTS).
+     * 1. Chèn bổ sung các mốc giờ mới được Admin bật nếu chưa có.
+     * 2. Dọn dẹp các mốc giờ Admin đã bỏ chọn (chỉ xóa ca chưa có bệnh nhân đặt lịch).
      */
     public void ensureSchedulesExist(int doctorId, Date workDate) {
         if (workDate == null || doctorId <= 0) {
@@ -103,36 +117,20 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
         // Lấy cấu hình khung giờ làm việc từ ClinicSettings
         ClinicSettingDAO settingDAO = new ClinicSettingDAO();
         Map<String, String> settings = settingDAO.getSettingsMap();
-
         String timeSlotsConfig = settings.get("CLINIC_TIME_SLOTS");
         if (timeSlotsConfig == null || timeSlotsConfig.trim().isEmpty()) {
             timeSlotsConfig = settings.get("time_slots");
         }
 
-        List<String> configuredTimes = new ArrayList<>();
-        if (timeSlotsConfig != null && !timeSlotsConfig.trim().isEmpty()) {
-            for (String s : timeSlotsConfig.split(",")) {
-                String trimmed = s.trim();
-                if (trimmed.length() >= 5) {
-                    configuredTimes.add(trimmed.substring(0, 5));
-                }
-            }
-        } else {
-            configuredTimes.add("08:00");
-            configuredTimes.add("09:00");
-            configuredTimes.add("10:00");
-            configuredTimes.add("11:00");
-            configuredTimes.add("14:00");
-            configuredTimes.add("15:00");
-            configuredTimes.add("16:00");
-            configuredTimes.add("17:00");
-        }
+        List<String> configuredTimes = parseConfiguredSlots(timeSlotsConfig);
 
-        // Lấy tất cả các ca hiện có trong CSDL của bác sĩ vào ngày này
-        String queryExistingSql = "SELECT id, start_time FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ?";
-        Map<Integer, String> existingSlotsMap = new HashMap<>(); // slotId -> HH:mm
         try {
             Connection conn = DBContext.getConnection();
+
+            // 1. Lấy tất cả các ca hiện có trong CSDL của bác sĩ vào ngày này: slotId -> HH:mm
+            String queryExistingSql = "SELECT id, start_time FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ?";
+            Map<Integer, String> existingSlotsMap = new HashMap<>();
+
             try (PreparedStatement ps = conn.prepareStatement(queryExistingSql)) {
                 ps.setInt(1, doctorId);
                 ps.setDate(2, workDate);
@@ -145,28 +143,21 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     }
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách ca khám của bác sĩ", e);
-        }
 
-        // 1. CHÈN BỔ SUNG CÁC CA MỚI NẾU CHƯA TỒN TẠI
-        String insertSql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, 1)";
-        try {
-            Connection conn = DBContext.getConnection();
+            // 2. Chèn bổ sung các ca mới nếu chưa tồn tại
+            String insertSql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, CAST(? AS TIME), CAST(? AS TIME), 1)";
             try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                 boolean hasNewSlots = false;
                 for (String hhmm : configuredTimes) {
                     if (!existingSlotsMap.containsValue(hhmm)) {
-                        String startTimeStr = hhmm + ":00";
                         try {
-                            Time startTime = Time.valueOf(startTimeStr);
-                            long endMs = startTime.getTime() + 60L * 60L * 1000L;
-                            Time endTime = new Time(endMs);
+                            LocalTime startLocal = LocalTime.parse(hhmm);
+                            LocalTime endLocal = startLocal.plusHours(1);
 
                             ps.setInt(1, doctorId);
                             ps.setDate(2, workDate);
-                            ps.setTime(3, startTime);
-                            ps.setTime(4, endTime);
+                            ps.setString(3, startLocal.toString() + ":00");
+                            ps.setString(4, endLocal.toString() + ":00");
                             ps.addBatch();
                             hasNewSlots = true;
                         } catch (Exception e) {
@@ -178,14 +169,9 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     ps.executeBatch();
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi chèn ca khám mới", e);
-        }
 
-        // 2. DỌN DẸP XÓA CÁC CA MÀ ADMIN ĐÃ BỎ CHỌN (CHỈ XÓA CA CHƯA CÓ BỆNH NHÂN ĐẶT LỊCH)
-        String deleteUnusedSql = "DELETE FROM DoctorSchedules WHERE id = ? AND id NOT IN (SELECT schedule_id FROM Appointments WHERE schedule_id IS NOT NULL)";
-        try {
-            Connection conn = DBContext.getConnection();
+            // 3. Dọn dẹp xóa các ca mà Admin đã bỏ chọn (chỉ xóa ca chưa có lịch hẹn)
+            String deleteUnusedSql = "DELETE FROM DoctorSchedules WHERE id = ? AND id NOT IN (SELECT schedule_id FROM Appointments WHERE schedule_id IS NOT NULL)";
             try (PreparedStatement ps = conn.prepareStatement(deleteUnusedSql)) {
                 boolean hasDeletedSlots = false;
                 for (Map.Entry<Integer, String> entry : existingSlotsMap.entrySet()) {
@@ -201,11 +187,15 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     ps.executeBatch();
                 }
             }
+
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi xóa các ca đã hủy từ cấu hình Admin", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi đồng bộ khung giờ làm việc cho doctorId=" + doctorId + ", workDate=" + workDate, e);
         }
     }
 
+    /**
+     * Lấy toàn bộ lịch làm việc của bác sĩ trong ngày (kèm trạng thái tính toán khả dụng realtime).
+     */
     public List<DoctorSchedule> findSchedulesByDoctorAndDate(int doctorId, Date workDate) {
         String sql = "SELECT ds.id, ds.doctor_id, ds.work_date, ds.start_time, ds.end_time, "
                 + "CASE "
@@ -223,11 +213,17 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
         return queryList(sql, this::mapResultSetToSchedule, doctorId, workDate);
     }
 
+    /**
+     * Cập nhật trạng thái khả dụng của một khung giờ.
+     */
     public boolean updateSlotAvailability(int id, boolean isAvailable) {
         String sql = "UPDATE DoctorSchedules SET is_available = ? WHERE id = ?";
         return executeUpdate(sql, isAvailable, id);
     }
 
+    /**
+     * Thêm một khung giờ mới cho bác sĩ nếu chưa tồn tại.
+     */
     public boolean insertSlot(int doctorId, Date workDate, Time startTime, Time endTime) {
         String checkSql = "SELECT TOP 1 * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? AND start_time = CAST(? AS TIME)";
         DoctorSchedule existing = queryOne(checkSql, this::mapResultSetToSchedule, doctorId, workDate, startTime.toString());
@@ -238,6 +234,9 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
         return executeUpdate(sql, doctorId, workDate, startTime.toString(), endTime.toString());
     }
 
+    /**
+     * Xóa một khung giờ (chỉ xóa nếu chưa có bệnh nhân đặt lịch).
+     */
     public boolean deleteSlot(int slotId, int doctorId) {
         String sql = "DELETE FROM DoctorSchedules WHERE id = ? AND doctor_id = ? AND NOT EXISTS (SELECT 1 FROM Appointments WHERE schedule_id = ?)";
         return executeUpdate(sql, slotId, doctorId, slotId);
@@ -254,45 +253,25 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      * @param doctorId           Mã hồ sơ bác sĩ
      * @param startDate          Ngày bắt đầu (phải >= Hôm nay)
      * @param endDate            Ngày kết thúc (tối đa 90 ngày kể từ startDate)
-     * @param selectedDaysOfWeek Danh sách các thứ trong tuần (1: Thứ 2, 2: Thứ 3, ..., 7: Chủ Nhật)
+     * @param selectedDaysOfWeek Danh sách các thứ trong tuần (1: Thứ 2, ..., 7: Chủ Nhật)
      * @param selectedTimeSlots  Danh sách khung giờ (ví dụ: ["08:00", "09:00", ...])
      * @return Số lượng ca khám mới được tạo thành công
      * @throws IllegalArgumentException khi tham số không hợp lệ
      */
     public int registerWeeklyScheduleBatch(int doctorId, LocalDate startDate, LocalDate endDate,
                                            List<Integer> selectedDaysOfWeek, List<String> selectedTimeSlots) {
-        if (doctorId <= 0) {
-            throw new IllegalArgumentException("Mã bác sĩ không hợp lệ!");
-        }
-        if (startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Ngày bắt đầu và ngày kết thúc không được để trống!");
-        }
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Không thể đăng ký lịch khám cho các ngày trong quá khứ!");
-        }
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Ngày bắt đầu không được lớn hơn ngày kết thúc!");
-        }
-        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-        if (daysBetween > 90) {
-            throw new IllegalArgumentException("Khoảng thời gian đăng ký không được vượt quá 90 ngày (3 tháng)!");
-        }
-        if (selectedDaysOfWeek == null || selectedDaysOfWeek.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn ít nhất một ngày làm việc trong tuần!");
-        }
-        if (selectedTimeSlots == null || selectedTimeSlots.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn ít nhất một khung giờ khám!");
-        }
-
-        // 1. Lấy tất cả các ca hiện có trong khoảng ngày này của bác sĩ để chống trùng lặp (Idempotent)
-        String queryExistingSql = "SELECT work_date, start_time FROM DoctorSchedules WHERE doctor_id = ? AND work_date BETWEEN ? AND ?";
-        Set<String> existingKeySet = new HashSet<>(); // "yyyy-MM-dd_HH:mm"
+        validateBatchScheduleParams(doctorId, startDate, endDate, selectedDaysOfWeek, selectedTimeSlots);
 
         Date sqlStartDate = Date.valueOf(startDate);
         Date sqlEndDate = Date.valueOf(endDate);
 
         try {
             Connection conn = DBContext.getConnection();
+
+            // 1. Lấy tất cả các ca hiện có trong khoảng ngày này của bác sĩ để chống trùng lặp (Idempotent)
+            String queryExistingSql = "SELECT work_date, start_time FROM DoctorSchedules WHERE doctor_id = ? AND work_date BETWEEN ? AND ?";
+            Set<String> existingKeySet = new HashSet<>(); // "yyyy-MM-dd_HH:mm"
+
             try (PreparedStatement ps = conn.prepareStatement(queryExistingSql)) {
                 ps.setInt(1, doctorId);
                 ps.setDate(2, sqlStartDate);
@@ -302,22 +281,16 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                         Date d = rs.getDate("work_date");
                         Time t = rs.getTime("start_time");
                         if (d != null && t != null) {
-                            String timeStr = t.toString().substring(0, 5);
-                            existingKeySet.add(d.toString() + "_" + timeStr);
+                            existingKeySet.add(d.toString() + "_" + t.toString().substring(0, 5));
                         }
                     }
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi kiểm tra ca khám hiện có của bác sĩ", e);
-        }
 
-        // 2. Thực hiện Batch Insert các ca chưa tồn tại
-        String insertSql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, 1)";
-        int totalInserted = 0;
+            // 2. Thực hiện Batch Insert các ca chưa tồn tại
+            String insertSql = "INSERT INTO DoctorSchedules (doctor_id, work_date, start_time, end_time, is_available) VALUES (?, ?, CAST(? AS TIME), CAST(? AS TIME), 1)";
+            int totalInserted = 0;
 
-        try {
-            Connection conn = DBContext.getConnection();
             try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                 LocalDate current = startDate;
                 boolean hasBatch = false;
@@ -330,22 +303,22 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                         for (String hhmm : selectedTimeSlots) {
                             String trimmed = hhmm.trim();
                             if (trimmed.length() >= 5) {
-                                String slotKey = current.toString() + "_" + trimmed.substring(0, 5);
+                                String timePrefix = trimmed.substring(0, 5);
+                                String slotKey = current.toString() + "_" + timePrefix;
+
                                 if (!existingKeySet.contains(slotKey)) {
-                                    String startTimeStr = trimmed.substring(0, 5) + ":00";
                                     try {
-                                        Time startTime = Time.valueOf(startTimeStr);
-                                        long endMs = startTime.getTime() + 60L * 60L * 1000L;
-                                        Time endTime = new Time(endMs);
+                                        LocalTime startLocal = LocalTime.parse(timePrefix);
+                                        LocalTime endLocal = startLocal.plusHours(1);
 
                                         ps.setInt(1, doctorId);
                                         ps.setDate(2, currentSqlDate);
-                                        ps.setTime(3, startTime);
-                                        ps.setTime(4, endTime);
+                                        ps.setString(3, startLocal.toString() + ":00");
+                                        ps.setString(4, endLocal.toString() + ":00");
                                         ps.addBatch();
                                         hasBatch = true;
                                         totalInserted++;
-                                    } catch (Exception e) {
+                                    } catch (DateTimeParseException e) {
                                         LOGGER.log(Level.WARNING, "Bỏ qua khung giờ không hợp lệ: " + trimmed, e);
                                     }
                                 }
@@ -359,12 +332,13 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     ps.executeBatch();
                 }
             }
+
+            return totalInserted;
+
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi thực thi Batch Insert lịch làm việc theo tuần", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi thực thi Batch Insert lịch làm việc theo tuần cho doctorId=" + doctorId, e);
             throw new RuntimeException("Lỗi hệ thống khi lưu lịch làm việc: " + e.getMessage(), e);
         }
-
-        return totalInserted;
     }
 
     /**
@@ -382,16 +356,15 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
             return 0;
         }
 
-        String deleteSql = "DELETE FROM DoctorSchedules WHERE id = ? AND doctor_id = ? "
-                + "AND NOT EXISTS (SELECT 1 FROM Appointments a WHERE a.schedule_id = DoctorSchedules.id)";
-
-        // Lấy danh sách ID các ca thỏa mãn
         String findSql = "SELECT id, work_date FROM DoctorSchedules WHERE doctor_id = ? AND work_date BETWEEN ? AND ? "
                 + "AND is_available = 1 AND NOT EXISTS (SELECT 1 FROM Appointments a WHERE a.schedule_id = DoctorSchedules.id)";
+        String deleteSql = "DELETE FROM DoctorSchedules WHERE id = ? AND doctor_id = ? "
+                + "AND NOT EXISTS (SELECT 1 FROM Appointments a WHERE a.schedule_id = DoctorSchedules.id)";
 
         List<Integer> slotIdsToDelete = new ArrayList<>();
         try {
             Connection conn = DBContext.getConnection();
+
             try (PreparedStatement ps = conn.prepareStatement(findSql)) {
                 ps.setInt(1, doctorId);
                 ps.setDate(2, Date.valueOf(startDate));
@@ -401,8 +374,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                         int slotId = rs.getInt("id");
                         Date workDate = rs.getDate("work_date");
                         if (workDate != null) {
-                            LocalDate ld = workDate.toLocalDate();
-                            int dayOfWeek = ld.getDayOfWeek().getValue();
+                            int dayOfWeek = workDate.toLocalDate().getDayOfWeek().getValue();
                             if (selectedDaysOfWeek == null || selectedDaysOfWeek.isEmpty() || selectedDaysOfWeek.contains(dayOfWeek)) {
                                 slotIdsToDelete.add(slotId);
                             }
@@ -410,17 +382,12 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     }
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi tìm ca khám cần xóa", e);
-        }
 
-        if (slotIdsToDelete.isEmpty()) {
-            return 0;
-        }
+            if (slotIdsToDelete.isEmpty()) {
+                return 0;
+            }
 
-        int deletedCount = 0;
-        try {
-            Connection conn = DBContext.getConnection();
+            int deletedCount = 0;
             try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
                 for (Integer id : slotIdsToDelete) {
                     ps.setInt(1, id);
@@ -434,9 +401,54 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                     }
                 }
             }
+            return deletedCount;
+
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi xóa hàng loạt ca khám trống", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi xóa hàng loạt ca khám trống cho doctorId=" + doctorId, e);
+            return 0;
         }
-        return deletedCount;
+    }
+
+    // =========================================================================
+    // 🛠️ 4. PRIVATE HELPERS
+    // =========================================================================
+
+    private List<String> parseConfiguredSlots(String timeSlotsConfig) {
+        if (timeSlotsConfig == null || timeSlotsConfig.trim().isEmpty()) {
+            return DEFAULT_TIME_SLOTS;
+        }
+        List<String> result = new ArrayList<>();
+        for (String s : timeSlotsConfig.split(",")) {
+            String trimmed = s.trim();
+            if (trimmed.length() >= 5) {
+                result.add(trimmed.substring(0, 5));
+            }
+        }
+        return result.isEmpty() ? DEFAULT_TIME_SLOTS : result;
+    }
+
+    private void validateBatchScheduleParams(int doctorId, LocalDate startDate, LocalDate endDate,
+                                            List<Integer> selectedDaysOfWeek, List<String> selectedTimeSlots) {
+        if (doctorId <= 0) {
+            throw new IllegalArgumentException("Mã bác sĩ không hợp lệ!");
+        }
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Ngày bắt đầu và ngày kết thúc không được để trống!");
+        }
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Không thể đăng ký lịch khám cho các ngày trong quá khứ!");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Ngày bắt đầu không được lớn hơn ngày kết thúc!");
+        }
+        if (ChronoUnit.DAYS.between(startDate, endDate) > MAX_BATCH_REGISTRATION_DAYS) {
+            throw new IllegalArgumentException("Khoảng thời gian đăng ký không được vượt quá " + MAX_BATCH_REGISTRATION_DAYS + " ngày (3 tháng)!");
+        }
+        if (selectedDaysOfWeek == null || selectedDaysOfWeek.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một ngày làm việc trong tuần!");
+        }
+        if (selectedTimeSlots == null || selectedTimeSlots.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một khung giờ khám!");
+        }
     }
 }
