@@ -61,6 +61,7 @@ public abstract class BaseRoleServlet extends HttpServlet {
      * @throws IOException nếu ghi thất bại
      */
     protected void writeJson(HttpServletResponse response, String json) throws IOException {
+        response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(json);
     }
