@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import config.DBContext;
 import constant.SystemConstant;
 import exception.SlotAlreadyBookedException;
 import model.Appointment;
@@ -19,6 +18,11 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
 
     private static final Logger LOGGER = Logger.getLogger(AppointmentDAO.class.getName());
 
+    // =========================================================================
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
+    // =========================================================================
+    private final RowMapper<Appointment> mapper = autoMapper(Appointment.class);
+
     private static final String BASE_SELECT = "SELECT a.*, u_pat.fullname AS patient_name, u_pat.phone AS patient_phone, "
             + "u_doc.fullname AS doctor_name, s.service_name "
             + "FROM Appointments a "
@@ -26,44 +30,6 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
             + "JOIN DoctorProfiles dp ON a.doctor_id = dp.id "
             + "JOIN Users u_doc ON dp.user_id = u_doc.id "
             + "JOIN Services s ON a.service_id = s.id ";
-
-    protected Appointment mapResultSetToAppointment(ResultSet rs) throws SQLException {
-        Appointment app = new Appointment();
-        app.setId(rs.getInt("id"));
-        app.setPatientId(rs.getInt("patient_id"));
-        app.setDoctorId(rs.getInt("doctor_id"));
-        app.setServiceId(rs.getInt("service_id"));
-        app.setScheduleId(rs.getInt("schedule_id"));
-        app.setAppointmentDate(rs.getDate("appointment_date"));
-        app.setStartTime(rs.getTime("start_time"));
-        app.setTotalPrice(rs.getBigDecimal("total_price"));
-        app.setStatus(rs.getString("status"));
-        app.setPaymentStatus(rs.getString("payment_status"));
-        app.setPaymentMethod(rs.getString("payment_method"));
-        app.setPaymentContent(rs.getString("payment_content"));
-        app.setTransactionCode(rs.getString("transaction_code"));
-        app.setNotes(rs.getString("notes"));
-        app.setCreatedAt(rs.getTimestamp("created_at"));
-
-        try {
-            app.setPatientName(rs.getString("patient_name"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            app.setPatientPhone(rs.getString("patient_phone"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            app.setDoctorName(rs.getString("doctor_name"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            app.setServiceName(rs.getString("service_name"));
-        } catch (SQLException ignored) {
-        }
-
-        return app;
-    }
 
     /**
      * Tạo lịch hẹn mới (Atomic Booking). Hàm này được quản lý tự động bởi
@@ -158,14 +124,14 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
     public Appointment findById(int id) {
         String sql = BASE_SELECT
                 + "WHERE a.id = ?";
-        return queryOne(sql, this::mapResultSetToAppointment, id);
+        return queryOne(sql, mapper, id);
     }
 
     public List<Appointment> findByPatientId(int patientId) {
         String sql = BASE_SELECT
                 + "WHERE a.patient_id = ? "
                 + "ORDER BY a.created_at DESC";
-        return queryList(sql, this::mapResultSetToAppointment, patientId);
+        return queryList(sql, mapper, patientId);
     }
 
     public List<Appointment> findPatientAppointmentsPaginated(int patientId, int offset, int limit) {
@@ -173,7 +139,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "WHERE a.patient_id = ? "
                 + "ORDER BY a.created_at DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToAppointment, patientId, offset, limit);
+        return queryList(sql, mapper, patientId, offset, limit);
     }
 
     public int countPatientAppointments(int patientId) {
@@ -190,7 +156,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? AND a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC";
-        return queryList(sql, this::mapResultSetToAppointment, doctorUserId, date);
+        return queryList(sql, mapper, doctorUserId, date);
     }
 
     public List<Appointment> findAppointmentsByDoctorUserAndDatePaginated(int doctorUserId, String date, int offset,
@@ -199,7 +165,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "WHERE dp.user_id = ? AND a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToAppointment, doctorUserId, date, offset, limit);
+        return queryList(sql, mapper, doctorUserId, date, offset, limit);
     }
 
     public int countAppointmentsByDoctorUserAndDate(int doctorUserId, String date) {
@@ -212,14 +178,14 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "WHERE dp.user_id = ? "
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToAppointment, doctorUserId, offset, limit);
+        return queryList(sql, mapper, doctorUserId, offset, limit);
     }
 
     public List<Appointment> findAppointmentsByDoctorUser(int doctorUserId) {
         String sql = BASE_SELECT
                 + "WHERE dp.user_id = ? "
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC";
-        return queryList(sql, this::mapResultSetToAppointment, doctorUserId);
+        return queryList(sql, mapper, doctorUserId);
     }
 
     public int countAppointmentsByDoctorUser(int doctorUserId) {
@@ -248,7 +214,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         String sql = BASE_SELECT
                 + "WHERE a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC";
-        return queryList(sql, this::mapResultSetToAppointment, date);
+        return queryList(sql, mapper, date);
     }
 
     public List<Appointment> findAllAppointmentsByDatePaginated(String date, int offset, int limit) {
@@ -256,7 +222,7 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "WHERE a.appointment_date = ? "
                 + "ORDER BY a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToAppointment, date, offset, limit);
+        return queryList(sql, mapper, date, offset, limit);
     }
 
     public int countAllAppointmentsByDate(String date) {
@@ -268,13 +234,13 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
         String sql = BASE_SELECT
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToAppointment, offset, limit);
+        return queryList(sql, mapper, offset, limit);
     }
 
     public List<Appointment> findAllAppointments() {
         String sql = BASE_SELECT
                 + "ORDER BY a.appointment_date DESC, a.start_time ASC";
-        return queryList(sql, this::mapResultSetToAppointment);
+        return queryList(sql, mapper);
     }
 
     public int countAllAppointments() {
@@ -319,23 +285,15 @@ public class AppointmentDAO extends BaseDAO<Appointment> {
                 + "COALESCE(SUM(CASE WHEN payment_method = 'CASH' AND payment_status = 'PAID' THEN total_price ELSE 0 END), 0) AS cash_revenue "
                 + "FROM Appointments "
                 + "WHERE appointment_date BETWEEN ? AND ?";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, startDate);
-            ps.setDate(2, endDate);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new RevenueReport(
-                            rs.getInt("total_appointments"),
-                            rs.getInt("completed_appointments"),
-                            rs.getInt("cancelled_appointments"),
-                            rs.getBigDecimal("total_revenue_paid"),
-                            rs.getBigDecimal("sepay_revenue"),
-                            rs.getBigDecimal("cash_revenue"));
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi truy vấn báo cáo doanh thu getRevenueReport", e);
-        }
-        return new RevenueReport();
+        
+        RevenueReport report = queryOne(sql, rs -> new RevenueReport(
+                rs.getInt("total_appointments"),
+                rs.getInt("completed_appointments"),
+                rs.getInt("cancelled_appointments"),
+                rs.getBigDecimal("total_revenue_paid"),
+                rs.getBigDecimal("sepay_revenue"),
+                rs.getBigDecimal("cash_revenue")), startDate, endDate);
+
+        return report != null ? report : new RevenueReport();
     }
 }

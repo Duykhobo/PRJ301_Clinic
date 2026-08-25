@@ -85,7 +85,7 @@ public class HistoryServlet extends BaseRoleServlet {
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
 
-        request.getRequestDispatcher(RouterConstant.HISTORY_JSP).forward(request, response);
+        forward(request, response, RouterConstant.HISTORY_JSP);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class HistoryServlet extends BaseRoleServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
-            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_HISTORY);
+            redirect(request, response, RouterConstant.ROUTE_LOGIN + "?redirect=" + RouterConstant.ROUTE_HISTORY);
             return;
         }
 
@@ -118,7 +118,7 @@ public class HistoryServlet extends BaseRoleServlet {
             } catch (Exception e) {
                 setError(request, "Lỗi khi gửi đánh giá: " + e.getMessage());
             }
-            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
+            redirect(request, response, RouterConstant.ROUTE_HISTORY);
             return;
         } else if ("cancel-appointment".equals(action)) {
             try {
@@ -133,7 +133,7 @@ public class HistoryServlet extends BaseRoleServlet {
             } catch (Exception e) {
                 setError(request, "Lỗi khi hủy lịch hẹn: " + e.getMessage());
             }
-            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
+            redirect(request, response, RouterConstant.ROUTE_HISTORY);
             return;
         }
 

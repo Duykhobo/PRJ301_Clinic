@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -20,7 +19,7 @@ import util.JsonUtil;
  * NotificationServlet - API Endpoint phục vụ Polling thông báo thời gian thực (/api/notifications).
  */
 @WebServlet(name = "NotificationServlet", urlPatterns = {"/api/notifications"})
-public class NotificationServlet extends HttpServlet {
+public class NotificationServlet extends BaseRoleServlet {
 
     private NotificationDAO notificationDAO;
 
@@ -33,10 +32,9 @@ public class NotificationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("application/json;charset=UTF-8");
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
-            response.getWriter().write("{\"success\":false,\"unreadCount\":0,\"notifications\":[]}");
+            writeJson(response, "{\"success\":false,\"unreadCount\":0,\"notifications\":[]}");
             return;
         }
 
@@ -60,18 +58,16 @@ public class NotificationServlet extends HttpServlet {
                 .append("}");
         }
         json.append("]}");
-
-        response.getWriter().write(json.toString());
+        writeJson(response, json.toString());
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("application/json;charset=UTF-8");
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SystemConstant.SESSION_USER) == null) {
-            response.getWriter().write("{\"success\":false,\"message\":\"Chưa đăng nhập!\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"Chưa đăng nhập!\"}");
             return;
         }
 
@@ -80,7 +76,7 @@ public class NotificationServlet extends HttpServlet {
 
         if ("mark-all-read".equals(action)) {
             boolean ok = notificationDAO.markAllAsRead(loginUser.getId());
-            response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã đánh dấu tất cả đã đọc!\"}");
+            writeJson(response, "{\"success\":" + ok + ",\"message\":\"Đã đánh dấu tất cả đã đọc!\"}");
             return;
         }
 
@@ -88,14 +84,14 @@ public class NotificationServlet extends HttpServlet {
             try {
                 int id = Integer.parseInt(request.getParameter("id"));
                 boolean ok = notificationDAO.markAsRead(id, loginUser.getId());
-                response.getWriter().write("{\"success\":" + ok + "}");
+                writeJson(response, "{\"success\":" + ok + "}");
                 return;
             } catch (Exception e) {
-                response.getWriter().write("{\"success\":false,\"message\":\"ID không hợp lệ\"}");
+                writeJson(response, "{\"success\":false,\"message\":\"ID không hợp lệ\"}");
                 return;
             }
         }
 
-        response.getWriter().write("{\"success\":false,\"message\":\"Hành động không hợp lệ\"}");
+        writeJson(response, "{\"success\":false,\"message\":\"Hành động không hợp lệ\"}");
     }
 }

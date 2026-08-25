@@ -10,10 +10,11 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import constant.RoleConstant;
+import constant.RouterConstant;
 import dao.AppointmentDAO;
 import dao.ClinicSettingDAO;
 import dao.ServiceDAO;
@@ -46,7 +47,7 @@ public class AdminServlet extends BaseRoleServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User loginUser = requireRole(request, response, "ADMIN");
+        User loginUser = requireRole(request, response, RoleConstant.ADMIN);
         if (loginUser == null) {
             return;
         }
@@ -121,21 +122,19 @@ public class AdminServlet extends BaseRoleServlet {
         request.setAttribute("totalPagesService", totalPagesService);
         request.setAttribute("activeTab", activeTab);
 
-        request.getRequestDispatcher(constant.RouterConstant.ADMIN_DASHBOARD_JSP).forward(request, response);
+        forward(request, response, RouterConstant.ADMIN_DASHBOARD_JSP);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User loginUser = requireRole(request, response, "ADMIN");
+        User loginUser = requireRole(request, response, RoleConstant.ADMIN);
         if (loginUser == null) {
             return;
         }
 
-        request.setCharacterEncoding("UTF-8");
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
-                || "true".equalsIgnoreCase(request.getParameter("ajax"));
+        boolean ajax = isAjax(request);
 
         String action = request.getParameter("action");
         if (action == null) action = "";
@@ -268,19 +267,18 @@ public class AdminServlet extends BaseRoleServlet {
             }
         }
 
-        if (isAjax) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(String.format(
+        if (ajax) {
+            writeJson(response, String.format(
                     "{\"success\":%b,\"message\":\"%s\",\"newStatus\":%b,\"newRole\":\"%s\"}",
                     success, message, newStatus, newRoleStr
             ));
             return;
         }
 
-        String redirectUrl = request.getContextPath() + constant.RouterConstant.DASHBOARD_ADMIN + "?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
+        String redirectUrl = RouterConstant.DASHBOARD_ADMIN + "?pageUser=" + (pageUserParam != null ? pageUserParam : "1")
                 + "&pageService=" + (pageServiceParam != null ? pageServiceParam : "1")
                 + "&tab=" + (tabParam != null ? tabParam : "users");
 
-        response.sendRedirect(redirectUrl);
+        redirect(request, response, redirectUrl);
     }
 }

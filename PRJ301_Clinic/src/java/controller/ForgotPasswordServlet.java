@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,7 +23,7 @@ import util.ValidationUtil;
  * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "ForgotPasswordServlet", urlPatterns = { "/forgot-password" })
-public class ForgotPasswordServlet extends HttpServlet {
+public class ForgotPasswordServlet extends BaseRoleServlet {
 
     private UserService userService;
     private static final String ALPHA_NUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -38,7 +37,7 @@ public class ForgotPasswordServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
+        forward(request, response, RouterConstant.FORGOT_PASSWORD_JSP);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_INVALID_EMAIL);
-            request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
+            forward(request, response, RouterConstant.FORGOT_PASSWORD_JSP);
             return;
         }
 
@@ -63,7 +62,7 @@ public class ForgotPasswordServlet extends HttpServlet {
             errors.put("email", MessageConstant.ERR_EMAIL_NOT_FOUND);
             request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_EMAIL_NOT_FOUND);
-            request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
+            forward(request, response, RouterConstant.FORGOT_PASSWORD_JSP);
             return;
         }
 
@@ -71,7 +70,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         boolean updated = userService.resetPasswordByEmail(user.getId(), tempPassword);
         if (!updated) {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Lỗi hệ thống khi cập nhật mật khẩu mới. Vui lòng thử lại sau!");
-            request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
+            forward(request, response, RouterConstant.FORGOT_PASSWORD_JSP);
             return;
         }
 
@@ -79,7 +78,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         request.setAttribute(emailSent ? SystemConstant.SUCCESS_MESSAGE_ATTR : SystemConstant.ERROR_MESSAGE_ATTR,
                              emailSent ? MessageConstant.MSG_SEND_EMAIL_SUCCESS : MessageConstant.ERR_SEND_EMAIL_FAILED);
 
-        request.getRequestDispatcher(RouterConstant.FORGOT_PASSWORD_JSP).forward(request, response);
+        forward(request, response, RouterConstant.FORGOT_PASSWORD_JSP);
     }
 
     private String generateTempPassword() {

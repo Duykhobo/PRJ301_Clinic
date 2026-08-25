@@ -1,42 +1,22 @@
 package dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
-
 import model.DoctorProfile;
 
 /**
  * Lớp DoctorProfileDAO quản lý thông tin Hồ sơ Bác sĩ (DoctorProfiles & Users).
- * Kế thừa BaseDAO<DoctorProfile> áp dụng chuẩn DRY.
+ * Kế thừa BaseDAO<DoctorProfile> áp dụng chuẩn SOLID và DRY (AutoMapper Reflection).
  */
 public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
 
     // =========================================================================
-    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
     // =========================================================================
-    /**
-     * Mapper chuyển ResultSet từ câu SQL JOIN DoctorProfiles + Users.
-     */
-    protected DoctorProfile mapResultSetToDoctorProfile(ResultSet rs) throws SQLException {
-        DoctorProfile doc = new DoctorProfile();
-        doc.setId(rs.getInt("id"));
-        doc.setUserId(rs.getInt("user_id"));
-        doc.setSpecialty(rs.getString("specialty"));
-        doc.setExperienceYears(rs.getInt("experience_years"));
-        doc.setRoomNumber(rs.getString("room_number"));
-        doc.setBio(rs.getString("bio"));
+    private final RowMapper<DoctorProfile> mapper = autoMapper(DoctorProfile.class);
 
-        // Map thông tin JOIN từ bảng Users (nếu có trong câu query)
-        try {
-            doc.setDoctorName(rs.getString("fullname"));
-            doc.setDoctorPhone(rs.getString("phone"));
-            doc.setDoctorEmail(rs.getString("email"));
-        } catch (SQLException ignored) {
-            // Cho phép bỏ qua nếu câu SQL đơn giản không JOIN với Users
-        }
-        return doc;
-    }
+    private static final String BASE_DOCTOR_SELECT = 
+            "SELECT d.*, u.fullname AS doctor_name, u.phone AS doctor_phone, u.email AS doctor_email "
+            + "FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id ";
 
     // =========================================================================
     // 🔑 2. CÁC NGHỆP VỤ DAO BÁC SĨ
@@ -49,8 +29,8 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
      * @return Danh sách các Hồ sơ Bác sĩ Active
      */
     public List<DoctorProfile> findAllActiveDoctors() {
-        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE u.status = 1";
-        return queryList(sql, this::mapResultSetToDoctorProfile);
+        String sql = BASE_DOCTOR_SELECT + "WHERE u.status = 1 ORDER BY u.fullname ASC";
+        return queryList(sql, mapper);
     }
 
     /**
@@ -60,8 +40,8 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
      * @return Đối tượng DoctorProfile hoặc null nếu không tìm thấy
      */
     public DoctorProfile findById(int id) {
-        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.id = ?";
-        return queryOne(sql, this::mapResultSetToDoctorProfile, id);
+        String sql = BASE_DOCTOR_SELECT + "WHERE d.id = ?";
+        return queryOne(sql, mapper, id);
     }
 
     /**
@@ -72,8 +52,8 @@ public class DoctorProfileDAO extends BaseDAO<DoctorProfile> {
      * @return Đối tượng DoctorProfile tương ứng với tài khoản Bác sĩ
      */
     public DoctorProfile findByUserId(int userId) {
-        String sql = "SELECT d.*, u.fullname, u.phone, u.email FROM DoctorProfiles d JOIN Users u ON d.user_id = u.id WHERE d.user_id = ?";
-        return queryOne(sql, this::mapResultSetToDoctorProfile, userId);
+        String sql = BASE_DOCTOR_SELECT + "WHERE d.user_id = ?";
+        return queryOne(sql, mapper, userId);
     }
 
     /**

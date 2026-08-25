@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,7 +23,7 @@ import util.ValidationUtil;
  * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
-public class RegisterServlet extends HttpServlet {
+public class RegisterServlet extends BaseRoleServlet {
 
     private UserService userService;
 
@@ -36,7 +35,7 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
+        forward(request, response, RouterConstant.REGISTER_JSP);
     }
 
     @Override
@@ -81,7 +80,7 @@ public class RegisterServlet extends HttpServlet {
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng kiểm tra và hoàn thiện các trường dữ liệu bên dưới!");
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
+            forward(request, response, RouterConstant.REGISTER_JSP);
             return;
         }
 
@@ -100,10 +99,10 @@ public class RegisterServlet extends HttpServlet {
             if (email != null && !email.trim().isEmpty()) {
                 EmailUtil.sendWelcomeEmailAsync(email, fullname, username);
             }
-            response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_LOGIN + "?registered=success");
+            redirect(request, response, RouterConstant.ROUTE_LOGIN + "?registered=success");
         } else {
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Đã xảy ra lỗi trong quá trình tạo tài khoản. Vui lòng thử lại!");
-            request.getRequestDispatcher(RouterConstant.REGISTER_JSP).forward(request, response);
+            forward(request, response, RouterConstant.REGISTER_JSP);
         }
     }
 }

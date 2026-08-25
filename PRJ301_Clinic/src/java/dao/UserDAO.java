@@ -1,7 +1,5 @@
 package dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,24 +16,9 @@ public class UserDAO extends BaseDAO<User> {
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
     // =========================================================================
-    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
     // =========================================================================
-    /**
-     * Helper Mapper chuyển 1 dòng ResultSet thành đối tượng User.
-     */
-    protected User mapResultSetToUser(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setUsername(rs.getString("username"));
-        user.setPassword(rs.getString("password"));
-        user.setEmail(rs.getString("email"));
-        user.setFullname(rs.getString("fullname"));
-        user.setPhone(rs.getString("phone"));
-        user.setRole(rs.getString("role"));
-        user.setStatus(rs.getBoolean("status"));
-        user.setCreatedAt(rs.getTimestamp("created_at"));
-        return user;
-    }
+    private final RowMapper<User> mapper = autoMapper(User.class);
 
     // =========================================================================
     // 🔑 2. CÁC NGHỆP VỤ ĐĂNG NHẬP & ĐĂNG KÝ
@@ -51,7 +34,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public User login(String username, String rawPassword) {
         String sql = "SELECT * FROM Users WHERE username = ?";
-        User user = queryOne(sql, this::mapResultSetToUser, username);
+        User user = queryOne(sql, mapper, username);
         if (user != null && user.isStatus()) {
             if (BCryptUtil.checkPassword(rawPassword, user.getPassword())) {
                 return user;
@@ -85,7 +68,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public boolean existsByUsername(String username) {
         String sql = "SELECT * FROM Users WHERE username = ?";
-        return queryOne(sql, this::mapResultSetToUser, username) != null;
+        return queryOne(sql, mapper, username) != null;
     }
 
     /**
@@ -99,7 +82,7 @@ public class UserDAO extends BaseDAO<User> {
             return false;
         }
         String sql = "SELECT * FROM Users WHERE email = ?";
-        return queryOne(sql, this::mapResultSetToUser, email) != null;
+        return queryOne(sql, mapper, email) != null;
     }
 
     /**
@@ -113,7 +96,7 @@ public class UserDAO extends BaseDAO<User> {
             return null;
         }
         String sql = "SELECT * FROM Users WHERE email = ?";
-        return queryOne(sql, this::mapResultSetToUser, email.trim());
+        return queryOne(sql, mapper, email.trim());
     }
 
     /**
@@ -124,7 +107,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public User findById(int id) {
         String sql = "SELECT * FROM Users WHERE id = ?";
-        return queryOne(sql, this::mapResultSetToUser, id);
+        return queryOne(sql, mapper, id);
     }
 
     /**
@@ -146,7 +129,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public List<User> findAll() {
         String sql = "SELECT * FROM Users ORDER BY id DESC";
-        return queryList(sql, this::mapResultSetToUser);
+        return queryList(sql, mapper);
     }
 
     /**
@@ -154,7 +137,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public List<User> findByRole(String role) {
         String sql = "SELECT * FROM Users WHERE role = ? AND status = 1 ORDER BY fullname ASC";
-        return queryList(sql, this::mapResultSetToUser, role);
+        return queryList(sql, mapper, role);
     }
 
     /**
@@ -181,7 +164,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     public List<User> findPaginated(int offset, int limit) {
         String sql = "SELECT * FROM Users ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToUser, offset, limit);
+        return queryList(sql, mapper, offset, limit);
     }
 
     public int countAll() {
@@ -219,7 +202,7 @@ public class UserDAO extends BaseDAO<User> {
         params.add(offset);
         params.add(limit);
 
-        return queryList(sql.toString(), this::mapResultSetToUser, params.toArray());
+        return queryList(sql.toString(), mapper, params.toArray());
     }
 
     /**
@@ -279,7 +262,7 @@ public class UserDAO extends BaseDAO<User> {
         if (phone == null || phone.trim().isEmpty())
             return null;
         String sql = "SELECT * FROM Users WHERE phone = ?";
-        return queryOne(sql, this::mapResultSetToUser, phone.trim());
+        return queryOne(sql, mapper, phone.trim());
     }
 
     /**
@@ -307,7 +290,7 @@ public class UserDAO extends BaseDAO<User> {
 
         try {
             return executeInsertAndGetGeneratedKey(sql, username, hashedPassword, email, user.getFullname(),
-                    safePhone, user.getRole() != null ? user.getRole() : "PATIENT");
+                    safePhone, user.getRole() != null ? user.getRole() : RoleConstant.PATIENT);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "insertAndGetId error: Không thể tạo user mới", e);
             return -1;

@@ -550,6 +550,37 @@ BEGIN
 END
 GO
 
+-- High Performance Indexes cho các bảng thường xuyên Query / Filter / Webhook
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Appointments_Patient_Date')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Appointments_Patient_Date ON Appointments(patient_id, appointment_date, status);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Appointments_Doctor_Date')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Appointments_Doctor_Date ON Appointments(doctor_id, appointment_date, status);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Appointments_PaymentContent')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Appointments_PaymentContent ON Appointments(payment_content);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_DoctorSchedules_Doctor_Date')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_DoctorSchedules_Doctor_Date ON DoctorSchedules(doctor_id, work_date, is_available);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_MedicalRecords_Appointment')
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_MedicalRecords_Appointment ON MedicalRecords(appointment_id);
+END
+GO
+
 -- =========================================================================
 -- 8. TRIGGER TỰ ĐỘNG ĐỒNG BỘ TOTAL_SPENT VÀ LOYALTY_TIER (ACID DATA INTEGRITY)
 -- =========================================================================

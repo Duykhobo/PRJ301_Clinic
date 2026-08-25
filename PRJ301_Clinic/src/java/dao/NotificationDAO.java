@@ -19,18 +19,10 @@ public class NotificationDAO extends BaseDAO<Notification> {
 
     private static final Logger LOGGER = Logger.getLogger(NotificationDAO.class.getName());
 
-    protected Notification mapResultSetToNotification(ResultSet rs) throws SQLException {
-        Notification n = new Notification();
-        n.setId(rs.getInt("id"));
-        n.setUserId(rs.getInt("user_id"));
-        n.setTitle(rs.getString("title"));
-        n.setMessage(rs.getString("message"));
-        n.setType(rs.getString("type"));
-        n.setIsRead(rs.getBoolean("is_read"));
-        n.setLink(rs.getString("link"));
-        n.setCreatedAt(rs.getTimestamp("created_at"));
-        return n;
-    }
+    // =========================================================================
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
+    // =========================================================================
+    private final RowMapper<Notification> mapper = autoMapper(Notification.class);
 
     /**
      * Lấy danh sách thông báo mới nhất của người dùng.
@@ -38,7 +30,7 @@ public class NotificationDAO extends BaseDAO<Notification> {
     public List<Notification> findByUserId(int userId, int limit) {
         String sql = "SELECT TOP (?) id, user_id, title, message, type, is_read, link, created_at "
                 + "FROM Notifications WHERE user_id = ? ORDER BY created_at DESC, id DESC";
-        return queryList(sql, this::mapResultSetToNotification, limit > 0 ? limit : 20, userId);
+        return queryList(sql, mapper, limit > 0 ? limit : 20, userId);
     }
 
     /**
@@ -46,20 +38,7 @@ public class NotificationDAO extends BaseDAO<Notification> {
      */
     public int countUnreadByUserId(int userId) {
         String sql = "SELECT COUNT(*) FROM Notifications WHERE user_id = ? AND is_read = 0";
-        try {
-            Connection conn = DBContext.getConnection();
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, userId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getInt(1);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi đếm thông báo chưa đọc của user " + userId, e);
-        }
-        return 0;
+        return queryCount(sql, userId);
     }
 
     /**

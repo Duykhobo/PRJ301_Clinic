@@ -1,7 +1,5 @@
 package dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.logging.Logger;
 import model.MedicalRecord;
 
@@ -13,28 +11,17 @@ public class MedicalRecordDAO extends BaseDAO<MedicalRecord> {
 
     private static final Logger LOGGER = Logger.getLogger(MedicalRecordDAO.class.getName());
 
-    protected MedicalRecord mapResultSetToRecord(ResultSet rs) throws SQLException {
-        MedicalRecord record = new MedicalRecord();
-        record.setId(rs.getInt("id"));
-        record.setAppointmentId(rs.getInt("appointment_id"));
-        record.setPatientId(rs.getInt("patient_id"));
-        record.setDoctorId(rs.getInt("doctor_id"));
-        record.setDiagnosis(rs.getString("diagnosis"));
-        record.setPrescriptionOrResult(rs.getString("prescription_or_result"));
-        record.setSkinMoistureLevel((Integer) rs.getObject("skin_moisture_level"));
-        record.setSkinSebumLevel((Integer) rs.getObject("skin_sebum_level"));
-        record.setRating((Integer) rs.getObject("rating"));
-        record.setReviewComment(rs.getString("review_comment"));
-        record.setCreatedAt(rs.getTimestamp("created_at"));
-        return record;
-    }
+    // =========================================================================
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
+    // =========================================================================
+    private final RowMapper<MedicalRecord> mapper = autoMapper(MedicalRecord.class);
 
     /**
      * Tìm hồ sơ bệnh án theo mã Cuộc hẹn.
      */
     public MedicalRecord getRecordByAppointmentId(int appointmentId) {
         String sql = "SELECT * FROM MedicalRecords WHERE appointment_id = ?";
-        return queryOne(sql, this::mapResultSetToRecord, appointmentId);
+        return queryOne(sql, mapper, appointmentId);
     }
 
     /**

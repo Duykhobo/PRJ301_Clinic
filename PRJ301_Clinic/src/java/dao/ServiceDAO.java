@@ -1,35 +1,19 @@
 package dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-
 import model.Service;
 
 /**
- * Lớp ServiceDAO quản lý thao tác CSDL cho Bảng Services (Danh mục Dịch vụ Khám
- * & Spa).
- * Kế thừa BaseDAO<Service> áp dụng nguyên tắc DRY (Don't Repeat Yourself).
+ * Lớp ServiceDAO quản lý thao tác CSDL cho Bảng Services (Danh mục Dịch vụ Khám & Spa).
+ * Kế thừa BaseDAO<Service> áp dụng nguyên tắc SOLID và DRY (AutoMapper Reflection).
  */
 public class ServiceDAO extends BaseDAO<Service> {
 
     // =========================================================================
-    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
     // =========================================================================
-    /**
-     * Helper Mapper chuyển 1 dòng ResultSet từ SQL Server thành đối tượng Service.
-     */
-    protected Service mapResultSetToService(ResultSet rs) throws SQLException {
-        Service service = new Service();
-        service.setId(rs.getInt("id"));
-        service.setServiceName(rs.getString("service_name"));
-        service.setPrice(rs.getBigDecimal("price"));
-        service.setDurationMinutes(rs.getInt("duration_minutes"));
-        service.setDescription(rs.getString("description"));
-        service.setImageUrl(rs.getString("image_url"));
-        service.setStatus(rs.getBoolean("status"));
-        return service;
-    }
+    private final RowMapper<Service> mapper = autoMapper(Service.class);
 
     // =========================================================================
     // 🔑 2. CÁC NGHỆP VỤ DAO DỊCH VỤ
@@ -43,7 +27,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public List<Service> findAllActive() {
         String sql = "SELECT * FROM Services WHERE status = 1 ORDER BY service_name ASC";
-        return queryList(sql, this::mapResultSetToService);
+        return queryList(sql, mapper);
     }
 
     /**
@@ -54,7 +38,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public Service findById(int id) {
         String sql = "SELECT * FROM Services WHERE id = ?";
-        return queryOne(sql, this::mapResultSetToService, id);
+        return queryOne(sql, mapper, id);
     }
 
     /**
@@ -109,7 +93,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public List<Service> findAllForAdmin() {
         String sql = "SELECT * FROM Services ORDER BY id DESC";
-        return queryList(sql, this::mapResultSetToService);
+        return queryList(sql, mapper);
     }
 
     /**
@@ -127,7 +111,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public List<Service> findAllForAdminPaginated(int offset, int limit) {
         String sql = "SELECT * FROM Services ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        return queryList(sql, this::mapResultSetToService, offset, limit);
+        return queryList(sql, mapper, offset, limit);
     }
 
     /**
@@ -142,7 +126,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public List<Service> findFilteredPaginated(String search, String status, int offset, int limit) {
         StringBuilder sql = new StringBuilder("SELECT * FROM Services WHERE 1=1 ");
-        List<Object> params = new java.util.ArrayList<>();
+        List<Object> params = new ArrayList<>();
 
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (service_name LIKE ? OR description LIKE ?) ");
@@ -160,7 +144,7 @@ public class ServiceDAO extends BaseDAO<Service> {
         params.add(offset);
         params.add(limit);
 
-        return queryList(sql.toString(), this::mapResultSetToService, params.toArray());
+        return queryList(sql.toString(), mapper, params.toArray());
     }
 
     /**
@@ -168,7 +152,7 @@ public class ServiceDAO extends BaseDAO<Service> {
      */
     public int countFiltered(String search, String status) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Services WHERE 1=1 ");
-        List<Object> params = new java.util.ArrayList<>();
+        List<Object> params = new ArrayList<>();
 
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (service_name LIKE ? OR description LIKE ?) ");

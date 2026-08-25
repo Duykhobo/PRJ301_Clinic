@@ -43,23 +43,9 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
     private static final int MAX_BATCH_REGISTRATION_DAYS = 90;
 
     // =========================================================================
-    // 🧱 1. HELPER MAPPER (CHUẨN DRY)
+    // 🧱 1. ROWMAPPER (TỰ ĐỘNG BẰNG REFLECTION CHUẨN DRY & SOLID)
     // =========================================================================
-
-    protected DoctorSchedule mapResultSetToSchedule(ResultSet rs) throws SQLException {
-        DoctorSchedule schedule = new DoctorSchedule();
-        try {
-            schedule.setId(rs.getInt("id"));
-        } catch (SQLException e) {
-            schedule.setId(rs.getInt("schedule_id"));
-        }
-        schedule.setDoctorId(rs.getInt("doctor_id"));
-        schedule.setWorkDate(rs.getDate("work_date"));
-        schedule.setStartTime(rs.getTime("start_time"));
-        schedule.setEndTime(rs.getTime("end_time"));
-        schedule.setIsAvailable(rs.getBoolean("is_available"));
-        return schedule;
-    }
+    private final RowMapper<DoctorSchedule> mapper = autoMapper(DoctorSchedule.class);
 
     // =========================================================================
     // 🔍 2. STORED PROCEDURE & QUERY METHODS
@@ -70,7 +56,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      */
     public DoctorSchedule findById(int id) {
         String sql = "SELECT * FROM DoctorSchedules WHERE id = ?";
-        return queryOne(sql, this::mapResultSetToSchedule, id);
+        return queryOne(sql, mapper, id);
     }
 
     /**
@@ -94,7 +80,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                 cs.setDate(2, workDate);
                 try (ResultSet rs = cs.executeQuery()) {
                     while (rs.next()) {
-                        list.add(mapResultSetToSchedule(rs));
+                        list.add(mapper.mapRow(rs));
                     }
                 }
             }
@@ -210,7 +196,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
                 + "FROM DoctorSchedules ds "
                 + "WHERE ds.doctor_id = ? AND ds.work_date = ? "
                 + "ORDER BY ds.start_time ASC";
-        return queryList(sql, this::mapResultSetToSchedule, doctorId, workDate);
+        return queryList(sql, mapper, doctorId, workDate);
     }
 
     /**
@@ -226,7 +212,7 @@ public class DoctorScheduleDAO extends BaseDAO<DoctorSchedule> {
      */
     public boolean insertSlot(int doctorId, Date workDate, Time startTime, Time endTime) {
         String checkSql = "SELECT TOP 1 * FROM DoctorSchedules WHERE doctor_id = ? AND work_date = ? AND start_time = CAST(? AS TIME)";
-        DoctorSchedule existing = queryOne(checkSql, this::mapResultSetToSchedule, doctorId, workDate, startTime.toString());
+        DoctorSchedule existing = queryOne(checkSql, mapper, doctorId, workDate, startTime.toString());
         if (existing != null) {
             return false;
         }

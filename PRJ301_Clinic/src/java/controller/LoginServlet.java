@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -24,7 +23,7 @@ import util.ValidationUtil;
  * Tách biệt lỗi chi tiết cho từng field, dùng toán tử 3 ngôi tinh gọn.
  */
 @WebServlet(name = "LoginServlet", urlPatterns = { "/login" })
-public class LoginServlet extends HttpServlet {
+public class LoginServlet extends BaseRoleServlet {
 
     private UserService userService;
 
@@ -43,7 +42,7 @@ public class LoginServlet extends HttpServlet {
             redirectByRole(response, request.getContextPath(), user.getRole());
             return;
         }
-        request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
+        forward(request, response, RouterConstant.LOGIN_JSP);
     }
 
     @Override
@@ -63,7 +62,7 @@ public class LoginServlet extends HttpServlet {
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!");
-            request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
+            forward(request, response, RouterConstant.LOGIN_JSP);
             return;
         }
 
@@ -72,7 +71,7 @@ public class LoginServlet extends HttpServlet {
             errors.put("general", MessageConstant.ERR_LOGIN_FAILED);
             request.setAttribute("errors", errors);
             request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, MessageConstant.ERR_LOGIN_FAILED);
-            request.getRequestDispatcher(RouterConstant.LOGIN_JSP).forward(request, response);
+            forward(request, response, RouterConstant.LOGIN_JSP);
             return;
         }
 

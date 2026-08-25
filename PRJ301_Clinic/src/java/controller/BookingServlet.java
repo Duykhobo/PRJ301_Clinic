@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -31,7 +30,7 @@ import util.ValidationUtil;
  * Chuẩn mô hình Enterprise 3-Tier (Servlet -> Service -> DAO).
  */
 @WebServlet(name = "BookingServlet", urlPatterns = { "/booking" })
-public class BookingServlet extends HttpServlet {
+public class BookingServlet extends BaseRoleServlet {
 
     private ClinicService clinicService;
     private BookingService bookingService;
@@ -79,7 +78,7 @@ public class BookingServlet extends HttpServlet {
         List<DoctorProfile> doctors = clinicService.getAllDoctors();
         request.setAttribute("services", services);
         request.setAttribute("doctors", doctors);
-        request.getRequestDispatcher(RouterConstant.BOOKING_JSP).forward(request, response);
+        forward(request, response, RouterConstant.BOOKING_JSP);
     }
 
     /**
@@ -98,8 +97,11 @@ public class BookingServlet extends HttpServlet {
 
         String serviceIdStr = request.getParameter("serviceId") != null ? request.getParameter("serviceId").trim() : "";
         String doctorIdStr = request.getParameter("doctorId") != null ? request.getParameter("doctorId").trim() : "";
-        String scheduleIdStr = request.getParameter("scheduleId") != null ? request.getParameter("scheduleId").trim() : "";
-        String appointmentDateStr = request.getParameter("appointmentDate") != null ? request.getParameter("appointmentDate").trim() : "";
+        String scheduleIdStr = request.getParameter("scheduleId") != null ? request.getParameter("scheduleId").trim()
+                : "";
+        String appointmentDateStr = request.getParameter("appointmentDate") != null
+                ? request.getParameter("appointmentDate").trim()
+                : "";
         String notes = request.getParameter("notes") != null ? request.getParameter("notes").trim() : "";
 
         request.setAttribute("selectedServiceId", serviceIdStr);
@@ -111,12 +113,15 @@ public class BookingServlet extends HttpServlet {
         Map<String, String> errors = new HashMap<>();
         ValidationUtil.validateField(errors, "serviceId", !serviceIdStr.isEmpty(), "Vui lòng chọn dịch vụ khám/spa!");
         ValidationUtil.validateField(errors, "doctorId", !doctorIdStr.isEmpty(), "Vui lòng chọn bác sĩ phụ trách!");
-        ValidationUtil.validateField(errors, "appointmentDate", !appointmentDateStr.isEmpty(), "Vui lòng chọn ngày khám hợp lệ!");
-        ValidationUtil.validateField(errors, "scheduleId", !scheduleIdStr.isEmpty(), "Vui lòng chọn khung giờ khám còn trống!");
+        ValidationUtil.validateField(errors, "appointmentDate", !appointmentDateStr.isEmpty(),
+                "Vui lòng chọn ngày khám hợp lệ!");
+        ValidationUtil.validateField(errors, "scheduleId", !scheduleIdStr.isEmpty(),
+                "Vui lòng chọn khung giờ khám còn trống!");
 
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
-            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR, "Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ, Ngày và Khung giờ khám!");
+            request.setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
+                    "Vui lòng chọn đầy đủ Dịch vụ, Bác sĩ, Ngày và Khung giờ khám!");
             doGet(request, response);
             return;
         }
@@ -272,20 +277,18 @@ public class BookingServlet extends HttpServlet {
                     if (!SystemConstant.PAYMENT_PAID.equalsIgnoreCase(app.getPaymentStatus())) {
                         boolean updated = bookingService.switchToCashPayment(appointmentId);
                         if (updated) {
-                            request.getSession().setAttribute(SystemConstant.SUCCESS_MESSAGE_ATTR,
+                            setSuccess(request,
                                     "Đã chuyển phương thức sang Thanh toán Tiền mặt khi đến khám thành công!");
                         }
                     } else {
-                        request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
-                                "Hóa đơn này đã được thanh toán, không thể chuyển phương thức!");
+                        setError(request, "Hóa đơn này đã được thanh toán, không thể chuyển phương thức!");
                     }
                 } else {
-                    request.getSession().setAttribute(SystemConstant.ERROR_MESSAGE_ATTR,
-                            "Bạn không có quyền thay đổi phương thức thanh toán của lịch hẹn này!");
+                    setError(request, "Bạn không có quyền thay đổi phương thức thanh toán của lịch hẹn này!");
                 }
             }
         } catch (Exception ignored) {
         }
-        response.sendRedirect(request.getContextPath() + RouterConstant.ROUTE_HISTORY);
+        redirect(request, response, RouterConstant.ROUTE_HISTORY);
     }
 }

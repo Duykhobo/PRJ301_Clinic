@@ -2,12 +2,12 @@ package service;
 
 import java.util.List;
 
+import constant.SystemConstant;
 import dao.AppointmentDAO;
 import model.Appointment;
 
 /**
- * BookingService - Tầng Service Quản lý Đặt lịch hẹn & Thanh toán (Business
- * Logic).
+ * BookingService - Tầng Service Quản lý Đặt lịch hẹn & Thanh toán (Business Logic).
  */
 public class BookingService {
 
@@ -57,6 +57,6 @@ public class BookingService {
      * Chuyển đổi phương thức thanh toán sang Tiền mặt khi đến khám (Cash Fallback).
      */
     public boolean switchToCashPayment(int appointmentId) {
-        return appointmentDAO.updatePayment(appointmentId, "UNPAID", "CASH");
+        return appointmentDAO.updatePayment(appointmentId, SystemConstant.PAYMENT_UNPAID, SystemConstant.METHOD_CASH);
     }
 }

@@ -7,13 +7,7 @@ import model.ClinicSetting;
 
 public class ClinicSettingDAO extends BaseDAO<ClinicSetting> {
 
-    private final RowMapper<ClinicSetting> mapper = rs -> new ClinicSetting(
-            rs.getInt("id"),
-            rs.getString("setting_key"),
-            rs.getString("setting_value"),
-            rs.getString("description"),
-            rs.getTimestamp("updated_at")
-    );
+    private final RowMapper<ClinicSetting> mapper = autoMapper(ClinicSetting.class);
 
     public List<ClinicSetting> getAllSettings() {
         String sql = "SELECT id, setting_key, setting_value, description, updated_at FROM ClinicSettings ORDER BY id ASC";
