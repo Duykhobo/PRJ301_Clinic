@@ -202,7 +202,7 @@ erDiagram
 
 | Hạng Mục                   | Công Nghệ / Thư Viện                           | Mô Tả Vai Trò                                                                 |
 | :--------------------------- | :------------------------------------------------- | :------------------------------------------------------------------------------- |
-| **Kiến trúc**        | Java Web EE MVC-V2 3-Tier                          | Servlet (Thin Controller)$\rightarrow$ Service $\rightarrow$ DAO (Pure JDBC) |
+| **Kiến trúc**        | Java Web EE MVC-V2 3-Tier                          | Servlet (Thin Controller) $\rightarrow$ Service $\rightarrow$ DAO (Pure JDBC) |
 | **Build Tool**         | NetBeans Ant Project                               | Chuẩn quy chế môn học PRJ301                                                 |
 | **JDK Version**        | Java SE 8 (JDK 1.8.0_202)                          | Tương thích 100% với phòng thi và server chấm                             |
 | **Database**           | Microsoft SQL Server 2019 / Express                | Hệ quản trị CSDL quan hệ chính thức                                        |
